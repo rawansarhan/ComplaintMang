@@ -1,19 +1,20 @@
 const express = require('express');
-const cors = require('cors');
-const dotenv = require('dotenv');
-const routes = require('./routes');
-const errorHandler = require('./middleware/errorHandler');
-
-dotenv.config();
-
 const app = express();
+require('dotenv').config();
 
-app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
-app.use('/api', routes);
 
-app.use(errorHandler);
+// 📘 إضافة Swagger
+const setupSwagger = require('./swagger'); // تأكد من مسار الملف
+setupSwagger(app); // تفعيل Swagger UI على /api-docs
 
+// Routes
+const authRoutes = require('./routes/auth');
+app.use('/api/auth', authRoutes);
+const mosqueRoutes = require('./routes/Mosque');
+app.use('/api/mosque', mosqueRoutes);
+
+
+// 👇 مهم جدًا!
 module.exports = app;
