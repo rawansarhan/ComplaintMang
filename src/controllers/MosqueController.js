@@ -80,7 +80,7 @@ async function generateUniqueCode() {
 const mosqueAllShow = asyncHandler(async (req, res) => {
   try {
     const mosques = await Mosque.findAll({
-      attributes: { exclude: ['code'] } // ← استثناء حقل code
+      attributes: { exclude: ['code'] } 
     })
 
     return res.status(200).json(mosques)
@@ -105,7 +105,6 @@ const mosqueShowById = asyncHandler(async (req, res) => {
       return res.status(404).json({ message: 'Mosque not found' });
     }
 
-    // فك تشفير الكود قبل الإرجاع
     const decodedCode = decodeCode(mosque.code);
 
     return res.status(200).json({
@@ -145,7 +144,7 @@ const mosqueUpdate = asyncHandler(async (req, res) => {
     await mosque.save();
 
     mosque = await Mosque.findOne({
-      where: { id: mosqueId }, // لازم تضيف شرط الـ id
+      where: { id: mosqueId }, 
       attributes: { exclude: ['code'] }
     });
 

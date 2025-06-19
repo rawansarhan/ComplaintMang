@@ -5,7 +5,7 @@ module.exports = {
   up: async (queryInterface, Sequelize) => {
     const now = new Date();
 
-    // 1. Insert parts
+    //  Insert parts
     const parts = Array.from({ length: 30 }, (_, i) => ({
       id: i + 1,
       name: `Juz ${i + 1}`,
@@ -18,7 +18,7 @@ module.exports = {
     const surahs = new Map();
     const ayahs = [];
 
-    // 2. Fetch ayahs for each juz
+    //  Fetch ayahs for each juz
     for (let part = 1; part <= 30; part++) {
       const res = await axios.get(`https://api.alquran.cloud/v1/juz/${part}/quran-uthmani`);
       for (const ay of res.data.data.ayahs) {
@@ -45,10 +45,10 @@ module.exports = {
       }
     }
 
-    // 3. Insert surahs
+    //  Insert surahs
     await queryInterface.bulkInsert('surahs', Array.from(surahs.values()));
 
-    // 4. Insert ayahs
+    //  Insert ayahs
     await queryInterface.bulkInsert('ayahs', ayahs);
   },
 

@@ -10,7 +10,7 @@ const {
 
 const SECRET_KEY = process.env.JWT_SECRET ;
 
-// ✅ Encode/Decode functions
+//  Encode/Decode functions
 const encodeMap = {
   '0': 'aa', '1': 'bb', '2': 'cc', '3': 'dd', '4': 'ee',
   '5': 'ff', '6': 'gg', '7': 'hh', '8': 'ii', '9': 'jj'
@@ -29,7 +29,7 @@ function decodeCode(encoded) {
   return parts.map(pair => decodeMap[pair]).join('');
 }
 
-// ✅ توليد كود فريد
+
 async function generateUniqueCode() {
   let code, exists = true;
 
@@ -43,7 +43,7 @@ async function generateUniqueCode() {
   return code;
 }
 
-// ✅ تسجيل مستخدم مع دور معين
+//register
 const registerUserWithRole = roleName => asyncHandler(async (req, res) => {
   const { error } = ValidateRegisterUser(req.body);
   if (error) return res.status(400).json({ message: error.details[0].message });
@@ -98,7 +98,7 @@ const registerUserWithRole = roleName => asyncHandler(async (req, res) => {
   res.status(201).json({ ...userData, code_user, token });
 });
 
-// ✅ تسجيل دخول المستخدم (طلاب أو معلمين)
+// login(student,teacher)
 const loginUser = asyncHandler(async (req, res) => {
   const { error } = ValidateLoginUser(req.body);
   if (error) return res.status(400).json({ message: error.details[0].message });
@@ -131,7 +131,7 @@ const loginUser = asyncHandler(async (req, res) => {
   res.status(200).json({ ...userData, code_user, token });
 });
 
-// ✅ تسجيل دخول السوبر أدمن
+// login SuperAdmin
 const loginSuperAdmin = async (req, res) => {
   const { error } = ValidateLoginSuperAdmin(req.body);
   if (error) return res.status(400).json({ message: error.details[0].message });

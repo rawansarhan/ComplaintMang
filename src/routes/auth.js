@@ -17,14 +17,14 @@ const { authMiddleware,
  * @swagger
  * tags:
  *   name: Auth
- *   description: عمليات تسجيل الدخول والتسجيل
+ *   description: Authentication and Registration Operations
  */
 
 /**
  * @swagger
  * /api/auth/register/student:
  *   post:
- *     summary: تسجيل طالب جديد
+ *     summary: Register a new student
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -69,17 +69,18 @@ const { authMiddleware,
  *                 type: string
  *     responses:
  *       201:
- *         description: تم تسجيل الطالب بنجاح
+ *         description: Student registered successfully
  *       400:
- *         description: بيانات غير صالحة أو المستخدم موجود بالفعل
+ *         description: Invalid data or user already exists
  */
+
 router.post('/register/student',authMiddleware,adminOnly, registerStudent);
 
 /**
  * @swagger
  * /api/auth/register/teacher:
  *   post:
- *     summary: تسجيل معلم جديد
+ *     summary: Register a new teacher
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -89,15 +90,16 @@ router.post('/register/student',authMiddleware,adminOnly, registerStudent);
  *             $ref: '#/components/schemas/RegisterUser'
  *     responses:
  *       201:
- *         description: تم تسجيل المعلم بنجاح
+ *         description: Teacher registered successfully
  */
+
 router.post('/register/teacher',authMiddleware,adminOnly, registerTeacher);
 
 /**
  * @swagger
  * /api/auth/register/admin:
  *   post:
- *     summary: تسجيل مسؤول جديد
+ *     summary: Register a new admin
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -107,15 +109,16 @@ router.post('/register/teacher',authMiddleware,adminOnly, registerTeacher);
  *             $ref: '#/components/schemas/RegisterUser'
  *     responses:
  *       201:
- *         description: تم تسجيل المسؤول بنجاح
+ *         description: Admin registered successfully
  */
+
 router.post('/register/admin',authMiddleware ,authorizeRoles('superAdmin'),registerAdmin);
 
 /**
  * @swagger
  * /api/auth/login:
  *   post:
- *     summary: تسجيل الدخول باستخدام كود المستخدم ومعرف المسجد
+ *     summary: Login using user code and mosque code
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -133,16 +136,17 @@ router.post('/register/admin',authMiddleware ,authorizeRoles('superAdmin'),regis
  *                 type: integer
  *     responses:
  *       200:
- *         description: تسجيل دخول ناجح مع JWT
+ *         description: Login successful with JWT token
  *       400:
- *         description: بيانات تسجيل دخول غير صحيحة
+ *         description: Invalid login credentials
  */
+
 router.post('/login', loginUser);
 /**
  * @swagger
  * /api/auth/login/superadmin:
  *   post:
- *     summary: تسجيل دخول Super Admin
+ *     summary: Super Admin login
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -162,10 +166,11 @@ router.post('/login', loginUser);
  *                 example: 123456
  *     responses:
  *       200:
- *         description: تسجيل دخول ناجح
+ *         description: Login successful
  *       400:
- *         description: بيانات غير صحيحة
+ *         description: Invalid email or password
  */
+
 router.post('/login/superadmin', loginSuperAdmin);
 
 module.exports = router;
