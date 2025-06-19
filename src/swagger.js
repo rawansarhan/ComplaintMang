@@ -75,6 +75,24 @@ const swaggerOptions = {
             mosque_id: { type: 'integer', example: 1 },
             token: { type: 'string', example: 'jwt.token.here' }
           }
+        },LoginRequest: {
+          type: 'object',
+          required: ['code_user', 'mosque_id'],
+          properties: {
+            email: { type: 'string' },
+            password: {type: 'string'  }
+          }
+        },
+        LoginResponse: {
+          type: 'object',
+          properties: {
+            id: { type: 'integer'},
+            email: { type: 'string'},
+            first_name: { type: 'string', example: 'Ali' },
+            last_name: { type: 'string', example: 'Ahmad' },
+            role_id:{type: 'integer'},
+            token: { type: 'string', example: 'jwt.token.here' }
+          }
         },
         mosqueCreateRequest: {
           type: 'object',
@@ -93,6 +111,51 @@ const swaggerOptions = {
             code: { type: 'string', example: 12345},
           }
         },
+      
+     mosqueUpdateRequest: {
+          type: 'object',
+          properties: {
+            name: { type: 'string', example: 'Saad ibn Waqqas' },
+            address: { type: 'string', example: 'Bab Msalla' },
+            
+          }
+        },
+        mosqueUpdateResponse: {
+          type: 'object',
+          properties: {
+            id: { type: 'integer', example: 1 },
+            name: { type: 'string', example: 'Saad ibn Abi Waqqas' },
+            address: { type: 'string', example: 'Bab Msalla' },
+          }
+        },
+        mosqueShowAllResponse: {
+          type: 'object',
+          properties: {
+            id: { type: 'integer', example: 1 },
+            name: { type: 'string', example: 'Saad ibn Abi Waqqas' },
+            address: { type: 'string', example: 'Bab Msalla' },
+          }
+        },
+        
+        mosqueShowResponse: {
+          type: 'object',
+          properties: {
+            id: { type: 'integer', example: 1 },
+            name: { type: 'string', example: 'Saad ibn Abi Waqqas' },
+            address: { type: 'string', example: 'Bab Msalla' },
+            code: { type: 'string', example: 12345},
+          }
+        },
+        mosqueDeleteResponse: {
+          type: 'object',
+          properties: {
+            id: { type: 'integer', example: 1 },
+            name: { type: 'string', example: 'Saad ibn Abi Waqqas' },
+            address: { type: 'string', example: 'Bab Msalla' },
+            code: { type: 'string', example: 12345},
+          }
+        },
+   
       }
     },
     security: [

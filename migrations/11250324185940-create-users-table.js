@@ -34,7 +34,6 @@ module.exports = {
       father_phone: {
         type: Sequelize.STRING,
         allowNull: true,
-        unique: true
       },
       birth_date: {
         type: Sequelize.DATE,
@@ -58,7 +57,7 @@ module.exports = {
         allowNull: true
       },
       code: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING,
         allowNull: false,
         unique: true
       },

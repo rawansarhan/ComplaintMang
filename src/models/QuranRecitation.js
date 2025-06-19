@@ -91,9 +91,8 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'quran_recitations',
     timestamps: true,
     underscored: true,
-      createdAt: 'created_at', // ← ربط الاسم الصحيح
-  updatedAt: 'updated_at', // ← ربط الاسم الصحيح
-
+      createdAt: 'created_at', 
+  updatedAt: 'updated_at',
   });
 
   return QuranRecitation;

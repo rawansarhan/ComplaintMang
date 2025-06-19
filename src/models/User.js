@@ -135,7 +135,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true
       },
       code: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.STRING,
         allowNull: false,
         unique: true
       },

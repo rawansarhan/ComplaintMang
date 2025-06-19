@@ -3,24 +3,30 @@ const ApiResponder = require('../utils/ApiResponder');
 const dotenv = require('dotenv');
 dotenv.config();
 
-//  Middleware عام للتحقق من التوكن
+// Middleware للتحقق من التوكن
 const authMiddleware = (req, res, next) => {
-  const token = req.header('Authorization')?.replace('Bearer ', '');
+  const authHeader = req.header('Authorization');
+  console.log('Authorization Header:', authHeader);
+
+  const token = authHeader?.replace('Bearer ', '');
+  console.log('Extracted Token:', token);
 
   if (!token) {
     return ApiResponder.unauthorizedResponse(res, 'No token provided');
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'default_secret_key');
+    console.log('Decoded Token:', decoded);
     req.user = decoded;
     next();
   } catch (error) {
+    console.error('JWT Verification Error:', error);
     return ApiResponder.unauthorizedResponse(res, 'Invalid token');
   }
 };
 
-//  Middlewares حسب الدور
+// Middlewares للتحقق من الأدوار بالنص
 const studentOnly = (req, res, next) => {
   if (req.user?.role !== 'student') {
     return ApiResponder.forbiddenResponse(res, 'Access restricted to students only');
@@ -48,7 +54,8 @@ const superAdminOnly = (req, res, next) => {
   }
   next();
 };
-// ✅ دالة تقبل قائمة من الأدوار وتسمح بها
+
+// يمكن تمرير أدوار مسموحة
 const authorizeRoles = (...allowedRoles) => {
   return (req, res, next) => {
     if (!req.user || !allowedRoles.includes(req.user.role)) {

@@ -8,22 +8,23 @@ function ValidateRegisterUser(data) {
     first_name: Joi.string().trim().min(2).max(100).required(),
     last_name: Joi.string().trim().min(2).max(100).required(),
 
-    phone: Joi.string().optional().allow(null),
-    father_phone: Joi.string().optional().allow(null),
+    phone: Joi.string().length(10).pattern(/^\d+$/).optional().allow(null),
+    father_phone: Joi.string().length(10).pattern(/^\d+$/).optional().allow(null),
 
     birth_date: Joi.date().required(),
-    email: Joi.string().email().trim().min(5).max(100),
-    password: Joi.string().min(6).max(20),
+    email: Joi.string().email().trim().min(5).max(100).required(),
+    password: Joi.string().min(6).max(20).required(),
 
-    address: Joi.string().required().allow(null),
+    address: Joi.string().required(),
     certificates: Joi.string().optional().allow(null),
     experiences: Joi.string().optional().allow(null),
     memorized_parts: Joi.number().integer().min(0).required().allow(null),
     is_save_quran: Joi.boolean().required(),
-  }).or('phone', 'father_phone'); 
+  }).or('phone', 'father_phone');
 
   return schema.validate(data);
 }
+
 //login
 function ValidateLoginUser(data) {
   const schema = Joi.object({
@@ -33,9 +34,18 @@ function ValidateLoginUser(data) {
 
   return schema.validate(data);
 }
+//login for super Admin
+function ValidateLoginSuperAdmin(data) {
+  const schema = Joi.object({
+    email: Joi.string().email().trim().min(5).max(100),
+    password: Joi.string().min(6).max(20), 
+  });
 
+  return schema.validate(data);
+}
 
 module.exports = {
   ValidateRegisterUser,
-  ValidateLoginUser
+  ValidateLoginUser,
+  ValidateLoginSuperAdmin
 }

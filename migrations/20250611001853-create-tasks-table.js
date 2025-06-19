@@ -27,7 +27,7 @@ module.exports = {
         allowNull: false,
         defaultValue: false,
       },
-      levels: {
+      level: {
         type: Sequelize.ENUM('save_new', 'five_part', 'exam', 'awqaf', 'talkeen'),
         allowNull: true,
       },

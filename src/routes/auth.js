@@ -4,9 +4,15 @@ const {
   registerStudent,
   registerTeacher,
   registerAdmin,
-  loginUser
+  loginUser,
+  loginSuperAdmin
 } = require('../controllers/AuthController');
-
+const { authMiddleware,
+  studentOnly,
+  teacherOnly,
+  adminOnly,
+  superAdminOnly,
+  authorizeRoles } =require('../middleware/authMiddleware')
 /**
  * @swagger
  * tags:
@@ -67,7 +73,7 @@ const {
  *       400:
  *         description: بيانات غير صالحة أو المستخدم موجود بالفعل
  */
-router.post('/register/student', registerStudent);
+router.post('/register/student',authMiddleware,adminOnly, registerStudent);
 
 /**
  * @swagger
@@ -85,7 +91,7 @@ router.post('/register/student', registerStudent);
  *       201:
  *         description: تم تسجيل المعلم بنجاح
  */
-router.post('/register/teacher', registerTeacher);
+router.post('/register/teacher',authMiddleware,adminOnly, registerTeacher);
 
 /**
  * @swagger
@@ -103,7 +109,7 @@ router.post('/register/teacher', registerTeacher);
  *       201:
  *         description: تم تسجيل المسؤول بنجاح
  */
-router.post('/register/admin', registerAdmin);
+router.post('/register/admin',authMiddleware ,authorizeRoles('superAdmin'),registerAdmin);
 
 /**
  * @swagger
@@ -132,5 +138,34 @@ router.post('/register/admin', registerAdmin);
  *         description: بيانات تسجيل دخول غير صحيحة
  */
 router.post('/login', loginUser);
+/**
+ * @swagger
+ * /api/auth/login/superadmin:
+ *   post:
+ *     summary: تسجيل دخول Super Admin
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: superadmin@gmail.com
+ *               password:
+ *                 type: string
+ *                 example: 123456
+ *     responses:
+ *       200:
+ *         description: تسجيل دخول ناجح
+ *       400:
+ *         description: بيانات غير صحيحة
+ */
+router.post('/login/superadmin', loginSuperAdmin);
 
 module.exports = router;
