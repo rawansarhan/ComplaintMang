@@ -89,6 +89,7 @@ const registerUserWithRole = roleName => asyncHandler(async (req, res) => {
     id: user.id,
     email: user.email,
     role_id: role.id,
+    mosque_id: user.mosque_id,
     role: role.name
   }, SECRET_KEY, { expiresIn: '4d' });
 
@@ -122,6 +123,7 @@ const loginUser = asyncHandler(async (req, res) => {
     id: user.id,
     email: user.email,
     role_id: user.role_id,
+    mosque_id: user.mosque_id,
     role: role?.name || 'unknown'
   }, SECRET_KEY, { expiresIn: '4d' });
 

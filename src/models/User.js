@@ -11,7 +11,14 @@ module.exports = (sequelize, DataTypes) => {
       User.belongsTo(models.Role, {
         foreignKey: 'role_id',
         as: 'role'
-      })
+      }),
+     User.belongsToMany(models.Circle, {
+  through: models.CircleUser,
+  as: 'circles',
+  foreignKey: 'user_id',
+  otherKey: 'circle_id'
+});
+
 
       // العلاقات الأخرى الممكنة
       User.hasMany(models.Announcement, {

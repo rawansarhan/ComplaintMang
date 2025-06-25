@@ -2,7 +2,7 @@
 const { Model } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
-
+  class Sublevel extends Model {}
 
   Sublevel.init({
     tasks_id: {
@@ -23,8 +23,8 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'sublevels',
     timestamps: true,
     underscored: true,
-      createdAt: 'created_at',
-  updatedAt: 'updated_at',
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
   });
 
   return Sublevel;

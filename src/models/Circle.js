@@ -8,6 +8,13 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'mosque_id',
         as: 'mosque',
       });
+      Circle.belongsToMany(models.User, {
+  through: models.CircleUser,
+  as: 'users',
+  foreignKey: 'circle_id',
+  otherKey: 'user_id'
+});
+
       Circle.belongsTo(models.CircleType, {
         foreignKey: 'circle_type_id',
         as: 'circle_type',
@@ -53,14 +60,11 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    lesson_type_id: {
+    circle_type_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    book_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
+   
   }, {
     sequelize,
     modelName: 'Circle',

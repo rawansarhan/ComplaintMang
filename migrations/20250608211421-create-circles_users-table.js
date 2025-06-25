@@ -27,9 +27,14 @@ module.exports = {
         },
         onDelete: 'CASCADE',
       },
-      role: {
-        type: Sequelize.ENUM('teacher', 'student', 'admin', 'superAdmin'),
-        allowNull: false
+   role_id: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'roles',
+          key: 'id',
+        },
+        onDelete: 'CASCADE',
       },
           created_at: {
         allowNull: false,
@@ -46,6 +51,5 @@ module.exports = {
 
   async down (queryInterface, Sequelize) {
     await queryInterface.dropTable('circles_users');
-    await queryInterface.sequelize.query('DROP TYPE IF EXISTS "enum_circles_users_role";'); 
   }
 };

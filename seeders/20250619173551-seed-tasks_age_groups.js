@@ -149,6 +149,55 @@ module.exports = {
         tasks_id: 14,
         created_at: new Date(),
         updated_at: new Date()
+      },
+      // Age Group 4
+      {
+        age_groups_id: 4,
+        tasks_id: 4,
+        created_at: new Date(),
+        updated_at: new Date()
+      },
+       {
+        age_groups_id: 4,
+        tasks_id: 6,
+        created_at: new Date(),
+        updated_at: new Date()
+      },
+      {
+        age_groups_id: 4,
+        tasks_id: 8,
+        created_at: new Date(),
+        updated_at: new Date()
+      },
+      {
+        age_groups_id: 4,
+        tasks_id: 9,
+        created_at: new Date(),
+        updated_at: new Date()
+      },
+      {
+        age_groups_id: 4,
+        tasks_id: 10,
+        created_at: new Date(),
+        updated_at: new Date()
+      },
+      {
+        age_groups_id: 4,
+        tasks_id: 12,
+        created_at: new Date(),
+        updated_at: new Date()
+      },
+      {
+        age_groups_id: 4,
+        tasks_id: 13,
+        created_at: new Date(),
+        updated_at: new Date()
+      },
+      {
+        age_groups_id: 4,
+        tasks_id: 14,
+        created_at: new Date(),
+        updated_at: new Date()
       }
     ])
   },
@@ -183,7 +232,24 @@ module.exports = {
         {
           age_groups_id: 3,
           tasks_id: 14
-        }
+        },
+       { age_groups_id: 4, tasks_id: 4 },
+        { age_groups_id: 4, tasks_id: 6 },
+        { age_groups_id: 4, tasks_id: 8 },
+        { age_groups_id: 4, tasks_id: 9 },
+        { age_groups_id: 4, tasks_id: 10 },
+        {
+          age_groups_id: 4,
+          tasks_id: 12
+        },
+        {
+          age_groups_id: 4,
+          tasks_id: 13
+        },
+        {
+          age_groups_id: 4,
+          tasks_id: 14
+        },
       ]
     })
   }
