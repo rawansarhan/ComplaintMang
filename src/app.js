@@ -16,5 +16,7 @@ const mosqueRoutes = require('./routes/Mosque');
 app.use('/api/mosque', mosqueRoutes);
 const circleRoutes = require('./routes/circle')
 app.use('/api/circle',circleRoutes);
+const userRouter = require('./routes/user')
+app.use('/api/user',userRouter)
 // 👇 مهم جدًا!
 module.exports = app;

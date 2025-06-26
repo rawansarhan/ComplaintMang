@@ -70,7 +70,9 @@ const updateCircle = asyncHandler(async (req, res) => {
   if (!circle) {
     return res.status(404).json({ message: 'Circle not found' })
   }
-
+ if(req.user.mosque_id !== circle.mosque_id){
+ return res.status(404).json({message:"no permission"})
+ }
   circle.name = req.body.name || circle.name
   circle.description = req.body.description || circle.description
   circle.circle_type_id = req.body.circle_type_id || circle.circle_type_id
@@ -267,6 +269,7 @@ const showWithId = asyncHandler(async (req, res) => {
       id: circle.id,
       name: circle.name,
       description: circle.description,
+      typeCircle_id:circle.circle_type_id,
       teachers,
       students
     })
@@ -308,7 +311,8 @@ const show_circle_for_teacher = asyncHandler(async (req, res) => {
       return {
         id: circle.id,
         name: circle.name,
-        description: circle.description,
+        typeCircle:circle.circle_type_id,
+        description:circle.description,
         students
       };
     });

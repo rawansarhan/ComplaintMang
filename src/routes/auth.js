@@ -24,7 +24,7 @@ const { authMiddleware,
  * @swagger
  * /api/auth/register/student:
  *   post:
- *     summary: Register a new student
+ *     summary: Register a new student => (adminOnly)
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -80,7 +80,7 @@ router.post('/register/student',authMiddleware,adminOnly, registerStudent);
  * @swagger
  * /api/auth/register/teacher:
  *   post:
- *     summary: Register a new teacher
+ *     summary: Register a new teacher => (adminOnly)
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -99,7 +99,7 @@ router.post('/register/teacher',authMiddleware,adminOnly, registerTeacher);
  * @swagger
  * /api/auth/register/admin:
  *   post:
- *     summary: Register a new admin
+ *     summary: Register a new admin => (superAdminOnly)
  *     tags: [Auth]
  *     requestBody:
  *       required: true

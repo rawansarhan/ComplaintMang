@@ -40,7 +40,7 @@ const {
  * @swagger
  * /api/circle/create:
  *   post:
- *     summary: Create a new circle
+ *     summary: Create a new circle =>(adminOnly)
  *     tags: [Circle]
  *     security:
  *       - bearerAuth: []
@@ -95,7 +95,7 @@ router.post('/create', authMiddleware, adminOnly, createCircle);
  * @swagger
  * /api/circle/update/{id}:
  *   put:
- *     summary: Update an existing circle
+ *     summary: Update an existing circle =>(adminOnly)
  *     tags: [Circle]
  *     parameters:
  *       - in: path
@@ -147,13 +147,13 @@ router.post('/create', authMiddleware, adminOnly, createCircle);
  *       404:
  *         description: Circle not found
  */
-router.put('/update/:id', updateCircle);
+router.put('/update/:id',authMiddleware,adminOnly, updateCircle);
 
 /**
  * @swagger
  * /api/circle/deleteCircleUser/{id}:
  *   delete:
- *     summary: Delete a circle
+ *     summary: Delete a circle =>(adminOnly)
  *     tags: [Circle]
  *     security:
  *       - bearerAuth: []
@@ -187,12 +187,12 @@ router.put('/update/:id', updateCircle);
  *       404:
  *         description: CircleUser not found
  */
-router.delete('/delete/:id', deleteCircleUser);
+router.delete('/delete/:id',authMiddleware,adminOnly, deleteCircleUser);
 /**
  * @swagger
  * /api/circle/deleteCircle/{id}:
  *   delete:
- *     summary: Delete a circle
+ *     summary: Delete a circle =>(adminOnly)
  *     tags: [Circle]
  *     security:
  *       - bearerAuth: []
@@ -213,12 +213,12 @@ router.delete('/delete/:id', deleteCircleUser);
  *       404:
  *         description: Circle not found
  */
-router.delete('/deleteCircle/:id', deleteCircle);
+router.delete('/deleteCircle/:id',authMiddleware,adminOnly, deleteCircle);
 /**
  * @swagger
  * /api/circle/showAll:
  *   get:
- *     summary: Get all circles with their associated users (teachers and students)
+ *     summary: Get all circles with their associated users (teachers and students)=>(adminOnly)
  *     tags: [Circle]
  *     security:
  *       - bearerAuth: []
@@ -234,7 +234,7 @@ router.get('/showAll',authMiddleware,adminOnly,showAll);
  * @swagger
  * /api/circle/showWithId/{id}:
  *   get:
- *     summary: Get circle by ID (with teachers and students)
+ *     summary: Get circle by ID (with teachers and students)=> (admin , teacher)
  *     tags: [Circle]
  *     security:
  *       - bearerAuth: []
@@ -255,12 +255,12 @@ router.get('/showAll',authMiddleware,adminOnly,showAll);
  *       500:
  *         description: Internal server error
  */
-router.get('/showWithId/:id', showWithId);
-/*
+router.get('/showWithId/:id',authMiddleware,authorizeRoles('admin','teacher'), showWithId);
+/**
  * @swagger
- * /api/circle/show_circle_for_teacher
+ * /api/circle/showCircleForTeacher:
  *   get:
- *     summary: Get circles for teacher(onlyTeacher,)
+ *     summary: Get circles for =>(onlyTeacher)
  *     tags: [Circle]
  *     security:
  *       - bearerAuth: []
@@ -268,13 +268,13 @@ router.get('/showWithId/:id', showWithId);
  *       200:
  *         description: Successfully retrieved the circle with its users
  *       400:
- *         description: Invalid circle ID
+ *         description: Invalid request
  *       404:
  *         description: Circle not found
  *       500:
  *         description: Internal server error
  */
-router.get('/show_circle_for_teacher', show_circle_for_teacher);
-
+router.get('/showCircleForTeacher',authMiddleware,teacherOnly, show_circle_for_teacher);
 
 module.exports = router;
+

@@ -42,23 +42,29 @@ async function generateUniqueCode() {
 
   return code;
 }
-
-//register
+//////////////
 const registerUserWithRole = roleName => asyncHandler(async (req, res) => {
   const { error } = ValidateRegisterUser(req.body);
   if (error) return res.status(400).json({ message: error.details[0].message });
 
-  const [existingUser, existingPhone, existingPhoneFather, existingMosque, role] = await Promise.all([
+  const [
+    existingUser,
+    existingPhone,
+    existingFatherPhone,
+    existingMosque,
+    role
+  ] = await Promise.all([
     User.findOne({ where: { email: req.body.email } }),
     User.findOne({ where: { phone: req.body.phone } }),
-    User.findOne({ where: { father_phone: req.body.father_phone } }),
+    req.body.father_phone
+      ? User.findOne({ where: { father_phone: req.body.father_phone } })
+      : Promise.resolve(null),
     Mosque.findOne({ where: { id: req.body.mosque_id } }),
     Role.findOne({ where: { name: roleName } })
   ]);
 
   if (existingUser) return res.status(400).json({ message: 'This user already registered' });
   if (existingPhone) return res.status(400).json({ message: 'This phone already registered' });
-  if (existingPhoneFather) return res.status(400).json({ message: 'This father phone already registered' });
   if (!existingMosque) return res.status(404).json({ message: 'This mosque does not exist' });
   if (!role) return res.status(500).json({ message: 'Role not found in database' });
 

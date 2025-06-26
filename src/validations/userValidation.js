@@ -44,8 +44,32 @@ function ValidateLoginSuperAdmin(data) {
   return schema.validate(data);
 }
 
+///update
+function ValidateUpdateUser(data) {
+  const schema = Joi.object({
+    first_name: Joi.string().trim().min(2).max(100),
+    last_name: Joi.string().trim().min(2).max(100),
+
+    phone: Joi.string().length(10).pattern(/^\d+$/).allow(null),
+    father_phone: Joi.string().length(10).pattern(/^\d+$/).allow(null),
+
+    birth_date: Joi.date(),
+    email: Joi.string().email().trim().min(5).max(100),
+    password: Joi.string().min(6).max(20).required(),
+
+    address: Joi.string(),
+    certificates: Joi.string().allow(null),
+    experiences: Joi.string().allow(null),
+    memorized_parts: Joi.number().integer().min(0).max(30).allow(null),
+    is_save_quran: Joi.boolean()
+  });
+
+  return schema.validate(data);
+}
+
 module.exports = {
   ValidateRegisterUser,
   ValidateLoginUser,
-  ValidateLoginSuperAdmin
+  ValidateLoginSuperAdmin,
+  ValidateUpdateUser
 }

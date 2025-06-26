@@ -18,8 +18,8 @@ function ValidateUpdateCircles(data) {
     circle_type_id: Joi.number(),
     name: Joi.string(),
     description: Joi.string().max(300),
-    student_id: Joi.array().items(Joi.number()).min(1).required(),
-    teacher_id: Joi.array().items(Joi.number()).min(1).required(),
+    student_id: Joi.array().items(Joi.number()),
+    teacher_id: Joi.array().items(Joi.number()),
   });
 
   return schema.validate(data);

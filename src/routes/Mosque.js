@@ -27,7 +27,7 @@ const router = express.Router();
  * @swagger
  * /api/mosque/create:
  *   post:
- *     summary: Add a new mosque
+ *     summary: Add a new mosque =>(superAdminOnly)
  *     tags: [Mosque]
  *     requestBody:
  *       required: true
@@ -57,7 +57,7 @@ router.post('/create',authMiddleware,superAdminOnly,mosqueCreate);
  * @swagger
  * /api/mosque:
  *   get:
- *     summary: Get all mosques
+ *     summary: Get all mosques =>(superAdminOnly)
  *     tags: [Mosque]
  *     responses:
  *       200:
@@ -71,7 +71,7 @@ router.get('/',authMiddleware,superAdminOnly,mosqueAllShow);
  * @swagger
  * /api/mosque/{id}:
  *   get:
- *     summary: Get a mosque by ID
+ *     summary: Get a mosque by ID => (superAdmin , admin)
  *     tags: [Mosque]
  *     parameters:
  *       - in: path
@@ -94,7 +94,7 @@ router.get('/:id',authMiddleware, authorizeRoles('superAdmin','admin'), mosqueSh
  * @swagger
  * /api/mosque/update/{id}:
  *   put:
- *     summary: Update a mosque
+ *     summary: Update a mosque => (superAdminOnly)
  *     tags: [Mosque]
  *     parameters:
  *       - in: path
@@ -130,7 +130,7 @@ router.put('/update/:id',authMiddleware,superAdminOnly,mosqueUpdate);
  * @swagger
  * /api/mosque/delete/{id}:
  *   delete:
- *     summary: Delete a mosque
+ *     summary: Delete a mosque => (superAdminOnly)
  *     tags: [Mosque]
  *     parameters:
  *       - in: path
