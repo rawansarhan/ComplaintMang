@@ -8,7 +8,7 @@ const circleType= asyncHandler(async(req,res)=>{
      const Type = await CircleType.findAll({
       where :{
         name :{
-          [Op.notIn] : ['Dars', 'Hadith']
+          [Op.notIn] : ['Dars', 'Hadith','Talqeen']
         }
       }
      });
@@ -17,7 +17,7 @@ const circleType= asyncHandler(async(req,res)=>{
     });
 
      return res.status(200).json({
-        message:"All circle types excluding 'lesson' and 'hadith'",
+        message:"All circle types excluding 'lesson','Talqeen' and 'hadith'",
         Type,
         books
      })
