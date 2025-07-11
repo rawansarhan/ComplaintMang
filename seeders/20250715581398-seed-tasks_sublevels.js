@@ -3,7 +3,9 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.bulkInsert('tasks_sublevels', [
-     
+       { sublevel_id: 1, task_id: 11, created_at: new Date(), updated_at: new Date() },
+      { sublevel_id: 2, task_id: 11, created_at: new Date(), updated_at: new Date() },
+      { sublevel_id: 3, task_id: 11, created_at: new Date(), updated_at: new Date() },
       { sublevel_id: 1, task_id: 8, created_at: new Date(), updated_at: new Date() },
       { sublevel_id: 2, task_id: 8, created_at: new Date(), updated_at: new Date() },
       { sublevel_id: 3, task_id: 8, created_at: new Date(), updated_at: new Date() },

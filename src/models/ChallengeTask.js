@@ -5,29 +5,38 @@ module.exports = (sequelize, DataTypes) => {
   class ChallengeTask extends Model {
     static associate(models) {
       ChallengeTask.belongsTo(models.Challenge, {
-        foreignKey: 'Challenge_id',
+        foreignKey: 'challenge_id',
         as: 'challenge',
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE'
       });
-
       ChallengeTask.belongsTo(models.Task, {
-        foreignKey: 'tasks_id',
+        foreignKey: 'task_id',
         as: 'task',
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE'
       });
+       ChallengeTask.belongsTo(models.Sublevel, {
+        foreignKey: 'sublevels_id',
+        as: 'sublevel',
+      });
     }
-  }
+  
+    }
+  
 
   ChallengeTask.init({
-    Challenge_id: {
+    challenge_id: {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    tasks_id: {
+    task_id: {
       type: DataTypes.INTEGER,
       allowNull: false
+    },
+    sublevels_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true
     },
     is_done: {
       type: DataTypes.BOOLEAN,

@@ -29,11 +29,11 @@ module.exports = {
       },
       text: {
         type: Sequelize.TEXT,
-        allowNull:true,
+        allowNull:false,
       },
        rate: {
         type: Sequelize.INTEGER,
-        allowNull:true,
+        allowNull:false,
       },
      created_at: {
         allowNull: false,

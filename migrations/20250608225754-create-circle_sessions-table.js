@@ -10,7 +10,7 @@ module.exports = {
         primaryKey: true,
         autoIncrement: true,
       },
- circle_id: {
+      circle_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {

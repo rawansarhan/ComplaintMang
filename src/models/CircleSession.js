@@ -46,14 +46,7 @@ module.exports = (sequelize, DataTypes) => {
       validate: {
         len: [3, 300], 
       },
-    },
-    name: {
-      type: DataTypes.STRING,
-      allowNull: true,
-      validate: {
-        len: [3, 300], 
-      },
-    },
+    } 
   }, {
     sequelize,
     modelName: 'CircleSession',

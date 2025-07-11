@@ -11,22 +11,14 @@ module.exports = (sequelize, DataTypes) => {
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE',
       });
-
-      // Challenge ينتمي لمستوى (Level)
-      Challenge.belongsTo(models.Level, {
-        foreignKey: 'level_id',
-        as: 'level',
-        onDelete: 'CASCADE',
-        onUpdate: 'CASCADE',
-      });
-
       // Challenge له عدة Tasks من خلال Challenges_task
-      Challenge.hasMany(models.ChallengeTask, {
-        foreignKey: 'Challenge_id',
-        as: 'challenges_tasks',
-        onDelete: 'CASCADE',
-        onUpdate: 'CASCADE',
-      });
+     Challenge.hasMany(models.ChallengeTask, {
+  foreignKey: 'challenge_id',
+  as: 'challenges_tasks',
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE',
+});
+
     }
   }
 
@@ -35,10 +27,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    level_id: {
+     teacher_id: {
       type: DataTypes.INTEGER,
       allowNull: false
-    }
+    },
   }, {
     sequelize,
     modelName: 'Challenge',

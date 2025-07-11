@@ -4,20 +4,22 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Task extends Model {
     static associate(models) {
-      Task.hasMany(models.Sublevel, {
-        foreignKey: 'tasks_id',
-        as: 'sublevels',
+      Task.hasMany(models.TasksSublevels, {
+        foreignKey: 'task_id',
+        as: 'tasksSublevels',
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE',
       });
 
       
       Task.hasMany(models.ChallengeTask, {
-        foreignKey: 'tasks_id',
+        foreignKey: 'task_id',
         as: 'challenges_tasks',
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE',
       });
+
+     Task.hasMany(models.TaskAgeGroup, { foreignKey: 'tasks_id', as: 'taskAgeGroups' });
     }
   }
 
@@ -45,7 +47,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: false,
     },
-    levels: {
+    level: {
       type: DataTypes.ENUM('save_new', 'five_part', 'exam', 'awqaf', 'talkeen'),
       allowNull: true,
     }

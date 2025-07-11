@@ -9,7 +9,7 @@ module.exports = {
         autoIncrement: true,
         allowNull: false,
       },
-      Challenge_id: {
+      challenge_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
@@ -19,11 +19,21 @@ module.exports = {
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE'
       },
-      tasks_id: {
+      task_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
           model: 'tasks',
+          key: 'id'
+        },
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE'
+      },
+      sublevels_id: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+        references: {
+          model: 'sublevels',
           key: 'id'
         },
         onDelete: 'CASCADE',

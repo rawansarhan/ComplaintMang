@@ -1,11 +1,11 @@
 const asyncHandler = require('express-async-handler')
-const { User, Role, Mosque, Circle, CircleUser } = require('../models')
+const { User, Role, Mosque, Circle, CircleUser,CircleType} = require('../models')
 const {
   ValidateCreateCircles,
   ValidateUpdateCircles,
   ValidateDeleteCircles
 } = require('../validations/circlesValidation')
-const { where } = require('sequelize')
+const { where, Op } = require('sequelize')
 ///////////////create
 const createCircle = asyncHandler(async (req, res) => {
   const { error } = ValidateCreateCircles(req.body)
@@ -327,6 +327,130 @@ const show_circle_for_teacher = asyncHandler(async (req, res) => {
   }
 });
 
+///show circle for teacher
+const showCircleTypeForTeacher = asyncHandler(async (req, res) => {
+  try {
+    const TEACHER_ROLE_ID = 2;
+    const STUDENT_ROLE_ID = 1;
+
+    const circleTypes = await CircleType.findAll({
+      where: {
+        id: { [Op.ne]: 4 } 
+      }
+    });
+
+    const result = await Promise.all(circleTypes.map(async (type) => {
+      const circles = await Circle.findAll({
+        where: { circle_type_id: type.id },
+        include: [
+          {
+            model: User,
+            as: 'users',
+            through: { attributes: ['role_id'] }
+          }
+        ]
+      });
+
+      const teacherCircles = circles.filter(circle =>
+        circle.users.some(user =>
+          user.id === req.user.id && user.CircleUser.role_id === TEACHER_ROLE_ID
+        )
+      );
+
+      const formattedCircles = teacherCircles.map(circle => {
+        const students = circle.users.filter(user => user.CircleUser.role_id === STUDENT_ROLE_ID);
+        return {
+          id: circle.id,
+          name: circle.name,
+          typeCircle: circle.circle_type_id,
+          description: circle.description,
+          students: students.map(student => ({
+            id: student.id,
+            name: student.name,
+            email: student.email 
+          }))
+        };
+      });
+
+      return {
+        type: type.name,
+        circles: formattedCircles 
+      };
+    }));
+
+    return res.status(200).json({ data: result });
+
+  } catch (err) {
+    console.error('Database error:', err);
+    return res.status(500).json({
+      message: 'Database error',
+      details: err.message
+    });
+  }
+});
+/////////show circle for teacher(dars)
+const show_Circle_Teacher_Dars = asyncHandler(async (req, res) => {
+  try {
+    const TEACHER_ROLE_ID = 2;
+    const STUDENT_ROLE_ID = 1;
+
+    const circleTypes = await CircleType.findAll({
+      where: {
+        id: { [Op.notIn]: [1,2,3] } 
+      }
+    });
+
+    const result = await Promise.all(circleTypes.map(async (type) => {
+      const circles = await Circle.findAll({
+        where: { circle_type_id: type.id },
+        include: [
+          {
+            model: User,
+            as: 'users',
+            through: { attributes: ['role_id'] }
+          }
+        ]
+      });
+
+      const teacherCircles = circles.filter(circle =>
+        circle.users.some(user =>
+          user.id === req.user.id && user.CircleUser.role_id === TEACHER_ROLE_ID
+        )
+      );
+
+      const formattedCircles = teacherCircles.map(circle => {
+        const students = circle.users.filter(user => user.CircleUser.role_id === STUDENT_ROLE_ID);
+        return {
+          id: circle.id,
+          name: circle.name,
+          typeCircle: circle.circle_type_id,
+          description: circle.description,
+          students: students.map(student => ({
+            id: student.id,
+            name: student.name,
+            email: student.email 
+          }))
+        };
+      });
+
+      return {
+        type: type.name,
+        circles: formattedCircles 
+      };
+    }));
+
+    return res.status(200).json({ data: result });
+
+  } catch (err) {
+    console.error('Database error:', err);
+    return res.status(500).json({
+      message: 'Database error',
+      details: err.message
+    });
+  }
+});
+
+
 module.exports = {
   createCircle,
   updateCircle,
@@ -334,5 +458,7 @@ module.exports = {
   showWithId,
   showAll,
   show_circle_for_teacher,
-  deleteCircleUser
+  deleteCircleUser,
+  showCircleTypeForTeacher,
+  show_Circle_Teacher_Dars
 }

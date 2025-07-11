@@ -17,7 +17,9 @@ const {
   showWithId,
   showAll,
   deleteCircleUser,
-  show_circle_for_teacher
+  show_circle_for_teacher,
+  showCircleTypeForTeacher,
+  show_Circle_Teacher_Dars
   
 } = require('../controllers/circleController');
 const {
@@ -58,8 +60,6 @@ const {
  *               - student_id
  *               - teacher_id
  *             properties:
- *               mosque_id:
- *                 type: integer
  *               circle_type_id:
  *                 type: integer
  *               name:
@@ -75,7 +75,6 @@ const {
  *                 items:
  *                   type: integer
  *           example:
- *             mosque_id: 1
  *             circle_type_id: 2
  *             name: "Evening Quran Class"
  *             description: "Evening memorization group"
@@ -275,6 +274,42 @@ router.get('/showWithId/:id',authMiddleware,authorizeRoles('admin','teacher'), s
  *         description: Internal server error
  */
 router.get('/showCircleForTeacher',authMiddleware,teacherOnly, show_circle_for_teacher);
+/**
+ * @swagger
+ * /api/circle/showCircleTypeForTeacher_Tasmii_Talqeen_Hadith:
+ *   get:
+ *     summary: Get circles grouped by type for logged-in teacher (Tasmii_Talqeen_Hadith)=>(onlyTeacher)
+ *     tags: [Circle]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved grouped circles
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
+
+router.get('/showCircleTypeForTeacher',authMiddleware,teacherOnly,showCircleTypeForTeacher);
+/**
+ * @swagger
+ * /api/circle/showCircleTypeForTeacher_dars:
+ *   get:
+ *     summary: Get circles grouped by type for logged-in teacher(dars)=>(onlyTeacher)
+ *     tags: [Circle]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved grouped circles
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
+router.get('/showCircleTypeForTeacher_Dars',authMiddleware,teacherOnly,show_Circle_Teacher_Dars);
+
 
 module.exports = router;
 

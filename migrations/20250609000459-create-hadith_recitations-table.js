@@ -1,13 +1,13 @@
-'use strict';
+'use strict'
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up(queryInterface, Sequelize) {
+  async up (queryInterface, Sequelize) {
     await queryInterface.createTable('hadith_recitations', {
       id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
-        autoIncrement: true,
+        autoIncrement: true
       },
 
       session_id: {
@@ -15,9 +15,9 @@ module.exports = {
         allowNull: false,
         references: {
           model: 'circle_sessions',
-          key: 'id',
+          key: 'id'
         },
-        onDelete: 'CASCADE',
+        onDelete: 'CASCADE'
       },
 
       student_id: {
@@ -25,9 +25,9 @@ module.exports = {
         allowNull: false,
         references: {
           model: 'users',
-          key: 'id',
+          key: 'id'
         },
-        onDelete: 'CASCADE',
+        onDelete: 'CASCADE'
       },
 
       teacher_id: {
@@ -35,9 +35,9 @@ module.exports = {
         allowNull: false,
         references: {
           model: 'users',
-          key: 'id',
+          key: 'id'
         },
-        onDelete: 'CASCADE',
+        onDelete: 'CASCADE'
       },
 
       book_id: {
@@ -45,31 +45,36 @@ module.exports = {
         allowNull: false,
         references: {
           model: 'hadith_books',
-          key: 'id',
+          key: 'id'
         },
-        onDelete: 'CASCADE',
+        onDelete: 'CASCADE'
       },
 
       from_hadith: {
         type: Sequelize.INTEGER,
-        allowNull: false,
+        allowNull: false
       },
 
       to_hadith: {
         type: Sequelize.INTEGER,
-        allowNull: false,
+        allowNull: false
       },
 
       is_exam: {
         type: Sequelize.BOOLEAN,
-        allowNull: false,
+        allowNull: false
       },
 
       is_counted: {
         type: Sequelize.BOOLEAN,
-        allowNull: false,
+        allowNull: false
       },
-     created_at: {
+      attendance: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: true
+      },
+      created_at: {
         allowNull: false,
         type: Sequelize.DATE,
         defaultValue: Sequelize.fn('NOW')
@@ -79,10 +84,10 @@ module.exports = {
         type: Sequelize.DATE,
         defaultValue: Sequelize.fn('NOW')
       }
-    });
+    })
   },
 
-  async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('hadith_recitations');
+  async down (queryInterface, Sequelize) {
+    await queryInterface.dropTable('hadith_recitations')
   }
-};
+}

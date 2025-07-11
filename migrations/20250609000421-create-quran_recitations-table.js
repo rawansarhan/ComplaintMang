@@ -1,13 +1,13 @@
-'use strict';
+'use strict'
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up(queryInterface, Sequelize) {
+  async up (queryInterface, Sequelize) {
     await queryInterface.createTable('quran_recitations', {
       id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
-        autoIncrement: true,
+        autoIncrement: true
       },
 
       session_id: {
@@ -15,9 +15,9 @@ module.exports = {
         allowNull: false,
         references: {
           model: 'circle_sessions', // ✅ اسم الجدول في قاعدة البيانات
-          key: 'id',
+          key: 'id'
         },
-        onDelete: 'CASCADE',
+        onDelete: 'CASCADE'
       },
 
       teacher_id: {
@@ -25,19 +25,19 @@ module.exports = {
         allowNull: false,
         references: {
           model: 'users',
-          key: 'id',
+          key: 'id'
         },
-        onDelete: 'CASCADE',
+        onDelete: 'CASCADE'
       },
 
       student_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'users', 
-          key: 'id',
+          model: 'users',
+          key: 'id'
         },
-        onDelete: 'CASCADE',
+        onDelete: 'CASCADE'
       },
 
       from_sura_id: {
@@ -45,9 +45,9 @@ module.exports = {
         allowNull: false,
         references: {
           model: 'surahs',
-          key: 'id',
+          key: 'id'
         },
-        onDelete: 'CASCADE',
+        onDelete: 'CASCADE'
       },
 
       from_verse: {
@@ -55,9 +55,9 @@ module.exports = {
         allowNull: false,
         references: {
           model: 'ayahs',
-          key: 'id',
+          key: 'id'
         },
-        onDelete: 'CASCADE',
+        onDelete: 'CASCADE'
       },
 
       to_sura_id: {
@@ -65,9 +65,9 @@ module.exports = {
         allowNull: false,
         references: {
           model: 'surahs',
-          key: 'id',
+          key: 'id'
         },
-        onDelete: 'CASCADE',
+        onDelete: 'CASCADE'
       },
 
       to_verse: {
@@ -75,22 +75,27 @@ module.exports = {
         allowNull: false,
         references: {
           model: 'ayahs',
-          key: 'id',
+          key: 'id'
         },
-        onDelete: 'CASCADE',
+        onDelete: 'CASCADE'
       },
 
       is_counted: {
         type: Sequelize.BOOLEAN,
-        allowNull: false,
+        allowNull: false
       },
 
       is_exam: {
         type: Sequelize.BOOLEAN,
+        allowNull: false
+      },
+      attendance: {
+        type: Sequelize.BOOLEAN,
         allowNull: false,
+        defaultValue: true
       },
 
-       created_at: {
+      created_at: {
         allowNull: false,
         type: Sequelize.DATE,
         defaultValue: Sequelize.fn('NOW')
@@ -100,10 +105,10 @@ module.exports = {
         type: Sequelize.DATE,
         defaultValue: Sequelize.fn('NOW')
       }
-    });
+    })
   },
 
-  async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('quran_recitations');
+  async down (queryInterface, Sequelize) {
+    await queryInterface.dropTable('quran_recitations')
   }
-};
+}

@@ -84,7 +84,13 @@ module.exports = (sequelize, DataTypes) => {
     is_exam: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
-    }
+    },
+    attendance: {
+     type: DataTypes.BOOLEAN,
+     allowNull: false,
+     defaultValue: true
+    },
+
   }, {
     sequelize,
     modelName: 'QuranRecitation',

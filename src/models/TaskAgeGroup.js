@@ -10,10 +10,12 @@ module.exports = (sequelize, DataTypes) => {
 
       });
 
-      TaskAgeGroup.belongsTo(models.Task, {
-        foreignKey: 'tasks_id',
-        as: 'task',
-      });
+TaskAgeGroup.belongsTo(models.Task, {
+  foreignKey: 'tasks_id',
+  as: 'task'
+});
+
+
     }
   }
 

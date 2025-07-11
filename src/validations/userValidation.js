@@ -9,7 +9,7 @@ function ValidateRegisterUser(data) {
     last_name: Joi.string().trim().min(2).max(100).required(),
 
     phone: Joi.string().length(10).pattern(/^\d+$/).allow(null),
-    father_phone: Joi.string().length(10).pattern(/^\d+$/).allow(null),
+    father_phone: Joi.string().allow(null).length(10).pattern(/^\d+$/),
 
     birth_date: Joi.date().required(),
     email: Joi.string().email().trim().min(5).max(100).required(),

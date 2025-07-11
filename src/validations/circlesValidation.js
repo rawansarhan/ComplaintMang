@@ -5,7 +5,7 @@ function ValidateCreateCircles(data) {
   const schema = Joi.object({
     circle_type_id: Joi.number().required(),
     name: Joi.string().required(),
-    description: Joi.text().max(300),
+    description: Joi.string().max(300),
     student_id: Joi.array().items(Joi.number()).min(1).required(),
     teacher_id: Joi.array().items(Joi.number()).min(1).required(),
   });

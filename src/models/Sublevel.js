@@ -2,13 +2,16 @@
 const { Model } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
-  class Sublevel extends Model {}
+  class Sublevel extends Model {
+    static associate(models) {
+      Sublevel.hasMany(models.TasksSublevels, {
+        foreignKey: 'sublevel_id',
+        as: 'tasl_sublevel',
+      });
+    }
+  }
 
   Sublevel.init({
-    tasks_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false
-    },
     number_level: {
       type: DataTypes.INTEGER,
       allowNull: false

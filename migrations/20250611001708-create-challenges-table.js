@@ -19,11 +19,11 @@ module.exports = {
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE'
       },
-      level_id: {
+       teacher_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'levels',
+          model: 'users', // assuming table name for students is "users"
           key: 'id'
         },
         onDelete: 'CASCADE',

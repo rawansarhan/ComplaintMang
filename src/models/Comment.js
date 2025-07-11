@@ -29,11 +29,11 @@ module.exports = (sequelize, DataTypes) => {
     },
     text: {
       type: DataTypes.TEXT,
-      allowNull: true,
+      allowNull: false,
     },
     rate: {
       type: DataTypes.INTEGER,
-      allowNull: true,
+      allowNull: false,
     }
   }, {
     sequelize,

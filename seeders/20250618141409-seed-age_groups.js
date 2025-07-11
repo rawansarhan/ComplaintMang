@@ -15,7 +15,7 @@ module.exports = {
         name: 'الفئة 12-13',
         minAge: 12,
         maxAge: 13,
-        photo: null,
+        photo: '/public/images/age12_13.png',
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -23,7 +23,7 @@ module.exports = {
         name: 'الفئة 14-16',
         minAge: 14,
         maxAge: 16,
-        photo: null,
+        photo: '/public/images/age14_15_16.png',
         created_at: new Date(),
         updated_at: new Date()
       },
@@ -31,7 +31,7 @@ module.exports = {
         name: 'الفئة 17+',
         minAge: 17,
         maxAge: 99, 
-        photo: null,
+        photo: '/public/images/age 17++.png',
         created_at: new Date(),
         updated_at: new Date()
       }

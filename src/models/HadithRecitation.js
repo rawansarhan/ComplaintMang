@@ -1,75 +1,81 @@
-'use strict';
-const { Model } = require('sequelize');
+'use strict'
+const { Model } = require('sequelize')
 
 module.exports = (sequelize, DataTypes) => {
   class HadithRecitation extends Model {
-    static associate(models) {
+    static associate (models) {
       HadithRecitation.belongsTo(models.CircleSession, {
         foreignKey: 'session_id',
-        as: 'session',
-      });
+        as: 'session'
+      })
 
       HadithRecitation.belongsTo(models.User, {
         foreignKey: 'student_id',
-        as: 'student',
-      });
+        as: 'student'
+      })
 
       HadithRecitation.belongsTo(models.User, {
         foreignKey: 'teacher_id',
-        as: 'teacher',
-      });
+        as: 'teacher'
+      })
 
       HadithRecitation.belongsTo(models.HadithBook, {
         foreignKey: 'book_id',
-        as: 'book',
-      });
-
-     
+        as: 'book'
+      })
     }
   }
 
-  HadithRecitation.init({
-    session_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
+  HadithRecitation.init(
+    {
+      session_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+      },
+      student_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+      },
+      teacher_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+      },
+      book_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+      },
+      from_hadith: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+      },
+      to_hadith: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+      },
+      is_exam: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false
+      },
+      is_counted: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false
+      },
+      attendance: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: true
+      }
     },
-    student_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    teacher_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    book_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    from_hadith: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    to_hadith: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    is_exam: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-    },
-    is_counted: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-    }
-  }, {
-    sequelize,
-    modelName: 'HadithRecitation',
-    tableName: 'hadith_recitations',
-    underscored: true,
-    timestamps: true,
+    {
+      sequelize,
+      modelName: 'HadithRecitation',
+      tableName: 'hadith_recitations',
+      underscored: true,
+      timestamps: true,
       createdAt: 'created_at', // ← ربط الاسم الصحيح
-  updatedAt: 'updated_at', // ← ربط الاسم الصحيح
-  });
+      updatedAt: 'updated_at' // ← ربط الاسم الصحيح
+    }
+  )
 
-  return HadithRecitation;
-};
+  return HadithRecitation
+}
