@@ -35,7 +35,7 @@ const { authMiddleware, adminOnly } = require('../middleware/authMiddleware');
  *             name: صحيح البخاري
  *             pages_num: 500
  *     responses:
- *       201:
+ *       200:
  *         description: Hadith book created successfully.
  *       400:
  *         description: Validation error.

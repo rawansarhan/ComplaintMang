@@ -3,7 +3,7 @@ const {
   ValidateMosqueCraete,
   ValidateMosqueUpdate
 } = require('../validations/mosqueValidation')
-const { Mosque } = require('../models')
+const { Mosque ,User } = require('../models')
 const bcrypt = require('bcryptjs')
 
 const mosqueCreate = asyncHandler(async (req, res) => {
@@ -201,11 +201,50 @@ const mosqueDelete = asyncHandler(async (req, res) => {
     return code.toString().split('').map(d => encodeMap[d]).join('');
   }
 
-  // فك التشفير ("bbccdd" => 123)
   function decodeCode(encoded) {
-    const parts = encoded.match(/.{1,2}/g); // تقسيم كل حرفين
+    const parts = encoded.match(/.{1,2}/g);
     return parts.map(pair => decodeMap[pair]).join('');
   }
+
+const showStudentAndTeacher = asyncHandler(async (req, res) => {
+  const Id = req.user.id;
+  const user = await User.findOne({ where: { id: Id } }); // ← تأكدت من where هنا
+  const AllStudent = [];
+  const AllTeacher = [];
+
+  const students = await User.findAll({
+    where: { mosque_id: user.mosque_id, role_id: 1 }
+  });
+
+  if (!students || students.length === 0) {
+    return res.status(404).json({ message: "No students found" });
+  }
+
+  for (const student of students) {
+    AllStudent.push(student);
+  }
+
+  const teachers = await User.findAll({
+    where: { mosque_id: user.mosque_id, role_id: 2 }
+  });
+
+  if (!teachers || teachers.length === 0) {
+    return res.status(404).json({ message: "No teachers found" });
+  }
+
+  for (const teacher of teachers) {
+    AllTeacher.push(teacher);
+  }
+
+  return res.status(200).json({
+    message: "Fetched all students and teachers in this mosque",
+    AllStudent: AllStudent,
+    AllTeacher: AllTeacher
+  });
+});
+
+
+
 
 
 module.exports = {
@@ -213,6 +252,7 @@ mosqueCreate,
 mosqueAllShow,
 mosqueShowById,
 mosqueUpdate,
-mosqueDelete
+mosqueDelete,
+showStudentAndTeacher
 
 }

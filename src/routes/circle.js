@@ -81,7 +81,7 @@ const {
  *             student_id: [4, 5, 6]
  *             teacher_id: [2]
  *     responses:
- *       201:
+ *       200:
  *         description: Circle created successfully
  *       400:
  *         description: Validation error or bad request
@@ -291,7 +291,7 @@ router.get('/showCircleForTeacher',authMiddleware,teacherOnly, show_circle_for_t
  *         description: Internal server error
  */
 
-router.get('/showCircleTypeForTeacher',authMiddleware,teacherOnly,showCircleTypeForTeacher);
+router.get('/showCircleTypeForTeacher_Tasmii_Talqeen_Hadith',authMiddleware,teacherOnly,showCircleTypeForTeacher);
 /**
  * @swagger
  * /api/circle/showCircleTypeForTeacher_dars:

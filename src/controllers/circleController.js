@@ -17,7 +17,12 @@ const createCircle = asyncHandler(async (req, res) => {
   if (!existingMosque) {
     return res.status(404).json({ message: 'This mosque does not exist' })
   }
-
+const circleType = await CircleType.findOne({
+  where :{id: req.body.circle_type_id}
+})
+if(!circleType){
+  return res.status(404).json({message:"not found the circle type"})
+}
   const circle = await Circle.create({
     mosque_id: mosqueId,
     circle_type_id: req.body.circle_type_id,
@@ -28,6 +33,9 @@ const createCircle = asyncHandler(async (req, res) => {
   const students = []
   for (const studentId of req.body.student_id || []) {
     const student = await User.findByPk(studentId)
+    if(!student){
+      return res.status(404).json({message:"not found student " ,studentId})
+    }
     if (student && student.role_id === 1) {
       const circle_user = await CircleUser.create({
         circle_id: circle.id,
@@ -41,6 +49,9 @@ const createCircle = asyncHandler(async (req, res) => {
   const teachers = []
   for (const teacherId of req.body.teacher_id || []) {
     const teacher = await User.findByPk(teacherId)
+      if(!teacher){
+      return res.status(404).json({message:"not found teacher " ,teacherId})
+    }
     if (teacher && teacher.role_id === 2) {
       const circle_user = await CircleUser.create({
         circle_id: circle.id,
@@ -81,6 +92,9 @@ const updateCircle = asyncHandler(async (req, res) => {
   const students = []
   for (const studentId of req.body.student_id || []) {
     const student = await User.findByPk(studentId)
+     if(!student){
+      return res.status(404).json({message:"not found student " ,studentId})
+    }
     if (student && student.role_id === 1) {
       const exists = await CircleUser.findOne({
         where: { circle_id: circle.id, user_id: student.id }
@@ -99,6 +113,9 @@ const updateCircle = asyncHandler(async (req, res) => {
   const teachers = []
   for (const teacherId of req.body.teacher_id || []) {
     const teacher = await User.findByPk(teacherId)
+     if(!teacher){
+      return res.status(404).json({message:"not found teacher " ,teacherId})
+    }
     if (teacher && teacher.role_id === 2) {
       const exists = await CircleUser.findOne({
         where: { circle_id: circle.id, user_id: teacher.id }
@@ -292,7 +309,10 @@ const show_circle_for_teacher = asyncHandler(async (req, res) => {
         {
           model: User,
           as: 'users',
-          through: { attributes: ['role_id'] }
+          through: { attributes: ['role_id'] },
+           attributes: {
+            exclude: ['password'] 
+          }
         }
       ]
     });
@@ -306,7 +326,25 @@ const show_circle_for_teacher = asyncHandler(async (req, res) => {
     const formatted = teacherCircles.map(circle => {
       const students = circle.users.filter(
         user => user.CircleUser.role_id === STUDENT_ROLE_ID
-      );
+      ) .map(student => {
+          return {
+             id: student.id,
+          mosque_id: student.mosque_id,
+          first_name: student.first_name,
+          last_name: student.last_name,
+          phone: student.phone,
+          father_phone: student.father_phone,
+          birth_date: student.birth_date,
+          email: student.email,
+          address: student.address,
+          certificates: student.certificates,
+          code: student.code,
+          experiences: student.experiences,
+          memorized_parts: student.memorized_parts,
+          role_id: student.role_id,
+          is_save_quran: student.is_save_quran
+          };
+        });
       
       return {
         id: circle.id,
@@ -365,9 +403,21 @@ const showCircleTypeForTeacher = asyncHandler(async (req, res) => {
           typeCircle: circle.circle_type_id,
           description: circle.description,
           students: students.map(student => ({
-            id: student.id,
-            name: student.name,
-            email: student.email 
+             id: student.id,
+          mosque_id: student.mosque_id,
+          first_name: student.first_name,
+          last_name: student.last_name,
+          phone: student.phone,
+          father_phone: student.father_phone,
+          birth_date: student.birth_date,
+          email: student.email,
+          address: student.address,
+          certificates: student.certificates,
+          code: student.code,
+          experiences: student.experiences,
+          memorized_parts: student.memorized_parts,
+          role_id: student.role_id,
+          is_save_quran: student.is_save_quran
           }))
         };
       });
@@ -426,9 +476,21 @@ const show_Circle_Teacher_Dars = asyncHandler(async (req, res) => {
           typeCircle: circle.circle_type_id,
           description: circle.description,
           students: students.map(student => ({
-            id: student.id,
-            name: student.name,
-            email: student.email 
+          id: student.id,
+          mosque_id: student.mosque_id,
+          first_name: student.first_name,
+          last_name: student.last_name,
+          phone: student.phone,
+          father_phone: student.father_phone,
+          birth_date: student.birth_date,
+          email: student.email,
+          address: student.address,
+          certificates: student.certificates,
+          code: student.code,
+          experiences: student.experiences,
+          memorized_parts: student.memorized_parts,
+          role_id: student.role_id,
+          is_save_quran: student.is_save_quran
           }))
         };
       });

@@ -23,55 +23,18 @@ const { authMiddleware,
 /**
  * @swagger
  * /api/auth/register/student:
- *   post:
- *     summary: Register a new student => (adminOnly)
+*   post:
+ *     summary: Register a new teacher => (adminOnly)
  *     tags: [Auth]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - email
- *               - password
- *               - first_name
- *               - last_name
- *               - mosque_id
- *               - birth_date
- *             properties:
- *               email:
- *                 type: string
- *               password:
- *                 type: string
- *               first_name:
- *                 type: string
- *               last_name:
- *                 type: string
- *               mosque_id:
- *                 type: integer
- *               birth_date:
- *                 type: string
- *                 format: date
- *               is_save_quran:
- *                 type: boolean
- *               phone:
- *                 type: string
- *               father_phone:
- *                 type: string
- *               address:
- *                 type: string
- *               certificates:
- *                 type: string
- *               experiences:
- *                 type: string
- *               memorized_parts:
- *                 type: string
+ *             $ref: '#/components/schemas/RegisterUser'
  *     responses:
- *       201:
- *         description: Student registered successfully
- *       400:
- *         description: Invalid data or user already exists
+ *       200:
+ *         description: Teacher registered successfully
  */
 
 router.post('/register/student',authMiddleware,adminOnly, registerStudent);
@@ -89,7 +52,7 @@ router.post('/register/student',authMiddleware,adminOnly, registerStudent);
  *           schema:
  *             $ref: '#/components/schemas/RegisterUser'
  *     responses:
- *       201:
+ *       200:
  *         description: Teacher registered successfully
  */
 
@@ -108,7 +71,7 @@ router.post('/register/teacher',authMiddleware,adminOnly, registerTeacher);
  *           schema:
  *             $ref: '#/components/schemas/RegisterUser'
  *     responses:
- *       201:
+ *       200:
  *         description: Admin registered successfully
  */
 
@@ -131,9 +94,9 @@ router.post('/register/admin',authMiddleware ,authorizeRoles('superAdmin'),regis
  *               - mosque_code
  *             properties:
  *               code_user:
- *                 type: integer
+ *                 type: string
  *               mosque_code:
- *                 type: integer
+ *                 type: string
  *     responses:
  *       200:
  *         description: Login successful with JWT token

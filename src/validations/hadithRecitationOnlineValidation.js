@@ -1,35 +1,33 @@
-const Joi = require('joi');
+const Joi = require('joi')
 
-// create 
-function ValidateCreateHadithRecitation(data) {
+function HadithRecitationValidationOnline_create (data) {
   const schema = Joi.object({
-   session_id: Joi.number().integer().required(),
     student_id: Joi.number().integer().required(),
     book_id: Joi.number().integer().required(),
-  
+
     from_hadith: Joi.number().integer().required(),
     to_hadith: Joi.number().integer().required(),
-  
+
     is_counted: Joi.boolean().required(),
     is_exam: Joi.boolean().required(),
-    attendance: Joi.boolean().required()
-  });
-
-  return schema.validate(data);
+    date: Joi.date().required()
+  })
+  return schema.validate(data)
 }
-///
 
-function ValidateUpdateHadithRecitation(data) {
-  const schema = Joi.object({  
+/////upadte
+function HadithRecitationValidationOnline_update (data) {
+  const schema = Joi.object({
     from_hadith: Joi.number().integer().required(),
     to_hadith: Joi.number().integer().required(),
+
     is_counted: Joi.boolean().required(),
     is_exam: Joi.boolean().required(),
-  });
-
-  return schema.validate(data);
+  })
+  return schema.validate(data)
 }
+
 module.exports = {
-  ValidateUpdateHadithRecitation,
-  ValidateCreateHadithRecitation
-};
+  HadithRecitationValidationOnline_create,
+  HadithRecitationValidationOnline_update
+}

@@ -71,7 +71,7 @@ const {
  *             is_exam: false
  *             attendance: true
  *     responses:
- *       201:
+ *       200:
  *         description: Quran recitation record created successfully.
  *       400:
  *         description: Validation error or bad request.
@@ -104,10 +104,6 @@ router.post('/create', authMiddleware, teacherOnly, createQuranRecitation)
  *           schema:
  *             type: object
  *             properties:
- *               session_id:
- *                 type: integer
- *               student_id:
- *                 type: integer
  *               from_sura_id:
  *                 type: integer
  *               from_verse:
@@ -120,8 +116,7 @@ router.post('/create', authMiddleware, teacherOnly, createQuranRecitation)
  *                 type: boolean
  *               is_exam:
  *                 type: boolean
- *               attendance:
- *                 type: boolean
+
  *           example:
  *             from_sura_id: 2
  *             from_verse: 5
@@ -129,7 +124,6 @@ router.post('/create', authMiddleware, teacherOnly, createQuranRecitation)
  *             to_verse: 10
  *             is_counted: false
  *             is_exam: true
- *             attendance: true
  *     responses:
  *       200:
  *         description: Quran recitation record updated successfully.

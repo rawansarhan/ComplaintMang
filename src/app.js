@@ -28,5 +28,12 @@ const session = require('./routes/sesssion');
 app.use('/api/session', session); 
 const hadithBook = require('./routes/HadithBook');
 app.use('/api/hadith-book', hadithBook); 
+const hadithRecitation = require('./routes/HadithRecitation');
+app.use('/api/hadith-recitation', hadithRecitation); 
+const QuranTalkeen = require('./routes/TalkeenRecitation');
+app.use('/api/talkeen-recitation', QuranTalkeen);
+const surah = require('./routes/surahAndAyah');
+app.use('/api/SurahAndAyah', surah);  
+
 
 module.exports = app;

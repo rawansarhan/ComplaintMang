@@ -27,10 +27,6 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-     teacher_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false
-    },
   }, {
     sequelize,
     modelName: 'Challenge',

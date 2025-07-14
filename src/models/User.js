@@ -93,10 +93,6 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'teacher_id',
         as: 'individual_quran_as_teacher'
       })
-         User.hasMany(models.Challenge, {
-        foreignKey: 'teacher_id',
-        as: 'challenge_teacherId'
-      })
        User.hasMany(models.Challenge, {
         foreignKey: 'student_id',
         as: 'challenge_studentId'

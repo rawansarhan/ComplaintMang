@@ -1,5 +1,5 @@
 const asyncHandler = require('express-async-handler')
-const { QuranRecitation,UndividualRecitationQuran,User,Surah,Ayah,CircleSession,} = require('../models')
+const { QuranRecitation,UndividualRecitationQuran,User,Surah,Ayah,CircleSession} = require('../models')
 const {
   quranRecitationValidation_update,
   quranRecitationValidation_create
@@ -7,54 +7,73 @@ const {
 
 const createQuranRecitation = asyncHandler(async (req, res) => {
   try {
-    const { error } = quranRecitationValidation_create(req.body)
+    const { error } = quranRecitationValidation_create(req.body);
     if (error) {
-      return res.status(400).json({
-        message: error.details[0].message
-      })
+      return res.status(400).json({ message: error.details[0].message });
     }
 
-    const existingRecord = await QuranRecitation.findOne({
-      where: {
-        student_id: req.body.student_id,
-        session_id: req.body.session_id
-      }
-    })
+    const {
+      session_id,
+      student_id,
+      from_sura_id,
+      from_verse,
+      to_sura_id,
+      to_verse,
+      is_counted,
+      is_exam,
+      attendance
+    } = req.body;
+
+    const teacherId = req.user?.id;
+    if (!teacherId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const [existingRecord, session, student] = await Promise.all([
+      QuranRecitation.findOne({ where: { student_id, session_id } }),
+      CircleSession.findByPk(session_id),
+      User.findByPk(student_id)
+    ]);
 
     if (existingRecord) {
       return res.status(409).json({
-        message:
-          'This student already has a Quran recitation record for this session.'
-      })
+        message: 'This student already has a Quran recitation record for this session.'
+      });
     }
 
-    const teacherId = req.user.id
+    if (!session) {
+      return res.status(404).json({ message: "Session not found" });
+    }
+
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
 
     const newRecitation = await QuranRecitation.create({
-      session_id: req.body.session_id,
-      student_id: req.body.student_id,
+      session_id,
+      student_id,
       teacher_id: teacherId,
-      from_sura_id: req.body.from_sura_id,
-      from_verse: req.body.from_verse,
-      to_sura_id: req.body.to_sura_id,
-      to_verse: req.body.to_verse,
-      is_counted: req.body.is_counted,
-      is_exam: req.body.is_exam,
-      attendance: req.body.attendance
-    })
+      from_sura_id,
+      from_verse,
+      to_sura_id,
+      to_verse,
+      is_counted,
+      is_exam,
+      attendance
+    });
 
-    return res.status(201).json({
+    return res.status(200).json({
       message: 'Quran recitation record created successfully.',
       data: newRecitation
-    })
+    });
   } catch (err) {
-    console.error('Database error:', err)
+    console.error('Database error:', err);
     return res.status(500).json({
       message: 'Internal server error',
-      details: err.message
-    })
+      details: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
   }
-})
+});
 
 ////////////update
 const updateQuranRecitation = asyncHandler(async (req, res) => {
@@ -90,8 +109,7 @@ const updateQuranRecitation = asyncHandler(async (req, res) => {
       quranRecitation.is_counted = req.body.is_counted
     if (req.body.is_exam !== undefined)
       quranRecitation.is_exam = req.body.is_exam
-    if (req.body.attendance !== undefined)
-      quranRecitation.attendance = req.body.attendance
+
 
     await quranRecitation.save()
 

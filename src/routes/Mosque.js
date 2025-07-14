@@ -4,7 +4,8 @@ const {
   mosqueAllShow,
   mosqueShowById,
   mosqueUpdate,
-  mosqueDelete
+  mosqueDelete,
+  showStudentAndTeacher
 } = require('../controllers/MosqueController');
 
 const { 
@@ -22,7 +23,40 @@ const router = express.Router();
  *   name: Mosque
  *   description: Mosque management endpoints
  */
+/**
+ * @swagger
+ * /api/mosque/AllStudentAndTeacher:
+ *   get:
+ *     summary: Get all students and teachers in the same mosque (superAdmin, admin, teacher only)
+ *     tags: [Mosque]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of students and teachers
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Fetched all students and teachers in this mosque
+ *                 AllStudent:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/User'
+ *                 AllTeacher:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/User'
+ *       404:
+ *         description: No students or teachers found
+ *       500:
+ *         description: Internal server error
+ */
 
+router.get('/AllStudentAndTeacher',authMiddleware, authorizeRoles('admin','teacher'), showStudentAndTeacher);
 /**
  * @swagger
  * /api/mosque/create:

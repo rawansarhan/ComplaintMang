@@ -10,7 +10,28 @@ const createQuranRecitationOnline = asyncHandler(async (req, res) => {
         message: error.details[0].message
       })
     }
+     const {
+      student_id,
 
+    } = req.body;
+ const [existingRecord, session, student] = await Promise.all([
+      UndividualRecitationQuran.findOne({ where: { student_id } }),
+      User.findByPk(student_id)
+    ]);
+
+    if (existingRecord) {
+      return res.status(409).json({
+        message: 'This student already has a Quran recitation record for this session.'
+      });
+    }
+
+    if (!session) {
+      return res.status(404).json({ message: "Session not found" });
+    }
+
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
     const teacherId = req.user.id
 
     const newRecitation = await UndividualRecitationQuran.create({
@@ -25,7 +46,7 @@ const createQuranRecitationOnline = asyncHandler(async (req, res) => {
        date : req.body.date
     })
 
-    return res.status(201).json({
+    return res.status(200).json({
       message: 'Quran recitation Online record created successfully.',
       data: newRecitation
     })

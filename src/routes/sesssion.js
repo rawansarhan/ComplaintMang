@@ -33,12 +33,13 @@ const {
  *               circle_id:
  *                 type: integer
  *               date:
- *                 type: date
+ *                 type: string
+ *                 format: date
  *           example:
  *             circle_id: 1
- *             date: 
+ *             date: "2024-07-01"
  *     responses:
- *       201:
+ *       200:
  *         description: session created successfully.
  *       400:
  *         description: Validation error or bad request.
@@ -47,6 +48,7 @@ const {
  *       500:
  *         description: Internal server error.
  */
+
 
 router.post('/create', authMiddleware, teacherOnly, sessionCreate);
 /**

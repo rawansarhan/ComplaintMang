@@ -71,6 +71,11 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false,
     }
+    ,   attendance: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: true
+      },
   }, {
     sequelize,
     modelName: 'QuranTalkeen',

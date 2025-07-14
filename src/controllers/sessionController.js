@@ -1,22 +1,39 @@
 const asyncHandler = require('express-async-handler');
 const { ValidateSessionCraete } = require('../validations/session');
-const { User, Role, Mosque, Circle, CircleUser,CircleType,CircleSession}= require('../models')
-//////////////create
+const { User, Role, Mosque, Circle, CircleUser,CircleType,CircleSession}= require('../models');
+const { where } = require('sequelize');
 
+
+const { Op } = require('sequelize');
+//////////////create
 const sessionCreate = asyncHandler(async (req, res) => {
   try {
     const { error } = ValidateSessionCraete(req.body);
     if (error) return res.status(400).json({ message: error.details[0].message });
 
+    const circle = await Circle.findOne({
+      where: { id: req.body.circle_id }
+    });
+    if (!circle) {
+      return res.status(404).json({ message: "Circle not found" });
+    }
+
+    const startOfDay = new Date(req.body.date);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(req.body.date);
+    endOfDay.setHours(23, 59, 59, 999);
+
     const existingSession = await CircleSession.findOne({
       where: {
-        date: req.body.date,
-        circle_id: req.body.circle_id
+        circle_id: req.body.circle_id,
+        date: {
+          [Op.between]: [startOfDay, endOfDay]
+        }
       }
     });
 
     if (existingSession) {
-      return res.status(409).json({ message: "You already have a session on this date for this circle" });
+      return res.status(409).json({ message: "A session already exists on this date for this circle" });
     }
 
     const createdSession = await CircleSession.create({
@@ -32,11 +49,13 @@ const sessionCreate = asyncHandler(async (req, res) => {
   } catch (err) {
     console.error('Database error:', err);
     return res.status(500).json({
-      message: 'Database error',
+      message: 'Internal server error',
       details: err.message
     });
   }
 });
+
+
 
 ////////////////show all session
 const showAllSession = asyncHandler(async(req,res)=>{

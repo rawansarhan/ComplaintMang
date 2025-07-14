@@ -92,31 +92,9 @@ const handleComplexChallenge = async (challenge, ageGroupId) => {
         task_id: task.id
       })
     }
-
-    if (task.is_sublevels == true) {
-      const taskSublevels = await TasksSublevels.findAll({
-        where: { task_id: task.id }
-      })
-
-      const subLevels = []
-      for (const taskSublevel of taskSublevels) {
-        const subLevel = await Sublevel.findOne({
-          where: { id: taskSublevel.sublevel_id }
-        })
-
-        if (subLevel) {
-          subLevels.push(subLevel)
-        }
-      }
-
-      tasksWithSublevels.push({
-        task,
-        subLevels
-      })
-    }
   }
 
-  return { quranTask, tasksWithSublevels }
+  return { quranTask }
 }
 
 const createChallenge = asyncHandler(async (req, res) => {
@@ -132,9 +110,9 @@ const createChallenge = asyncHandler(async (req, res) => {
       where: { student_id: studentId }
     })
 
-    // if (existingChallenge) {
-    //   return res.status(400).json({ message: "This user already has a challenge" });
-    // }
+    if (existingChallenge) {
+      return res.status(400).json({ message: "This user already has a challenge" });
+    }
 
     const challenge = await Challenge.create({
       student_id: studentId,
@@ -171,7 +149,7 @@ const createChallenge = asyncHandler(async (req, res) => {
     }
 
     if ([2, 3, 4].includes(ageGroupId)) {
-      const { quranTask, tasksWithSublevels } = await handleComplexChallenge(
+      const { quranTask } = await handleComplexChallenge(
         challenge,
         ageGroupId
       )
@@ -181,7 +159,6 @@ const createChallenge = asyncHandler(async (req, res) => {
           'Challenge created. Choose the Quran task and appropriate level.',
         challenge_id: challenge.id,
         quran: quranTask,
-        tasks_with_sublevels: tasksWithSublevels
       })
     }
 
@@ -191,102 +168,110 @@ const createChallenge = asyncHandler(async (req, res) => {
 
     return res.status(500).json({
       message: 'Internal server error',
-      details: err.stack // 👈 يعرض السطر والموقع الكامل للخطأ
+      details: err.stack // 
     })
   }
 })
 ////////////////////////
 const createLevel1 = asyncHandler(async (req, res) => {
-  try {
-    const { error } = ValidateCreate1Challange(req.body);
-    if (error) {
-      return res.status(400).json({ message: error.details[0].message });
+  const { error } = ValidateCreate1Challange(req.body);
+  if (error) {
+    return res.status(400).json({ message: error.details[0].message });
+  }
+
+  const challengeId = req.params.id;
+  const taskQuranId = req.body.taskQuranId;
+
+  const existingTask = await ChallengeTask.findOne({
+    where: { challenge_id: challengeId, task_id: taskQuranId }
+  });
+
+  if (existingTask) {
+    return res.status(400).json({ message: 'The task already assigned to this challenge' });
+  }
+
+  const existingTasks = await ChallengeTask.findAll({
+    where: { challenge_id: challengeId },
+    include: [
+      { model: Task, as: 'task' }
+    ]
+  });
+
+  for (const challengeTask of existingTasks) {
+    if (challengeTask.task?.name === 'Quran') {
+      return res.status(403).json({ message: 'This challenge already has a task named Quran' });
     }
+  }
 
-    const challangeId = req.params.id;
+  const task = await Task.findOne({ where: { id: taskQuranId } });
+  if (!task) {
+    return res.status(404).json({ message: 'Task not found.' });
+  }
 
-    // التأكد من عدم تكرار المهمة
-    const existingQuranTask = await ChallengeTask.findOne({
-      where: {
-        challenge_id: challangeId,
-        task_id: req.body.taskQuranId
-      }
+  if (task.name !== 'Quran') {
+    return res.status(400).json({ message: "This task's name is not Quran." });
+  }
+
+  await ChallengeTask.create({
+    challenge_id: challengeId,
+    task_id: taskQuranId
+  });
+
+  const challengeTasks = await ChallengeTask.findAll({
+    where: { challenge_id: challengeId }
+  });
+
+  const tasksWithSublevels = [];
+
+  for (const challengeTask of challengeTasks) {
+    const taskSublevels = await TasksSublevels.findAll({
+      where: { task_id: challengeTask.task_id }
     });
 
-    if (existingQuranTask) {
-      return res
-        .status(400)
-        .json({ message: 'Quran task already assigned to this challenge' });
-    }
+    const subLevels = [];
 
-    // إضافة المهمة
-    await ChallengeTask.create({
-      challenge_id: challangeId,
-      task_id: req.body.taskQuranId
-    });
-
-    // جلب جميع المهام المرتبطة بالتحدي
-    const challengeTasks = await ChallengeTask.findAll({
-      where: { challenge_id: challangeId }
-    });
-
-    const tasksWithSublevels = [];
-
-    for (const task of challengeTasks) {
-      const taskSublevels = await TasksSublevels.findAll({
-        where: { task_id: task.task_id }
+    for (const taskSublevel of taskSublevels) {
+      const subLevel = await Sublevel.findOne({
+        where: { id: taskSublevel.sublevel_id }
       });
 
-      const subLevels = [];
+      if (subLevel) subLevels.push(subLevel);
+    }
 
-      for (const taskSublevel of taskSublevels) {
-        const subLevel = await Sublevel.findOne({
-          where: { id: taskSublevel.sublevel_id }
-        });
-
-        if (subLevel) {
-          subLevels.push(subLevel);
-        }
-      }
-
+    if (challengeTask.sublevel_id !== null) {
       tasksWithSublevels.push({
-        task,
+        task: challengeTask,
         subLevels
       });
     }
-
-    return res.status(200).json({
-      message: 'Added Quran task to challenge. Here are all tasks for this challenge.',
-      result: tasksWithSublevels
-    });
-  } catch (err) {
-    console.error('Database error:', err);
-
-    return res.status(500).json({
-      message: 'Internal server error'
-    });
   }
+
+  return res.status(200).json({
+    message: 'Added Quran task to challenge. Here are all tasks for this challenge.',
+    result: tasksWithSublevels
+  });
 });
+
 
 /////////////////////////////// put id challange and this step the last step for create challengeTask=>admin
 const createLevel2 = asyncHandler(async (req, res) => {
-  try{const { error } = ValidateCreate2Challange(req.body)
+  const { error } = ValidateCreate2Challange(req.body);
   if (error) {
-    return res.status(400).json({ message: error.details[0].message })
+    return res.status(400).json({ message: error.details[0].message });
   }
 
-  const challangeId = req.params.id
+  const challangeId = req.params.id;
 
   const existingTask = await ChallengeTask.findOne({
-    where: { Challenge_id: challangeId }
-  })
+    where: { challenge_id: challangeId }
+  });
 
   if (!existingTask) {
-    return res.status(404).json({ message: 'not found' })
+    return res.status(404).json({ message: 'Challenge not found' });
   }
 
-  const data = []
-  const dataItems = req.body.data
+  const data = [];
+  const dataItems = req.body.data;
 
   for (const dataItem of dataItems) {
     const task = await ChallengeTask.findOne({
@@ -294,99 +279,173 @@ const createLevel2 = asyncHandler(async (req, res) => {
         challenge_id: challangeId,
         task_id: dataItem.task_id
       }
-    })
+    });
 
     if (!task) {
       return res
         .status(404)
-        .json({ message: `Task with id ${dataItem.task_id} not found` })
+        .json({ message: `Task with id ${dataItem.task_id} not found` });
     }
 
-    task.level_id = dataItem.lavel_id || task.level_id
-    await task.save()
-    data.push(task)
+    const tasks_sublevels = await TasksSublevels.findOne({
+      where: {
+        sublevel_id: dataItem.lavel_id, 
+        task_id: dataItem.task_id
+      }
+    });
+
+    if (!tasks_sublevels) {
+      return res.status(404).json({ message:` Level not found for this task id = ${dataItem.task_id}.` });
+    }
+
+    task.sublevels_id = dataItem.lavel_id || task.sublevels_id;
+    await task.save();
+
+    if (task.sublevels_id !== null) {
+      data.push(task);
+    }
   }
+
+  const filteredTasks = data.filter(task => task.sublevels_id !== null);
 
   return res.status(200).json({
     message: 'Finish create challenge',
-    updatedTasks: data
-  })}catch (err) {
-    console.error('Database error:', err)
-
-    return res.status(500).json({
-      message: 'Internal server error'
-    })
-  }
-  
-})
+    updatedTasks: filteredTasks
+  });
+});
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
 const challangeTeasher = asyncHandler(async (req, res) => {
-  const { error } = ValidateTeacherChallange(req.body)
+  const { error } = ValidateTeacherChallange(req.body);
   if (error) {
-    return res.status(400).json({ message: error.details[0].message })
+    return res.status(400).json({ message: error.details[0].message });
   }
 
-  const studentId = req.params.id
-  const challange = await Challenge.findOne({
+  const studentId = req.params.id;
+
+  const challenge = await Challenge.findOne({
     where: { student_id: studentId }
-  })
+  });
 
-  if (!challange) {
-    return res.status(404).json({ message: 'Challenge not found' })
+  if (!challenge) {
+    return res.status(404).json({ message: 'Challenge not found' });
   }
 
-  const wallet = await Wallet.findOne({ where: { student_id: studentId } })
+  const wallet = await Wallet.findOne({ where: { student_id: studentId } });
   if (!wallet) {
-    return res.status(404).json({ message: 'Wallet not found' })
+    return res.status(404).json({ message: 'Wallet not found' });
   }
 
-  const data = []
-  let totalPointsToAdd = 0
-  const dataItems = req.body.data
+  const updatedTasks = [];
+  const dataItems = req.body.data;
+
+  let totalPointsToAdd = 0; 
 
   for (const dataItem of dataItems) {
     const challengeTasks = await ChallengeTask.findAll({
       where: {
-        challange_id: challange.id,
+        challenge_id: challenge.id,
         task_id: dataItem.task_id
       }
-    })
+    });
 
     for (const task of challengeTasks) {
-      task.is_done = dataItem.is_done ?? task.is_done
-      await task.save()
-      data.push(task)
-
-      if (task.is_done) {
-        const sublevels = await Sublevel.findOne({
-          where: { id: task.sublevels_id }
-        })
-
-        if (!sublevels) {
-          return res.status(404).json({ message: 'Sublevel not found' })
+      if (task.is_done === false) {
+        if (dataItem.is_done !== undefined) {
+          task.is_done = dataItem.is_done;
         }
 
-        totalPointsToAdd += sublevels.point
+        await task.save();
+        updatedTasks.push(task);
+
+        if (task.is_done === true) {
+          if (task.sublevels_id !== null) {
+            const sublevels = await Sublevel.findOne({
+              where: { id: task.sublevels_id }
+            });
+
+            if (!sublevels) {
+              return res.status(404).json({ message: 'Sublevel not found' });
+            }
+
+            wallet.scores += sublevels.point;
+            totalPointsToAdd += sublevels.point; 
+            await wallet.save();
+          } else {
+            const taskCh = await Task.findOne({
+              where: { id: dataItem.task_id }
+            });
+
+            if (!taskCh) {
+              return res.status(404).json({ message: 'Task not found' });
+            }
+
+            wallet.scores += taskCh.point;
+            totalPointsToAdd += taskCh.point; 
+            await wallet.save();
+          }
+        }
+      } else if (task.is_done === true) {
+        if (dataItem.is_done !== undefined) {
+          task.is_done = dataItem.is_done;
+        }
+
+        await task.save();
+        updatedTasks.push(task);
+
+        if (task.is_done === false) {
+          if (task.sublevels_id !== null) {
+            const sublevels = await Sublevel.findOne({
+              where: { id: task.sublevels_id }
+            });
+
+            if (!sublevels) {
+              return res.status(404).json({ message: 'Sublevel not found' });
+            }
+
+            wallet.scores -= sublevels.point;
+            totalPointsToAdd -= sublevels.point; 
+            await wallet.save();
+          } else {
+            const taskCh = await Task.findOne({
+              where: { id: dataItem.task_id }
+            });
+
+            if (!taskCh) {
+              return res.status(404).json({ message: 'Task not found' });
+            }
+
+            wallet.scores -= taskCh.point;
+            totalPointsToAdd -= taskCh.point; 
+            await wallet.save();
+          }
+        }
       }
     }
   }
 
-  wallet.scores += totalPointsToAdd
-  await wallet.save()
-
   return res.status(200).json({
-    message: 'Tasks updated successfully',
-    data,
+    message: `Tasks updated successfully. ${totalPointsToAdd} points ${totalPointsToAdd >= 0 ? 'added to' : 'removed from'} wallet.`,
+    updatedTasks,
     wallet
-  })
-})
+  });
+});
+
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 const AllTaskChallenge = asyncHandler (async (req,res)=>{
   try{
-const challangeId = req.params.id;
+const studentId = req.params.id;
+const challange = await Challenge.findOne({
+  where :{student_id : studentId}
+})
+if(!challange){
+  return res.status(404).json({
+    message : "not found challenge for this student "
+  })
+}
    const challengeTask = await ChallengeTask.findAll({
-  where: { challenge_id: challangeId},
+  where: { challenge_id: challange.id},
   include: [
     {
       model: Task,
@@ -398,11 +457,10 @@ const challangeId = req.params.id;
     }
   ]
 });
+if (challengeTask.length === 0) {
+  return res.status(200).json({ message: 'No tasks found for this challenge.' });
+}
 
-    if (!challengeTask) {
-      return res.status(200).json({ message: 'not found' })
-    }
-    ////هي منشان حدد شو بدي ينعرض
 const result = challengeTask.map(ct => ({
   id: ct.id,
   challenge_id: ct.challenge_id,
@@ -411,11 +469,11 @@ const result = challengeTask.map(ct => ({
   sublevel: ct.sublevel
 }));
 
-    return res.status(200).json({
-      message:
-        'Added Quran task to challenge. Here are all tasks for this challenge.',
-         result
-    })
+return res.status(200).json({
+  message: 'Fetched all tasks for this challenge successfully.',
+  data: result
+});
+
   } catch (err) {
     console.error('Database error:', err)
 
@@ -431,5 +489,6 @@ module.exports = {
   createChallenge,
   createLevel2,
   challangeTeasher,
-  createLevel1
+  createLevel1,
+AllTaskChallenge
 }

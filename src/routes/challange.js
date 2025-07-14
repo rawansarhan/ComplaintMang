@@ -5,7 +5,9 @@ AllAgeGroups,
 AgeGroupById,
 createChallenge,
 createLevel2,
-challangeTeasher
+challangeTeasher,
+createLevel1,
+AllTaskChallenge
   
 } = require('../controllers/challangeController');
 const {
@@ -62,10 +64,9 @@ router.get('/allAgeGroup',authMiddleware,authorizeRoles('student','admin'),AllAg
 router.get('/ageGroupById/:id', authMiddleware, studentOnly, AgeGroupById);
 
 
-///id for ageGroup
 /**
  * @swagger
- * /api/challenge/createChallengelevel1/{id}:
+ * /api/challenge/createChallengelevel/{id}:
  *   post:
  *     summary: Create a new challenge for a student based on age group (Admin only)
  *     tags: [Challenge]
@@ -86,16 +87,10 @@ router.get('/ageGroupById/:id', authMiddleware, studentOnly, AgeGroupById);
  *             type: object
  *             properties:
  *               student_id:
- *                 type: array
- *                 items:
- *                   type: integer
- *               teacher_id:
- *                 type: array
- *                 items:
- *                   type: integer
+ *                 type: integer
+ *                 description: ID of the student
  *             example:
- *               student_id: [10]
- *               teacher_id: [2]
+ *               student_id: 4
  *     responses:
  *       200:
  *         description: Challenge created successfully
@@ -129,7 +124,59 @@ router.get('/ageGroupById/:id', authMiddleware, studentOnly, AgeGroupById);
  *         description: Unauthorized (if token is missing or user is not admin)
  */
 
-router.post('/createChallengelevel1/:id', authMiddleware, adminOnly, createChallenge);
+
+router.post('/createChallengelevel/:id', authMiddleware, adminOnly, createChallenge);
+/**
+ * @swagger
+ * /api/challenge/createChallangelevel1/{id}:
+ *   post:
+ *     summary: second step to create challenge tasks  (Level 1) - Admin Only
+ *     tags: [Challenge]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the Challenge
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               taskQuranId:
+ *                 type: integer
+ *                 description: The ID of the Quran task to assign
+ *             example:
+ *               taskQuranId: 3
+ *     responses:
+ *       200:
+ *         description: Challenge created and tasks assigned successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 newChallengeTask:
+ *                   type: object
+ *                 updatedTasks:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *       400:
+ *         description: Validation error
+ *       404:
+ *         description: Task or Challenge not found
+ */
+
+
+router.post('/createChallangelevel1/:id', authMiddleware, adminOnly, createLevel1);
 //id for challange
 /**
  * @swagger
@@ -168,7 +215,6 @@ router.post('/createChallengelevel1/:id', authMiddleware, adminOnly, createChall
  *                       type: integer
  *                       description: "The ID of the level (note: check spelling)"
  *             example:
- *               taskQuranId: 10
  *               data:
  *                 - task_id: 3
  *                   lavel_id: 1
@@ -196,7 +242,7 @@ router.post('/createChallengelevel1/:id', authMiddleware, adminOnly, createChall
  *         description: Task or Challenge not found
  */
 
-router.post('/createChallengelevel2/:id', authMiddleware, adminOnly, createLevel2);
+router.post('/createChallangelevel2/:id', authMiddleware, adminOnly, createLevel2);
 //id for student
 /**
  * @swagger
@@ -261,10 +307,33 @@ router.post('/createChallengelevel2/:id', authMiddleware, adminOnly, createLevel
 
 router.put('/ChallengePerformance/:id', authMiddleware, teacherOnly,challangeTeasher);
 
-
-
-
-
-
-
+/**
+ * @swagger
+ * /api/challenge/showChallenge/{id}:
+ *   get:
+ *     summary: Get challenge for this student => (teacherOnly)
+ *     tags: [Challenge]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Student ID
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved challenge tasks
+ *       404:
+ *         description: No challenge found
+ *       500:
+ *         description: Internal server error
+ */
+router.get(
+  '/showChallenge/:id',
+  authMiddleware,
+  authorizeRoles('admin', 'teacher'),
+  AllTaskChallenge
+);
 module.exports = router;

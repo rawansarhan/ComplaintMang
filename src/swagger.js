@@ -35,11 +35,11 @@ const swaggerOptions = {
             birth_date: { type: 'string', format: 'date', example: '2000-01-01' },
             is_save_quran: { type: 'boolean', example: true },
             phone: { type: 'string', example: '0999123456' },
-            father_phone: { type: 'string', example: '0999112233' },
+    father_phone: { type: 'string', example: '0999112233' },
             address: { type: 'string', example: 'Damascus, Syria' },
             certificates: { type: 'string', example: 'Ijaza in Hafs' },
             experiences: { type: 'string', example: '5 years teaching Quran' },
-            memorized_parts: { type: 'string', example: '30' }
+            memorized_parts: { type: 'integer', example: 30 }
           }
         },
         RegisterResponse: {
