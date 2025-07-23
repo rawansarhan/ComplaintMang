@@ -124,7 +124,7 @@ const registerUserWithRole = roleName =>
         role: role.name
       },
       SECRET_KEY,
-      { expiresIn: '4d' }
+      { expiresIn: '30d' }
     )
 
     const { password, code, ...userData } = user.toJSON()
@@ -162,7 +162,7 @@ const loginUser = asyncHandler(async (req, res) => {
       role: role?.name || 'unknown'
     },
     SECRET_KEY,
-    { expiresIn: '4d' }
+    { expiresIn: '30d' }
   )
 
   const { password, code, ...userData } = user.toJSON()

@@ -40,8 +40,7 @@ const AllAgeGroups = asyncHandler(async (req, res) => {
 /////////////// show group by id =>studentOnly
 const AgeGroupById = asyncHandler(async (req, res) => {
   try {
-    const ID = Number(req.params.id) // ✅ تصحيح اسم الباراميتر وتحويله لرقم
-
+    const ID = Number(req.params.id) 
     const ageGroupById = await AgeGroup.findOne({ where: { id: ID } })
 
     if (!ageGroupById) {
@@ -49,7 +48,15 @@ const AgeGroupById = asyncHandler(async (req, res) => {
     }
 
     const studentId = req.user.id
-    const wallet = await Wallet.findOne({ where: { student_id: studentId } })
+    const wallet = await Wallet.findOne({
+       where: { student_id: studentId } ,
+      include: [
+        {
+          model: User,
+          as: 'student',
+        }
+      ]
+      })
 
     if (!wallet) {
       return res.status(404).json({ message: "You don't have a wallet" })
@@ -110,9 +117,9 @@ const createChallenge = asyncHandler(async (req, res) => {
       where: { student_id: studentId }
     })
 
-    if (existingChallenge) {
-      return res.status(400).json({ message: "This user already has a challenge" });
-    }
+    // if (existingChallenge) {
+    //   return res.status(400).json({ message: "This user already has a challenge" });
+    // }
 
     const challenge = await Challenge.create({
       student_id: studentId,

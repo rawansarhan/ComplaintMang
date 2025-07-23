@@ -152,7 +152,7 @@ router.put('/update/:id',authMiddleware,adminOnly, updateCircle);
  * @swagger
  * /api/circle/deleteCircleUser/{id}:
  *   delete:
- *     summary: Delete a circle =>(adminOnly)
+ *     summary: Delete a User for circle =>(adminOnly)
  *     tags: [Circle]
  *     security:
  *       - bearerAuth: []

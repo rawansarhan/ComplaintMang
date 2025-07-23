@@ -15,7 +15,7 @@ const {
  * @swagger
  * /api/circle-type/showAll:
  *   get:
- *     summary: Get all circle types (excluding hadith and lesson) with bookHadith =>(teacherOnly)
+ *     summary: Get all circle types (excluding hadith and lesson) with bookHadith =>(teacherOnly and admin)
  *     tags: [CircleType]
  *     security:
  *       - bearerAuth: []
@@ -25,7 +25,7 @@ const {
  *       500:
  *         description: Internal server error
  */
-router.get('/showAll', authMiddleware, teacherOnly, circleType);
+router.get('/showAll', authMiddleware, authorizeRoles('admin','teacher'), circleType);
 /**
  * @swagger
  * /api/circle-type/showAllType:

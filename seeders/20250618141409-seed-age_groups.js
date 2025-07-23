@@ -7,7 +7,7 @@ module.exports = {
         name: 'الفئة 9-11',
         minAge: 9,
         maxAge: 11,
-        photo: null,
+        photo: '/public/images/age9_10_11.png',
         created_at: new Date(),
         updated_at: new Date()
       },

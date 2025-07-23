@@ -75,7 +75,7 @@ router.post('/register/teacher',authMiddleware,adminOnly, registerTeacher);
  *         description: Admin registered successfully
  */
 
-router.post('/register/admin',authMiddleware ,authorizeRoles('superAdmin'),registerAdmin);
+router.post('/register/admin' ,authMiddleware,authorizeRoles('superAdmin'),registerAdmin);
 
 /**
  * @swagger
