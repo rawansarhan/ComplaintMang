@@ -8,7 +8,7 @@ const {
   ChallengeTask,
   Challenge,
   AgeGroup,
-  TasksSublevels
+  TasksSublevels,User
 } = require('../models')
 const {
   ValidateCreateChallange,
