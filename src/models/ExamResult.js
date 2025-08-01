@@ -4,13 +4,11 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class ExamResult extends Model {
     static associate(models) {
-      // العلاقة مع الامتحان
       ExamResult.belongsTo(models.Exam, {
         foreignKey: 'exam_id',
         as: 'exam',
       });
 
-      // العلاقة مع الطالب
       ExamResult.belongsTo(models.User, {
         foreignKey: 'student_id',
         as: 'student',
@@ -34,15 +32,20 @@ module.exports = (sequelize, DataTypes) => {
     notes: {
       type: DataTypes.TEXT,
       allowNull: true,
-    }
+    },
+    has_taken_exam: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      }
   }, {
     sequelize,
     modelName: 'ExamResult',
     tableName: 'exam_results',
     timestamps: true,
     underscored: true,
-      createdAt: 'created_at', // ← ربط الاسم الصحيح
-  updatedAt: 'updated_at', // ← ربط الاسم الصحيح
+      createdAt: 'created_at', 
+  updatedAt: 'updated_at', 
   });
 
   return ExamResult;

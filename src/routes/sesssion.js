@@ -53,12 +53,19 @@ const {
 router.post('/create', authMiddleware, teacherOnly, sessionCreate);
 /**
  * @swagger
- * /api/session/showAll:
+ * /api/session/showAll/{id}:
  *   get:
- *     summary: Get all sessions =>(teacherOnly)
+ *     summary: Get all sessions for a specific circle (teacher only)
  *     tags: [CircleSession]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Circle ID
  *     responses:
  *       200:
  *         description: Successfully retrieved session 
@@ -67,6 +74,6 @@ router.post('/create', authMiddleware, teacherOnly, sessionCreate);
  * 
  */
 
-router.get('/showAll',authMiddleware,teacherOnly,showAllSession);
+router.get('/showAll/:id',authMiddleware,teacherOnly,showAllSession);
 
 module.exports = router

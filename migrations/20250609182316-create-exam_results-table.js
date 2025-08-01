@@ -10,7 +10,7 @@ module.exports = {
         autoIncrement: true,
         allowNull: false
       },
-         exam_id: {
+      exam_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
@@ -30,16 +30,20 @@ module.exports = {
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE'
       },
-      score:{
+      score: {
         type: Sequelize.INTEGER,
-        primaryKey: true,
+        allowNull: true // أو false إذا مطلوب دائماً
       },
       notes: {
         type: Sequelize.TEXT,
         allowNull: true
       },
-
-       created_at: {
+      has_taken_exam: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
+      },
+      created_at: {
         allowNull: false,
         type: Sequelize.DATE,
         defaultValue: Sequelize.fn('NOW')

@@ -10,10 +10,10 @@ const AllAyahAndSurah = asyncHandler(async (req, res) => {
       const ayahs = await Ayah.findAll({
         where: { surah_id: surah.id }
       });
-
+      const ayahNnumber = ayahs.length;
       result.push({
         surah,
-        ayahs
+        ayahNnumber
       });
     }
 
