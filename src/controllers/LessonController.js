@@ -95,258 +95,106 @@ const GetAllSessionesLession = asyncHandler(async (req, res) => {
     data: lessonSession
   })
 })
+/////////////////////////////////////////////
+////////////////////////////////////////////
 /////////create session attendance for lesson
 const createSession_attendance = asyncHandler(async (req, res) => {
-  const { error } = session_attendance_create(req.body)
-  if (error) {
-    return res.status(400).json({ message: error.details[0].message })
-  }
-  const LessonSessionId = req.params.id
-  const lesson = await LessonSession.findOne({
-    where: { id: LessonSessionId }
-  })
-  if (!lesson) {
-    res.status(404).json({ message: 'not found lesson Session' })
-  }
-  const Allstudent = []
-  const students = req.body.student_id
-  for (const studentId of students) {
-    const user = await User.findOne({
-      where: { id: studentId }
-    })
-    if (!user) {
-      return res.status(404).json({ message: 'not found studen id' })
-    }
-    const lession_attendance = await LessonAttendance.findOne({
-      where: {
-        lesson_session_id: LessonSessionId,
-        user_id: studentId
-      }
-    })
-    if (!lession_attendance) {
-      await LessonAttendance.create({
-        lesson_session_id: LessonSessionId,
-        user_id: studentId
-      })
-      Allstudent.push(user)
-    }
-  }
-  return res.status(200).json({
-    message: 'create Lesson Attendance successfully',
-    lessonSession: lesson,
-    student: Allstudent
-  })
-})
-////update session attendance for lesson
-const updateSession_attendance = asyncHandler(async (req, res) => {
-  const { error } = session_attendance_update(req.body)
-  if (error) {
-    return res.status(400).json({ message: error.details[0].message })
-  }
-  const LessonSessionId = req.params.id
-  const lesson = await LessonSession.findOne({
-    where: { id: LessonSessionId }
-  })
-  if (!lesson) {
-    res.status(404).json({ message: 'not found lesson Session' })
-  }
-  const Allstudent = []
-  const students = req.body.student_id
-  for (const studentId of students) {
-    const user = await User.findOne({
-      where: { id: studentId }
-    })
-    if (!user) {
-      return res.status(404).json({ message: 'not found studen id' })
-    }
-    const lession_attendance = await LessonAttendance.findOne({
-      where: {
-        lesson_session_id: LessonSessionId,
-        user_id: studentId
-      }
-    })
-    if (!lession_attendance) {
-      await LessonAttendance.create({
-        lesson_session_id: LessonSessionId,
-        user_id: studentId
-      })
-      Allstudent.push(user)
-    }
-  }
-  return res.status(200).json({
-    message: 'create Lesson Attendance successfully',
-    lessonSession: lesson,
-    student: Allstudent
-  })
-})
-//// get All students for attendance
-const getAllStudent = asyncHandler(async (req, res) => {
-  const LessonSessionId = req.params.id
-  const lesson = await LessonSession.findOne({
-    where: { id: LessonSessionId }
-  })
-  if (!lesson) {
-    res.status(404).json({ message: 'not found lesson Session' })
-  }
-  const Allstudent = []
-  const userId = req.user.id
-  const user = await User.findOne({
-    where: { id: userId }
-  })
-  const students = await User.findAll({
-    where: { mosque_id: user.mosque_id }
-  })
-  for (const studentId of students) {
-    const lession_attendance = await LessonAttendance.findOne({
-      where: {
-        lesson_session_id: LessonSessionId,
-        user_id: studentId
-      }
-    })
-    if (!lession_attendance) {
-      Allstudent.push(user)
-    }
-  }
-  return res.status(200).json({
-    message: 'get all student for attendance not true',
-    student: Allstudent
-  })
-})
-///////////////////////
-const examCreate = asyncHandler(async (req, res) => {
-  const { error } = exam_create(req.body)
-  if (error) {
-    return res.status(400).json({ message: error.details[0].message })
-  }
-  const LessonSessionId = req.params.id
-  const lesson = await LessonSession.findOne({
-    where: { id: LessonSessionId }
-  })
-  if (!lesson) {
-    res.status(404).json({ message: 'not found lesson Session' })
-  }
-  const exam = await Exam.create({
-    circle_id: lesson.circle_id,
-    title: req.body.title,
-    date: req.body.data,
-    description: req.body.description
-  })
-  return res.status(200).json({
-    message: 'create Lesson exam successfully',
-    lessonSession: lesson,
-    data: exam
-  })
-})
-///////////////
-const examUpdate = asyncHandler(async (req, res) => {
-  const { error } = exam_update(req.body)
-  if (error) {
-    return res.status(400).json({ message: error.details[0].message })
-  }
-  const examId = req.params.id
-  const exam = await Exam.findOne({
-    where: { id: examId }
-  })
-  if (!exam) {
-    res.status(404).json({ message: 'not found lesson exam' })
-  }
-
-  exam.title = req.body.title || exam.title
-  exam.date = req.body.data || exam.data
-  exam.description = req.body.description || exam.description
-  await exam.save()
-  return res.status(200).json({
-    message: 'create Lesson exam successfully',
-    lessonSession: lesson,
-    data: exam
-  })
-})
-////////All exam for circle
-const examGetAll = asyncHandler(async (req, res) => {
-  const circleId = req.params.id
-  const circle = await Circle.findOne({
-    where: { id: circleId }
-  })
-  if (!circle) {
-    res.status(404).json({ message: 'not found circle' })
-  }
-  const exams = await Exam.findAll({
-    where: { circle_id: circleId }
-  })
-  return res.status(200).json({
-    message: 'get All exam for the circle',
-    data: exams
-  })
-})
-/////Add marks for examconst 
-const AddMarksCreate = asyncHandler(async (req, res) => {
-  const { error } = Add_marks(req.body);
+  const { error } = session_attendance_create(req.body);
   if (error) {
     return res.status(400).json({ message: error.details[0].message });
   }
 
-  const examId = req.params.id;
-  const exam = await Exam.findOne({ where: { id: examId } });
-  if (!exam) {
-    return res.status(404).json({ message: 'not found lesson exam' });
+  const LessonSessionId = req.params.id
+  const lesson = await LessonSession.findOne({
+    where: { id: LessonSessionId }
+  })
+  if (!lesson) {
+    res.status(404).json({ message: 'not found lesson Session' })
+  }
+  const Allstudent = []
+  const students = req.body.student_id
+
+  for (const studentId of students) {
+    const user = await User.findOne({
+      where: { id: studentId }
+    })
+    if (!user) {
+      return res.status(404).json({ message: 'not found studen id' })
+    }
+    const circleUser = await CircleUser.findOne({
+      where : { circle_id : lesson.circle_id , user_id : studentId}
+    })
+     if(  !circleUser){
+      return res.status(404).json({ message: 'not found studen in this circle' })
+
+     }
+    const lession_attendance = await LessonAttendance.findOne({
+      where: {
+        lesson_session_id: LessonSessionId,
+        user_id: studentId
+      }
+    })
+    if (!lession_attendance) {
+      await LessonAttendance.create({
+        lesson_session_id: LessonSessionId,
+        user_id: studentId
+      })
+      Allstudent.push(user)
+    }
   }
 
-  const groupOfData = req.body.data;
+  return res.status(200).json({
+    message: 'create Lesson Attendance successfully',
+    lessonSession: lesson,
+    student: Allstudent
+  })
+})
+////////////////////////////////////////
+///////////////////////////////////////
+//// get All students 
+const getAllStudent = asyncHandler(async (req, res) => {
+  const LessonSessionId = req.params.id;
 
-  try {
-    const datas = await Promise.all(groupOfData.map(async (data) => {
-      const user = await User.findOne({ where: { id: data.student_id } });
-      if (!user) {
-        throw new Error(`Student with ID ${data.student_id} not found`);
+  const lesson = await LessonSession.findOne({ where: { id: LessonSessionId } });
+  if (!lesson) {
+    return res.status(404).json({ message: 'Lesson session not found' });
+  }
+
+  const currentUserId = req.user.id;
+  const currentUser = await User.findOne({ where: { id: currentUserId } });
+
+  const students = await User.findAll({
+    where: {
+       mosque_id: currentUser.mosque_id ,
+        role_id : 1
       }
+  });
 
-      const examMarks = await ExamResult.findOne({
-        where: {
-          exam_id: examId,
-          student_id: user.id,
-        }
-      });
+  const studentsWithoutAttendance = [];
 
-      if (examMarks) {
-        if (data.score !== undefined) {
-          examMarks.score = data.score;
-        }
-        if (data.has_taken_exam !== undefined) {
-          examMarks.has_taken_exam = data.has_taken_exam;
-        }
-        await examMarks.save();
-        return examMarks;
+  for (const student of students) {
+    const attendance = await LessonAttendance.findOne({
+      where: {
+        lesson_session_id: LessonSessionId,
+        user_id: student.id
       }
-
-      const result = await ExamResult.create({
-        exam_id: examId,
-        student_id: user.id,
-        score: data.score,
-        has_taken_exam: data.has_taken_exam
-      });
-
-      return result;
-    }));
-
-    return res.status(200).json({
-      message: 'All exam marks have been processed successfully',
-      data: datas
     });
-  } catch (err) {
-    return res.status(400).json({ message: err.message });
-  }
-});
 
-////////////////////////
+    if (!attendance) {
+      studentsWithoutAttendance.push(student);
+    }
+  }
+
+  return res.status(200).json({
+    message: 'Students without attendance retrieved successfully',
+    students: studentsWithoutAttendance
+  });
+});
+//////
 module.exports = {
-  examCreate,
-  examGetAll,
-  examUpdate,
-  getAllStudent,
-  updateSession_attendance,
   createSession_attendance,
+  getAllStudent,
   createLessonSession,
   updateLessonSession,
   GetAllSessionesLession,
-  AddMarksCreate
 }

@@ -33,7 +33,12 @@ app.use('/api/hadith-recitation', hadithRecitation);
 const QuranTalkeen = require('./routes/TalkeenRecitation');
 app.use('/api/talkeen-recitation', QuranTalkeen);
 const surah = require('./routes/surahAndAyah');
-app.use('/api/SurahAndAyah', surah);  
+app.use('/api/SurahAndAyah', surah); 
+const exam = require('./routes/Exam');
+app.use('/api/exam', exam);  
+const LessonSession = require('./routes/lesson');
+app.use('/api/LessonSession', LessonSession);  
+
 
 
 module.exports = app;
