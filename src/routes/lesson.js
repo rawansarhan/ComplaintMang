@@ -2,6 +2,7 @@ const express = require('express');
 const { 
   authMiddleware,
   teacherOnly,
+  authorizeRoles
   } =require('../middleware/authMiddleware')
 const router = express.Router();
 const {
@@ -135,7 +136,7 @@ router.post('/updateLessonSession/:id', authMiddleware, teacherOnly, updateLesso
  *         description: No lesson sessions or circle not found
  */
 
-router.get('/GetAllSessionesLession/:id', authMiddleware, teacherOnly, GetAllSessionesLession);
+router.get('/GetAllSessionesLession/:id', authMiddleware,  authorizeRoles('student','teacher'), GetAllSessionesLession);
 
 /**
  * @swagger

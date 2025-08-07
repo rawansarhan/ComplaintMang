@@ -4,7 +4,7 @@ require('dotenv').config();
 
 app.use(express.json());
 
-
+app.use('/public', express.static('public'));
 // إضافة Swagger
 const setupSwagger = require('./swagger'); 
 setupSwagger(app); 

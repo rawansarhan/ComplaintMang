@@ -511,6 +511,32 @@ const show_Circle_Teacher_Dars = asyncHandler(async (req, res) => {
     });
   }
 });
+///////////////////////show circle Dars for student 
+const showCircleDarsForStudent = asyncHandler(async (req, res) => {
+  const studentId = req.user.id;
+
+  const circlesUser = await CircleUser.findAll({
+    where: { user_id: studentId }
+  });
+
+  if (circlesUser.length === 0) {
+    return res.status(404).json({ message: "not found circle for this student" });
+  }
+
+  const circleIds = circlesUser.map(cu => cu.circle_id);
+
+  const circles = await Circle.findAll({
+    where: {
+      id: circleIds,
+      circle_type_id: 4
+    }
+  });
+
+  return res.status(200).json({
+    message: " All circle for type Dars",
+    circles
+  });
+});
 
 
 module.exports = {
