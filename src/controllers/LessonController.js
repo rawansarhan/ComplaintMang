@@ -112,9 +112,10 @@ const createSession_attendance = asyncHandler(async (req, res) => {
     res.status(404).json({ message: 'not found lesson Session' })
   }
   const Allstudent = []
-  const students = req.body.student_id
+  const data = req.body.data
 
-  for (const studentId of students) {
+  for (const attendance of data) {
+    const studentId = attendance.student_id;
     const user = await User.findOne({
       where: { id: studentId }
     })
@@ -122,9 +123,9 @@ const createSession_attendance = asyncHandler(async (req, res) => {
       return res.status(404).json({ message: 'not found studen id' })
     }
     const circleUser = await CircleUser.findOne({
-      where : { circle_id : lesson.circle_id , user_id : studentId}
+      where : { circle_id : lesson.circle_id , user_id : studentId }
     })
-     if(  !circleUser){
+     if(  !circleUser ){
       return res.status(404).json({ message: 'not found studen in this circle' })
 
      }
@@ -134,12 +135,19 @@ const createSession_attendance = asyncHandler(async (req, res) => {
         user_id: studentId
       }
     })
+    if(lession_attendance){
+      if(attendance.attendance === false){
+        await lession_attendance.destroy() 
+      }
+    }
     if (!lession_attendance) {
-      await LessonAttendance.create({
+      if (attendance.attendance === true){
+         await LessonAttendance.create({
         lesson_session_id: LessonSessionId,
         user_id: studentId
       })
-      Allstudent.push(user)
+      Allstudent.push(user)}
+     
     }
   }
 

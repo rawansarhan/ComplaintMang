@@ -8,7 +8,7 @@ const authMiddleware = (req, res, next) => {
   const authHeader = req.header('Authorization');
   console.log('Authorization Header:', authHeader);
 
-  const token = authHeader?.replace('Bearer ', '');
+  const token = authHeader?.replace('Bearer ', ''); // لاحظ أضفت مسافة بعد Bearer
   console.log('Extracted Token:', token);
 
   if (!token) {
@@ -20,11 +20,14 @@ const authMiddleware = (req, res, next) => {
     console.log('Decoded Token:', decoded);
     req.user = decoded;
     next();
-  } catch (error) {
-    console.error('JWT Verification Error:', error);
+  } catch (err) {
+    if (err.name === 'TokenExpiredError') {
+      return ApiResponder.unauthorizedResponse(res, 'Token has expired');
+    }
     return ApiResponder.unauthorizedResponse(res, 'Invalid token');
   }
 };
+
 
 // Middlewares للتحقق من الأدوار بالنص
 const studentOnly = (req, res, next) => {

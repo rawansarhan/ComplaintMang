@@ -247,7 +247,7 @@ const createLevel1 = asyncHandler(async (req, res) => {
 
     if (challengeTask.sublevel_id !== null) {
       tasksWithSublevels.push({
-        task: challengeTask,
+        challange_task: challengeTask,
         subLevels
       });
     }

@@ -159,13 +159,22 @@ router.get('/GetAllSessionesLession/:id', authMiddleware,  authorizeRoles('stude
  *         application/json:
  *           schema:
  *             type: object
- *             required: [student_id]
+ *             required: [data]
  *             properties:
- *               student_id:
+ *               data:
  *                 type: array
  *                 items:
- *                   type: integer
- *                 example: [1, 2, 3]
+ *                   type: object
+ *                   required:
+ *                     - student_id
+ *                     - attendance
+ *                   properties:
+ *                     student_id:
+ *                       type: integer
+ *                       example: 1
+ *                     attendance:
+ *                       type: boolean
+ *                       example: true
  *     responses:
  *       200:
  *         description: Attendance created successfully
@@ -174,6 +183,7 @@ router.get('/GetAllSessionesLession/:id', authMiddleware,  authorizeRoles('stude
  *       404:
  *         description: Lesson session or student not found
  */
+
 router.post('/createSessionAttendance/:id', authMiddleware, teacherOnly, createSession_attendance);
 /**
  * @swagger
