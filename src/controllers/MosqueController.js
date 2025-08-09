@@ -262,7 +262,7 @@ function decodeCode (encoded) {
 
 const showStudentAndTeacher = asyncHandler(async (req, res) => {
   const Id = req.user.id
-  const user = await User.findOne({ where: { id: Id } }) // ← تأكدت من where هنا
+  const user = await User.findOne({ where: { id: Id } })
   const AllStudent = []
   const AllTeacher = []
 
