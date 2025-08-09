@@ -165,7 +165,6 @@ const swaggerOptions = {
     ]
   },
   apis:['./src/routes/*.js'],
- // عدل حسب مسار ملفات المسارات لديك
 };
 
 console.log('Swagger docs generated with definitions from:', swaggerOptions.apis);

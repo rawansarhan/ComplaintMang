@@ -19,7 +19,8 @@ const {
   deleteCircleUser,
   show_circle_for_teacher,
   showCircleTypeForTeacher,
-  show_Circle_Teacher_Dars
+  show_Circle_Teacher_Dars,
+  showCircleDarsForStudent
   
 } = require('../controllers/circleController');
 const {
@@ -309,7 +310,25 @@ router.get('/showCircleTypeForTeacher_Tasmii_Talqeen_Hadith',authMiddleware,teac
  *         description: Internal server error
  */
 router.get('/showCircleTypeForTeacher_Dars',authMiddleware,teacherOnly,show_Circle_Teacher_Dars);
-
+/**
+ * @swagger
+ * /api/circle/showCircleForStudent:
+ *   get:
+ *     summary: Get circles for =>(onlyStudent )
+ *     tags: [Circle]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved the circle  
+ *       400:
+ *         description: Invalid request
+ *       404:
+ *         description: Circle not found
+ *       500:
+ *         description: Internal server error
+ */
+router.get('/showCircleForstudent',authMiddleware,studentOnly,showCircleDarsForStudent);
 
 module.exports = router;
 

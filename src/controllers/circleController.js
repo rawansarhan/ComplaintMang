@@ -537,6 +537,8 @@ const showCircleDarsForStudent = asyncHandler(async (req, res) => {
     circles
   });
 });
+////// get all circle for student 
+
 
 
 module.exports = {
@@ -548,5 +550,6 @@ module.exports = {
   show_circle_for_teacher,
   deleteCircleUser,
   showCircleTypeForTeacher,
-  show_Circle_Teacher_Dars
+  show_Circle_Teacher_Dars,
+  showCircleDarsForStudent
 }
