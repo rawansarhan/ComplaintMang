@@ -63,7 +63,7 @@ const showAllSession = asyncHandler(async(req,res)=>{
 try{
 const circle_id = req.params.id;
 const session = await CircleSession.findAll({
-  where : {id : circle_id }
+  where : { circle_id: circle_id }
 })
  if( !session )
 {
