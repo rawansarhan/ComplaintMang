@@ -119,12 +119,12 @@ module.exports = (sequelize, DataTypes) => {
       phone: {
         type: DataTypes.STRING,
         allowNull: true,
-        unique: true
+   
       },
       father_phone: {
         type: DataTypes.STRING,
         allowNull: true,
-        unique: true
+  
       },
       birth_date: {
         type: DataTypes.DATE,

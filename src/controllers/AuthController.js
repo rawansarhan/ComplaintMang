@@ -5,7 +5,8 @@ const { User, Role, Mosque, Wallet } = require('../models')
 const {
   ValidateRegisterUser,
   ValidateLoginUser,
-  ValidateLoginSuperAdmin
+  ValidateLoginSuperAdmin,
+  ValidateRegisterAdmin
 } = require('../validations/userValidation')
 
 const SECRET_KEY = process.env.JWT_SECRET
@@ -132,7 +133,81 @@ const registerUserWithRole = roleName =>
 
     res.status(201).json({ ...userData, code_user, token })
   })
+/////////////////////
+const registerAdmin =
+  asyncHandler(async (req, res) => {
+   const { error, value } = ValidateRegisterAdmin(req.body);
+if (error)
+  return res.status(400).json({ message: error.details[0].message });
 
+  const roleName = "admin"
+    const [
+      existingUser,
+      existingPhone,
+      existingMosque,
+      role
+    ] = await Promise.all([
+      User.findOne({ where: { email: req.body.email } }),
+      User.findOne({ where: { phone: req.body.phone } }),
+      Mosque.findOne({ where: { id: req.body.mosque_id } }),
+      Role.findOne({ where: { name: roleName } })
+    ])
+
+    if (existingUser)
+      return res.status(400).json({ message: 'This user already registered' })
+    if (existingPhone)
+      return res.status(400).json({ message: 'This phone already registered' })
+    if (!existingMosque)
+      return res.status(404).json({ message: 'This mosque does not exist' })
+    if (!role)
+      return res.status(500).json({ message: 'Role not found in database' })
+
+    const salt = await bcrypt.genSalt(10)
+    const hashedPassword = await bcrypt.hash(req.body.password, salt)
+    const codeUser = await generateUniqueCode()
+    const encodedCode = encodeCode(codeUser.toString())
+
+    const user = await User.create({
+      email: req.body.email,
+      password: hashedPassword,
+      first_name: req.body.first_name,
+      last_name: req.body.last_name,
+      mosque_id: req.body.mosque_id,
+      birth_date: req.body.birth_date,
+      code: encodedCode,
+      is_save_quran: value.is_save_quran,
+      phone: req.body.phone,
+      father_phone: req.body.father_phone,
+      address: req.body.address,
+      certificates: req.body.certificates,
+      experiences: req.body.experiences,
+      memorized_parts: req.body.memorized_parts,
+      role_id: role.id
+    })
+    if (user.role_id == 1) {
+      await Wallet.create({
+        student_id: user.id,
+        scores: 0
+      })
+    }
+
+    const token = jwt.sign(
+      {
+        id: user.id,
+        email: user.email,
+        role_id: role.id,
+        mosque_id: user.mosque_id,
+        role: role.name
+      },
+      SECRET_KEY,
+      { expiresIn: '40d' }
+    )
+
+    const { password, code,is_save_quran,father_phone,certificates, memorized_parts, ...userData } = user.toJSON()
+    const code_user = decodeCode(code.toString())
+
+    res.status(201).json({ ...userData, code_user, token })
+  })
 // login(student,teacher)
 const loginUser = asyncHandler(async (req, res) => {
   const { error } = ValidateLoginUser(req.body)
@@ -223,7 +298,7 @@ const loginSuperAdmin = async (req, res) => {
 module.exports = {
   registerStudent: registerUserWithRole('student'),
   registerTeacher: registerUserWithRole('teacher'),
-  registerAdmin: registerUserWithRole('admin'),
+  registerAdmin,
   loginUser,
   loginSuperAdmin
 }

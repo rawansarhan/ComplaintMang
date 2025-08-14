@@ -29,7 +29,6 @@ module.exports = {
       phone: {
         type: Sequelize.STRING,
         allowNull: true,
-        unique: true
       },
       father_phone: {
         type: Sequelize.STRING,

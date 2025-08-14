@@ -24,6 +24,30 @@ function ValidateRegisterUser(data) {
 
   return schema.validate(data);
 }
+///////////////////
+
+/////////////////
+function ValidateRegisterAdmin(data) {
+  const schema = Joi.object({
+    mosque_id: Joi.number().required(),
+    first_name: Joi.string().trim().min(2).max(100).required(),
+    last_name: Joi.string().trim().min(2).max(100).required(),
+    phone: Joi.string()
+      .length(10)
+      .pattern(/^\d+$/)
+      .optional()
+      .allow(null, ''),
+    birth_date: Joi.date().required(),
+    email: Joi.string().email().trim().min(5).max(100).required(),
+    password: Joi.string().min(6).max(20).required(),
+    address: Joi.string().required(),
+    experiences: Joi.string().optional().allow(null, ''),
+    memorized_parts: Joi.number().integer().default(30),
+    is_save_quran: Joi.boolean().default(true),
+  });
+
+  return schema.validate(data);
+}
 
 //login
 function ValidateLoginUser(data) {
@@ -71,5 +95,6 @@ module.exports = {
   ValidateRegisterUser,
   ValidateLoginUser,
   ValidateLoginSuperAdmin,
-  ValidateUpdateUser
+  ValidateUpdateUser,
+  ValidateRegisterAdmin
 }

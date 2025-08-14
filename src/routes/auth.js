@@ -50,7 +50,7 @@ router.post('/register/student',authMiddleware,adminOnly, registerStudent);
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/RegisterUser'
+ *             $ref: '#/components/schemas/RegisterTeacher'
  *     responses:
  *       200:
  *         description: Teacher registered successfully
@@ -69,7 +69,7 @@ router.post('/register/teacher',authMiddleware,adminOnly, registerTeacher);
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/RegisterUser'
+ *             $ref: '#/components/schemas/RegisterAdmin'
  *     responses:
  *       200:
  *         description: Admin registered successfully
