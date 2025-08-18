@@ -20,7 +20,7 @@ const {
   exam_update,
   Add_marks
 } = require('../validations/LessonValidation')
-const { where } = require('sequelize')
+const { where, Op } = require('sequelize')
 const Exam = require('../models/Exam')
 const e = require('express')
 const { date } = require('joi')
@@ -99,9 +99,9 @@ const GetAllSessionesLession = asyncHandler(async (req, res) => {
 ////////////////////////////////////////////
 /////////create session attendance for lesson
 const createSession_attendance = asyncHandler(async (req, res) => {
-  const { error } = session_attendance_create(req.body);
+  const { error } = session_attendance_create(req.body)
   if (error) {
-    return res.status(400).json({ message: error.details[0].message });
+    return res.status(400).json({ message: error.details[0].message })
   }
 
   const LessonSessionId = req.params.id
@@ -115,7 +115,7 @@ const createSession_attendance = asyncHandler(async (req, res) => {
   const data = req.body.data
 
   for (const attendance of data) {
-    const studentId = attendance.student_id;
+    const studentId = attendance.student_id
     const user = await User.findOne({
       where: { id: studentId }
     })
@@ -123,31 +123,32 @@ const createSession_attendance = asyncHandler(async (req, res) => {
       return res.status(404).json({ message: 'not found studen id' })
     }
     const circleUser = await CircleUser.findOne({
-      where : { circle_id : lesson.circle_id , user_id : studentId }
+      where: { circle_id: lesson.circle_id, user_id: studentId }
     })
-     if(  !circleUser ){
-      return res.status(404).json({ message: 'not found studen in this circle' })
-
-     }
+    if (!circleUser) {
+      return res
+        .status(404)
+        .json({ message: 'not found studen in this circle' })
+    }
     const lession_attendance = await LessonAttendance.findOne({
       where: {
         lesson_session_id: LessonSessionId,
         user_id: studentId
       }
     })
-    if(lession_attendance){
-      if(attendance.attendance === false){
-        await lession_attendance.destroy() 
+    if (lession_attendance) {
+      if (attendance.attendance === false) {
+        await lession_attendance.destroy()
       }
     }
     if (!lession_attendance) {
-      if (attendance.attendance === true){
-         await LessonAttendance.create({
-        lesson_session_id: LessonSessionId,
-        user_id: studentId
-      })
-      Allstudent.push(user)}
-     
+      if (attendance.attendance === true) {
+        await LessonAttendance.create({
+          lesson_session_id: LessonSessionId,
+          user_id: studentId
+        })
+        Allstudent.push(user)
+      }
     }
   }
 
@@ -159,7 +160,7 @@ const createSession_attendance = asyncHandler(async (req, res) => {
 })
 ////////////////////////////////////////
 ///////////////////////////////////////
-//// get All students 
+//// get All students
 const getAllStudent = asyncHandler(async (req, res) => {
   const LessonSessionId = req.params.id;
 
@@ -168,41 +169,49 @@ const getAllStudent = asyncHandler(async (req, res) => {
     return res.status(404).json({ message: 'Lesson session not found' });
   }
 
-  const currentUserId = req.user.id;
-  const currentUser = await User.findOne({ where: { id: currentUserId } });
+  const circle = await Circle.findOne({ where: { id: lesson.circle_id } });
+  if (!circle) {
+    return res.status(404).json({ message: 'Circle not found' });
+  }
 
-  const students = await User.findAll({
-    where: {
-       mosque_id: currentUser.mosque_id ,
-        role_id : 1
-      }
+  const userCircles = await CircleUser.findAll({
+    where: { circle_id: circle.id, role_id: 1 }
   });
+  if (!userCircles || userCircles.length === 0) {
+    return res.status(404).json({ message: 'No students found for this circle' });
+  }
 
-  const studentsWithoutAttendance = [];
+  const studentsAttendanceStatus = [];
+  for (const userCircle of userCircles) {
+    const student = await User.findOne({
+      where: { id: userCircle.user_id },
+      attributes: ['first_name', 'last_name'] 
+    });
 
-  for (const student of students) {
     const attendance = await LessonAttendance.findOne({
       where: {
         lesson_session_id: LessonSessionId,
-        user_id: student.id
+        user_id: userCircle.user_id
       }
     });
 
-    if (!attendance) {
-      studentsWithoutAttendance.push(student);
-    }
+    studentsAttendanceStatus.push({
+      student,
+      attended: !!attendance
+    });
   }
 
   return res.status(200).json({
-    message: 'Students without attendance retrieved successfully',
-    students: studentsWithoutAttendance
+    message: 'Students retrieved successfully',
+    students: studentsAttendanceStatus
   });
 });
+
 //////
 module.exports = {
   createSession_attendance,
   getAllStudent,
   createLessonSession,
   updateLessonSession,
-  GetAllSessionesLession,
+  GetAllSessionesLession
 }

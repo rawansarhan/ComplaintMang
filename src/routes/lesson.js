@@ -142,7 +142,7 @@ router.get('/GetAllSessionesLession/:id', authMiddleware,  authorizeRoles('stude
  * @swagger
  * /api/LessonSession/createSessionAttendance/{id}:
  *   post:
- *     summary: Create attendance records for students in a lesson session
+ *     summary: Create attendance records for students in a lesson session =>{only teacher}
  *     tags: [LessonAttendance]
  *     security:
  *       - bearerAuth: []
@@ -189,7 +189,7 @@ router.post('/createSessionAttendance/:id', authMiddleware, teacherOnly, createS
  * @swagger
  * /api/LessonSession/getAllStudentForAttendance/{id}:
  *   get:
- *     summary: Get all students from same mosque who haven't attended this session
+ *     summary: Get all students from same mosque who haven't attended this session =>{only teacher}
  *     tags: [LessonAttendance]
  *     security:
  *       - bearerAuth: []
@@ -219,6 +219,6 @@ router.post('/createSessionAttendance/:id', authMiddleware, teacherOnly, createS
  *         description: Lesson session not found
  */
 
-router.get('/getAllStudentForAttendance/:id', authMiddleware, teacherOnly, getAllStudent);
+router.get('/getAllStudentForAttendance/:id', getAllStudent);
 
 module.exports = router;

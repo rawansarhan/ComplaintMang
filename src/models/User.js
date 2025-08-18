@@ -38,7 +38,6 @@ module.exports = (sequelize, DataTypes) => {
         as: 'session_attendances'
       })
 
-      // علاقات الطالب / المعلم
       User.hasMany(models.QuranRecitation, {
         foreignKey: 'student_id',
         as: 'quran_recitations_as_student'
@@ -175,8 +174,8 @@ module.exports = (sequelize, DataTypes) => {
       tableName: 'users',
       timestamps: true,
       underscored: true,
-        createdAt: 'created_at', // ← ربط الاسم الصحيح
-  updatedAt: 'updated_at', // ← ربط الاسم الصحيح
+        createdAt: 'created_at', 
+  updatedAt: 'updated_at', 
     }
   )
 

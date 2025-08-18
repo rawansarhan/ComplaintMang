@@ -10,7 +10,7 @@ const {
 } = require('../middleware/authMiddleware')
 const {
   AllAyahAndSurah
-} = require('../controllers/quran');
+} = require('../controllers/QuranController');
 /**
  * @swagger
  * /api/SurahAndAyah/AllSurahAndAyah:
