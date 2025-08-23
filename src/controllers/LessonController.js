@@ -84,7 +84,8 @@ const GetAllSessionesLession = asyncHandler(async (req, res) => {
     return res.status(404).json('circle not found')
   }
   const lessonSession = await LessonSession.findAll({
-    where: { circle_id: circleId }
+    where: { circle_id: circleId } ,
+    attributes :['id','date' ,'title']
   })
   if (lessonSession.length === 0) {
     return res.status(404).json('No lesson sessions found')
@@ -185,7 +186,7 @@ const getAllStudent = asyncHandler(async (req, res) => {
   for (const userCircle of userCircles) {
     const student = await User.findOne({
       where: { id: userCircle.user_id },
-      attributes: ['first_name', 'last_name'] 
+      attributes: ['id','first_name', 'last_name'] 
     });
 
     const attendance = await LessonAttendance.findOne({

@@ -17,7 +17,7 @@ module.exports = (sequelize, DataTypes) => {
 
       // مثال إضافي: تسجيلات صوتية لها علاقة بسورة
       Surah.hasMany(models.UserAudio, {
-        foreignKey: 'name_surah',
+        foreignKey: 'surah_id',
         as: 'user_audios',
       });
     }

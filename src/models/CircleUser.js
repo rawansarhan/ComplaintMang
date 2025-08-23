@@ -10,7 +10,7 @@ module.exports = (sequelize, DataTypes) => {
       });
       CircleUser.belongsTo(models.Circle, {
         foreignKey: 'circle_id',
-        as: 'circle',
+        as: 'circle_users',
       });
     }
   }

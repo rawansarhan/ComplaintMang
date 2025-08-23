@@ -1,5 +1,5 @@
 const asyncHandler = require('express-async-handler')
-const { User, Role, Mosque, Circle, CircleUser,CircleType} = require('../models')
+const { User, Role, Mosque, Circle, CircleUser,CircleType ,ExamResult ,Exam} = require('../models')
 const {
   ValidateCreateCircles,
   ValidateUpdateCircles,
@@ -365,7 +365,7 @@ const show_circle_for_teacher = asyncHandler(async (req, res) => {
   }
 });
 
-///show circle for teacher
+///show circle for teacher 
 const showCircleTypeForTeacher = asyncHandler(async (req, res) => {
   try {
     const TEACHER_ROLE_ID = 2;
@@ -537,10 +537,51 @@ const showCircleDarsForStudent = asyncHandler(async (req, res) => {
     circles
   });
 });
-////// get all circle for student 
+////// get All circle Dars For Student With Exam
 
+const getAllcircleDarsForStudentWithExam = asyncHandler(async (req, res) => {
+  const studentId = req.user.id;
 
+  const circlesUser = await CircleUser.findAll({
+    where: { user_id: studentId },
+  });
 
+  if (circlesUser.length === 0) {
+    return res.status(404).json({ message: "No circles found for this student" });
+  }
+
+  const circleIds = circlesUser.map((cu) => cu.circle_id);
+
+  const circles = await Circle.findAll({
+    where: {
+      id: circleIds,
+      circle_type_id: 4,
+    },
+    attributes: ["id", "name"],
+  });
+
+  if (circles.length === 0) {
+    return res.status(404).json({ message: "No Dars circles found" });
+  }
+
+  const AllCircles = [];
+  for (const circle of circles) {
+    const exams = await Exam.findAll({
+      where: { circle_id: circle.id },
+    });
+
+    AllCircles.push({
+       circle_id: circle.id,
+      circle_name: circle.name,
+      exams_count: exams.length,
+    });
+  }
+
+  return res.status(200).json({
+    message: "All Dars circles with exam count",
+    AllCircles,
+  });
+});
 module.exports = {
   createCircle,
   updateCircle,
@@ -551,5 +592,7 @@ module.exports = {
   deleteCircleUser,
   showCircleTypeForTeacher,
   show_Circle_Teacher_Dars,
-  showCircleDarsForStudent
+  showCircleDarsForStudent,
+  getAllcircleDarsForStudentWithExam,
+  
 }

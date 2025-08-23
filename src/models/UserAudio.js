@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
 
 
       UserAudio.belongsTo(models.Surah, {
-        foreignKey: 'name_surah',
+        foreignKey: 'surah_id',
         as: 'surah',
       });
 
@@ -26,7 +26,7 @@ module.exports = (sequelize, DataTypes) => {
       });
     
       UserAudio.hasMany(models.Comment, {
-        foreignKey: 'user_audio_id',
+        foreignKey: 'audio_id',
         as: 'comments',
       });
     }
@@ -41,7 +41,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    name_surah: {
+    surah_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },

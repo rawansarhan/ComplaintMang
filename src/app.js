@@ -8,7 +8,9 @@ app.use('/public', express.static('public'));
 // إضافة Swagger
 const setupSwagger = require('./swagger'); 
 setupSwagger(app); 
-
+app.use(express.static('public'));
+const path = require("path");
+app.use("/audios", express.static(path.join(__dirname, "public/audios")));
 // Routes
 const authRoutes = require('./routes/auth');
 app.use('/api/auth', authRoutes);
@@ -38,7 +40,8 @@ const exam = require('./routes/Exam');
 app.use('/api/exam', exam);  
 const LessonSession = require('./routes/lesson');
 app.use('/api/LessonSession', LessonSession);  
-
+const UserAudio = require('./routes/audio');
+app.use('/api/UserAudio', UserAudio);  
 
 
 module.exports = app;

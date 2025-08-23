@@ -20,7 +20,8 @@ const {
   show_circle_for_teacher,
   showCircleTypeForTeacher,
   show_Circle_Teacher_Dars,
-  showCircleDarsForStudent
+  showCircleDarsForStudent,
+  getAllcircleDarsForStudentWithExam,
   
 } = require('../controllers/circleController');
 const {
@@ -329,6 +330,53 @@ router.get('/showCircleTypeForTeacher_Dars',authMiddleware,teacherOnly,show_Circ
  *         description: Internal server error
  */
 router.get('/showCircleForstudent',authMiddleware,studentOnly,showCircleDarsForStudent);
+/**
+ * @swagger
+ * /api/Circle/dars-with-exams:
+ *   get:
+ *     summary: Get all Dars circles for the logged-in student with exams count =>(only student)
+ *     tags: [Circle]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of Dars circles with number of exams in each one
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: All Dars circles with exam count
+ *                 AllCircles:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       circle_name:
+ *                         type: string
+ *                         example: "Dars Circle 1"
+ *                       circle_id:
+ *                         type: integer
+ *                         example: 10
+ *                       exams_count:
+ *                         type: integer
+ *                         example: 3
+ *       404:
+ *         description: No circles found for this student OR no Dars circles found
+ *       401:
+ *         description: Unauthorized (missing or invalid token)
+ *       500:
+ *         description: Server error
+ */
+
+router.get(
+  "/dars-with-exams",
+  authMiddleware,
+  studentOnly,
+  getAllcircleDarsForStudentWithExam
+);
 
 module.exports = router;
 

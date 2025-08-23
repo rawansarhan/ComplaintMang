@@ -24,7 +24,7 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      name_surah :{
+      surah_id :{
        type: Sequelize.INTEGER,
         allowNull: false,
         references: {

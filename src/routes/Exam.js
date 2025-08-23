@@ -2,19 +2,21 @@ const express = require('express');
 const { 
   authMiddleware,
   teacherOnly,
+  studentOnly,
   } =require('../middleware/authMiddleware')
 const router = express.Router();
 const {
   examCreate,
   examGetAll,
   examUpdate,
-  AddMarksCreate
+  AddMarksCreate,
+  getAllMarks
 } = require('../controllers/ExamController');
 /**
  * @swagger
  * /api/exam/examCreate/{id}:
  *   post:
- *     summary: Create an exam for a lesson session
+ *     summary: Create an exam for a lesson session =>(only teacher)
  *     tags: [Exam]
  *     security:
  *       - bearerAuth: []
@@ -22,7 +24,7 @@ const {
  *       - in: path
  *         name: id
  *         required: true
- *         description: Lesson session ID
+ *         description: circle ID
  *         schema:
  *           type: integer
  *     requestBody:
@@ -63,7 +65,7 @@ const {
  *       400:
  *         description: Validation error or bad request
  *       404:
- *         description: Lesson session not found
+ *         description: circle not found
  */
 
 router.post('/examCreate/:id', authMiddleware, teacherOnly, examCreate);
@@ -71,7 +73,7 @@ router.post('/examCreate/:id', authMiddleware, teacherOnly, examCreate);
  * @swagger
  * /api/exam/update/{id}:
  *   put:
- *     summary: Update an existing exam
+ *     summary: Update an existing exam =>(only Tescher)
  *     tags: [Exam]
  *     security:
  *       - bearerAuth: []
@@ -123,7 +125,7 @@ router.put('/update/:id', authMiddleware, teacherOnly, examUpdate);
  * @swagger
  * /api/exam/getAll/{id}:
  *   get:
- *     summary: Get all exams for a specific circle
+ *     summary: Get all exams for a specific circle =>(only teacher)
  *     tags: [Exam]
  *     security:
  *       - bearerAuth: []
@@ -158,7 +160,7 @@ router.get('/getAll/:id', authMiddleware, teacherOnly, examGetAll);
  * @swagger
  * /api/exam/AddMarksCreate/{id}:
  *   post:
- *     summary: Add or update exam marks for multiple students
+ *     summary: Add or update exam marks for multiple students =>(only teacher)
  *     tags: [Exam]
  *     security:
  *       - bearerAuth: []
@@ -203,4 +205,56 @@ router.get('/getAll/:id', authMiddleware, teacherOnly, examGetAll);
  */
 
 router.post('/AddMarksCreate/:id', authMiddleware, teacherOnly, AddMarksCreate);
+/**
+ * @swagger
+ * /api/exam/getAllMarksForStudent/{id}:
+ *   get:
+ *     summary: Get all exam results (marks) for the logged-in student in a specific circle => (onlystudent)
+ *     tags: [Exam]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Circle ID
+ *     responses:
+ *       200:
+ *         description: List of all exams in the circle with student's marks
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: All exams with student marks
+ *                 results:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       exam_title:
+ *                         type: string
+ *                         example: "Midterm Exam"
+ *                       result_exam:
+ *                         type: integer
+ *                         nullable: true
+ *                         example: 85
+ *       404:
+ *         description: No exams found for this circle
+ *       401:
+ *         description: Unauthorized (missing or invalid token)
+ *       500:
+ *         description: Server error
+ */
+
+router.get(
+  "/getAllMarksForStudent/:id",
+  authMiddleware,
+  studentOnly,
+  getAllMarks
+);
 module.exports = router;

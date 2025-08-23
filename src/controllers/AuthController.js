@@ -64,24 +64,16 @@ const registerUserWithRole = roleName =>
 
     const [
       existingUser,
-      existingPhone,
-      existingFatherPhone,
       existingMosque,
       role
     ] = await Promise.all([
       User.findOne({ where: { email: req.body.email } }),
-      User.findOne({ where: { phone: req.body.phone } }),
-      req.body.father_phone
-        ? User.findOne({ where: { father_phone: req.body.father_phone } })
-        : Promise.resolve(null),
       Mosque.findOne({ where: { id: req.body.mosque_id } }),
       Role.findOne({ where: { name: roleName } })
     ])
 
     if (existingUser)
       return res.status(400).json({ message: 'This user already registered' })
-    if (existingPhone)
-      return res.status(400).json({ message: 'This phone already registered' })
     if (!existingMosque)
       return res.status(404).json({ message: 'This mosque does not exist' })
     if (!role)
@@ -143,20 +135,17 @@ if (error)
   const roleName = "admin"
     const [
       existingUser,
-      existingPhone,
       existingMosque,
       role
     ] = await Promise.all([
       User.findOne({ where: { email: req.body.email } }),
-      User.findOne({ where: { phone: req.body.phone } }),
       Mosque.findOne({ where: { id: req.body.mosque_id } }),
       Role.findOne({ where: { name: roleName } })
     ])
 
     if (existingUser)
       return res.status(400).json({ message: 'This user already registered' })
-    if (existingPhone)
-      return res.status(400).json({ message: 'This phone already registered' })
+    eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiZW1haWwiOiJBZG1pcm5AZXhhbXBsZS5jb20iLCJyb2xlX2lkIjozLCJtb3NxdWVfaWQiOjEsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1NTk0MTcxNSwiZXhwIjoxNzU5Mzk3NzE1fQ.zDAPNH6VCwHzKcuqZ1OfMRUm8rKXEX0vBilDjoDpo2Q
     if (!existingMosque)
       return res.status(404).json({ message: 'This mosque does not exist' })
     if (!role)
