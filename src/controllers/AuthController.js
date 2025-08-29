@@ -145,7 +145,6 @@ if (error)
 
     if (existingUser)
       return res.status(400).json({ message: 'This user already registered' })
-    eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiZW1haWwiOiJBZG1pcm5AZXhhbXBsZS5jb20iLCJyb2xlX2lkIjozLCJtb3NxdWVfaWQiOjEsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1NTk0MTcxNSwiZXhwIjoxNzU5Mzk3NzE1fQ.zDAPNH6VCwHzKcuqZ1OfMRUm8rKXEX0vBilDjoDpo2Q
     if (!existingMosque)
       return res.status(404).json({ message: 'This mosque does not exist' })
     if (!role)
