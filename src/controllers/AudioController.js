@@ -68,7 +68,8 @@ const uploadAudio = (req, res) => {
         surah_id: surahId,
         from_ayah_id: fromAyahId,
         to_ayah_id: toAyahId,
-        file: `/audios/${req.file.filename}`
+        file: `public/audios/${req.file.filename}`
+
       })
 
       const surah = await Surah.findOne({ where: { id: userAudio.surah_id } })
