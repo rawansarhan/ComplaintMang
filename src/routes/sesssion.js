@@ -35,12 +35,17 @@ const {
  *               date:
  *                 type: string
  *                 format: date
+ *               description:
+ *                 type: string
+ *                 minLength: 5
+ *                 maxLength: 200
  *           example:
  *             circle_id: 1
  *             date: "2024-07-01"
+ *             description: "new session for math class"
  *     responses:
  *       200:
- *         description: session created successfully.
+ *         description: Session created successfully.
  *       400:
  *         description: Validation error or bad request.
  *       409:
@@ -48,7 +53,6 @@ const {
  *       500:
  *         description: Internal server error.
  */
-
 
 router.post('/create', authMiddleware, teacherOnly, sessionCreate);
 /**

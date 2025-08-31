@@ -4,6 +4,7 @@ function ValidateSessionCraete(data) {
   const schema = Joi.object({
     circle_id: Joi.number().required(),
     date: Joi.date().required(),
+    description:Joi.string().min(20).max(200)
   });
 
   return schema.validate(data);
