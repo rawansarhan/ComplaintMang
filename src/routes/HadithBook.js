@@ -7,7 +7,7 @@ const {
   updateBook
 }= require('../controllers/BookHadithController');
 
-const { authMiddleware, adminOnly } = require('../middleware/authMiddleware');
+const { authMiddleware, adminOnly ,authorizeRoles, teacherOnly} = require('../middleware/authMiddleware');
 
 /**
  * @swagger
@@ -48,7 +48,7 @@ router.post('/create', authMiddleware, adminOnly, createBook);
  * @swagger
  * /api/hadith-book/getAllBook:
  *   get:
- *     summary: Get all Hadith books (admin only)
+ *     summary: Get all Hadith books (admin only,teacher only)
  *     tags: [HadithBook]
  *     security:
  *       - bearerAuth: []
@@ -60,7 +60,7 @@ router.post('/create', authMiddleware, adminOnly, createBook);
  *       500:
  *         description: Internal server error.
  */
-router.get('/getAllBook', authMiddleware, adminOnly, getAllBooks);
+router.get('/getAllBook', authMiddleware,authorizeRoles(adminOnly,teacherOnly) , getAllBooks);
 
 /**
  * @swagger
