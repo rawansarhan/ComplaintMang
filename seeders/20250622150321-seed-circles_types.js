@@ -5,22 +5,22 @@ module.exports = {
   async up (queryInterface, Sequelize) {
     await queryInterface.bulkInsert('circles_types', [
       {
-        name: 'Tasmii',
+        name: 'قران',
         created_at: new Date(),
         updated_at: new Date()
       },
       {
-        name: 'Hadith',
+        name: 'حديث',
         created_at: new Date(),
         updated_at: new Date()
       },
       {
-        name: 'Talqeen',
+        name: 'تلقين',
         created_at: new Date(),
         updated_at: new Date()
       },
       {
-        name: 'Dars',
+        name: 'دروس',
         created_at: new Date(),
         updated_at: new Date()
       }
@@ -29,7 +29,7 @@ module.exports = {
 
   async down (queryInterface, Sequelize) {
     await queryInterface.bulkDelete('circles_types', {
-      name: ['Tasmii', 'Hadith', 'Talqeen', 'lesson']
+      name: ['قران', 'حديث', 'تلقين', 'دروس']
     }, {});
   }
 };

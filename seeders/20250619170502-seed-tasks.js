@@ -5,7 +5,7 @@ module.exports = {
     await queryInterface.bulkInsert('tasks', [
       //1
       {
-        name: 'Quran',
+        name: 'قران',
         type: 'mandatory',
         point: 50,
         is_sublevels: false,
@@ -15,7 +15,7 @@ module.exports = {
       },
       //2
       {
-        name: 'Hadith',
+        name: 'حديث',
         type: 'mandatory',
         point: 40,
         is_sublevels: false,
@@ -25,7 +25,7 @@ module.exports = {
       },
       //3
       {
-        name: 'Fiqh',
+        name: 'فقه',
         type: 'mandatory',
         point: 10,
         is_sublevels: false,
@@ -35,7 +35,7 @@ module.exports = {
       },
       //4
       {
-        name: 'Tajweed',
+        name: 'تجويد',
         type: 'mandatory',
         point: 10,
         is_sublevels: false,
@@ -45,7 +45,7 @@ module.exports = {
       },
       //5
       {
-        name: 'Qisas Al-Anbiya',
+        name: 'قصص الانبياء',
         type: 'mandatory',
         point: 10,
         is_sublevels: false,
@@ -55,7 +55,7 @@ module.exports = {
       },
       //6
       {
-        name: 'Salah',
+        name: 'الصلاة',
         type: 'mandatory',
         point: 15,
         is_sublevels: false,
@@ -66,47 +66,47 @@ module.exports = {
       //7
 
       {
-        name: 'Quran',
+        name: 'قران',
         type: 'mandatory',
         point: 50,
         is_sublevels:false,
-        level: 'talkeen',
+        level: 'تلقين',
         created_at: new Date(),
         updated_at: new Date()
       },
       //8
       {
-        name: 'Quran',
+        name: 'قران',
         type: 'mandatory',
         point: null,
         is_sublevels: true,
-        level: 'save_new',
+        level: 'حفظ جديد',
         created_at: new Date(),
         updated_at: new Date()
       },
       //9
       {
-        name: 'Quran',
+        name: 'فران',
         type: 'mandatory',
         point: null,
         is_sublevels: true,
-        level: 'five_part',
+        level: 'خمس اجزاء',
         created_at: new Date(),
         updated_at: new Date()
       },
       //10
       {
-        name: 'Quran',
+        name: 'قران',
         type: 'mandatory',
         point: null,
         is_sublevels: true,
-        level: 'awqaf',
+        level: 'اوقاف',
         created_at: new Date(),
         updated_at: new Date()
       },
       //11
       {
-        name: 'Mohimmat Salah Ala Al-Nabi',
+        name: 'مهمة صلاة على النبي',
         type: 'optional',
         point: null,
         is_sublevels: true,
@@ -116,7 +116,7 @@ module.exports = {
       },
       //12
       {
-        name: 'Hadith',
+        name: 'حديث',
         type: 'mandatory',
         point: null,
         is_sublevels: true,
@@ -126,7 +126,7 @@ module.exports = {
       },
       //13
       {
-        name: 'Jazariyyah',
+        name: 'جزرية',
         type: 'optional',
         point: null,
         is_sublevels: true,
@@ -136,7 +136,7 @@ module.exports = {
       },
       //14
       {
-        name: 'Mohimmat Salah Ala Al-Nabi',
+        name: 'مهمة الصلاة على النبي',
         type: 'optional',
         point: null,
         is_sublevels: true,

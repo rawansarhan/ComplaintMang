@@ -1,18 +1,17 @@
-'use strict';
-const axios = require('axios');
-const axiosRetry = require('axios-retry').default;
-
+'use strict'
+const axios = require('axios')
+const axiosRetry = require('axios-retry').default
 
 axiosRetry(axios, {
   retries: 3,
-  retryDelay: axiosRetry.exponentialDelay,
-});
+  retryDelay: axiosRetry.exponentialDelay
+})
 
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    const now = new Date();
+    const now = new Date()
 
     // 1. Insert parts
     const parts = Array.from({ length: 30 }, (_, i) => ({
@@ -20,36 +19,39 @@ module.exports = {
       name: `Juz ${i + 1}`,
       description: null,
       created_at: now,
-      updated_at: now,
-    }));
-    await queryInterface.bulkInsert('parts', parts);
+      updated_at: now
+    }))
+    await queryInterface.bulkInsert('parts', parts)
 
-    const surahs = new Map();
-    const ayahs = [];
+    const surahs = new Map()
+    const ayahs = []
 
     // 2. Loop through parts (juz)
     for (let part = 1; part <= 30; part++) {
       try {
-        console.log(`⏳ Fetching part ${part}...`);
-        await delay(500); // نصف ثانية تأخير
+        console.log(`⏳ Fetching part ${part}...`)
+        await delay(500) // نصف ثانية تأخير
 
-        const res = await axios.get(`https://api.alquran.cloud/v1/juz/${part}/quran-uthmani`, {
-          timeout: 10000,
-        });
+        const res = await axios.get(
+          `https://api.alquran.cloud/v1/juz/${part}/quran-uthmani`,
+          {
+            timeout: 10000
+          }
+        )
 
         for (const ay of res.data.data.ayahs) {
-          const sNum = ay.surah.number;
+          const sNum = ay.surah.number
 
           if (!surahs.has(sNum)) {
             surahs.set(sNum, {
               id: sNum,
-              name: ay.surah.englishName,
+              name: ay.surah.name, // الاسم بالعربي
               ayat_counts: ay.surah.numberOfAyahs,
               part_id: part,
               description: null,
               created_at: now,
-              updated_at: now,
-            });
+              updated_at: now
+            })
           }
 
           ayahs.push({
@@ -57,26 +59,24 @@ module.exports = {
             ayah_number: ay.numberInSurah,
             page_number: ay.page,
             created_at: now,
-            updated_at: now,
-          });
+            updated_at: now
+          })
         }
 
-        console.log(`✅ Done with part ${part}`);
+        console.log(` Done with part ${part}`)
       } catch (error) {
-        console.error(`❌ Error fetching part ${part}:`, error.message);
+        console.error(` Error fetching part ${part}:`, error.message)
       }
     }
 
-    // 3. Insert surahs
-    await queryInterface.bulkInsert('surahs', Array.from(surahs.values()));
+    await queryInterface.bulkInsert('surahs', Array.from(surahs.values()))
 
-    // 4. Insert ayahs
-    await queryInterface.bulkInsert('ayahs', ayahs);
+    await queryInterface.bulkInsert('ayahs', ayahs)
   },
 
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.bulkDelete('ayahs', null, {});
-    await queryInterface.bulkDelete('surahs', null, {});
-    await queryInterface.bulkDelete('parts', null, {});
+    await queryInterface.bulkDelete('ayahs', null, {})
+    await queryInterface.bulkDelete('surahs', null, {})
+    await queryInterface.bulkDelete('parts', null, {})
   }
-};
+}

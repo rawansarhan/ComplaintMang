@@ -164,7 +164,17 @@ const showAllRecitationsForStudent = asyncHandler(async (req, res) => {
     }
 
     allRecitations.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
+     let attendance = false;
+     allRecitations.forEach(element => {
+      if(element === quranRecitations){
+        
+       return {
+        day : element.c
+       }
+      }
+      
+      
+     });
     return res.status(200).json({
       message: 'Retrieved all Quran recitations for the student.',
       data: allRecitations

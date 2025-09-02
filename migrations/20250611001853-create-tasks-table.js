@@ -28,7 +28,7 @@ module.exports = {
         defaultValue: false,
       },
       level: {
-        type: Sequelize.ENUM('save_new', 'five_part', 'exam', 'awqaf', 'talkeen'),
+        type: Sequelize.ENUM('حفظ جديد', 'خمس اجزاء', 'امتحان', 'اوقاف', 'تلقين'),
         allowNull: true,
       },
      created_at: {
