@@ -77,7 +77,9 @@ const showAllSession = asyncHandler(async (req, res) => {
 
     const formattedSessions = sessions.map(s => {
       const sessionData = s.toJSON();
-      sessionData.date = dayjs(sessionData.date).format("YYYY-MM-DD");
+      const dateObj = dayjs(sessionData.date);
+      sessionData.date = dateObj.format("YYYY-MM-DD");
+      sessionData.day = dateObj.format("dddd"); 
       return sessionData;
     });
 
@@ -93,6 +95,7 @@ const showAllSession = asyncHandler(async (req, res) => {
     });
   }
 });
+
 
 
 module.exports = {
