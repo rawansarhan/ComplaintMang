@@ -30,7 +30,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    pages_num: {
+    hadith_num: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },

@@ -49,15 +49,15 @@ const createHadithRecitation = asyncHandler(async (req, res) => {
       return res.status(404).json({ message: 'Not found Hadith Book' });
     }
  
- if (req.body.from_hadith > book.pages_num) {
+ if (req.body.from_hadith > book.hadith_num) {
   return res.status(400).json({
-    message: `'from_hadith' value (${req.body.from_hadith}) exceeds book's max hadith (${book.pages_num})`
+    message: `'from_hadith' value (${req.body.from_hadith}) exceeds book's max hadith (${book.hadith_num})`
   });
 }
 
-if (req.body.to_hadith > book.pages_num) {
+if (req.body.to_hadith > book.hadith_num) {
   return res.status(400).json({
-    message: `'to_hadith' value (${req.body.to_hadith}) exceeds book's max hadith (${book.pages_num})`
+    message: `'to_hadith' value (${req.body.to_hadith}) exceeds book's max hadith (${book.hadith_num})`
   });
 }
 if (req.body.to_hadith < req.body.from_hadith) {
@@ -155,15 +155,15 @@ const updateHadithRecitation = asyncHandler(async (req, res) => {
       return res.status(404).json({ message: 'Not found Hadith Book' });
     }
  
- if (req.body.from_hadith > book.pages_num) {
+ if (req.body.from_hadith > book.hadith_num) {
   return res.status(400).json({
-    message: `'from_hadith' value (${req.body.from_hadith}) exceeds book's max hadith (${book.pages_num})`
+    message: `'from_hadith' value (${req.body.from_hadith}) exceeds book's max hadith (${book.hadith_num})`
   });
 }
 
-if (req.body.to_hadith > book.pages_num) {
+if (req.body.to_hadith > book.hadith_num) {
   return res.status(400).json({
-    message: `'to_hadith' value (${req.body.to_hadith}) exceeds book's max hadith (${book.pages_num})`
+    message: `'to_hadith' value (${req.body.to_hadith}) exceeds book's max hadith (${book.hadith_num})`
   });
 }
 if (req.body.to_hadith < req.body.from_hadith) {
@@ -247,7 +247,7 @@ const showAllRecitationsForStudent = asyncHandler(async (req, res) => {
         day: dateObj.format("dddd"),
         attendance: !!element.session, // true إذا كان داخل الحلقة
         bookName: element.book?.name || null,
-        pageNamber: element.book?.pages_num || null,
+        pageNamber: element.book?.hadith_num || null,
       };
     });
 

@@ -13,7 +13,7 @@ const createBook = asyncHandler(async (req, res) => {
     const book = await HadithBook.create({
       mosque_id,
       name: req.body.name,
-      pages_num: req.body.pages_num
+      hadith_num: req.body.hadith_num
     });
 
     return res.status(201).json({
@@ -78,7 +78,7 @@ const updateBook = asyncHandler(async (req, res) => {
     if (!book) return res.status(404).json({ message: "Book not found" });
 
     book.name = req.body.name || book.name;
-    book.pages_num = req.body.pages_num || book.pages_num;
+    book.hadith_num = req.body.hadith_num || book.hadith_num;
 
     await book.save();
 

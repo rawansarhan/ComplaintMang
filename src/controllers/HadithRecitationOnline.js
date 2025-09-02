@@ -31,15 +31,15 @@ const createHadithRecitationOnline = asyncHandler(async (req, res) => {
       return res.status(404).json({ message: 'Not found Hadith Book' })
     }
 
-    if (req.body.from_hadith > book.pages_num) {
+    if (req.body.from_hadith > book.hadith_num) {
       return res.status(403).json({
-        message: `'from_hadith' (${req.body.from_hadith}) exceeds max hadith number in the book (${book.pages_num})`
+        message: `'from_hadith' (${req.body.from_hadith}) exceeds max hadith number in the book (${book.hadith_num})`
       })
     }
 
-    if (req.body.to_hadith > book.pages_num) {
+    if (req.body.to_hadith > book.hadith_num) {
       return res.status(403).json({
-        message: `'to_hadith' (${req.body.to_hadith}) exceeds max hadith number in the book (${book.pages_num})`
+        message: `'to_hadith' (${req.body.to_hadith}) exceeds max hadith number in the book (${book.hadith_num})`
       })
     }
 
@@ -114,15 +114,15 @@ const updateHadithRecitationOnline = asyncHandler(async (req, res) => {
       req.body.from_hadith ?? hadithRecitation.from_hadith_number
     const toHadith = req.body.to_hadith ?? hadithRecitation.to_hadith_number
 
-    if (fromHadith > book.pages_num) {
+    if (fromHadith > book.hadith_num) {
       return res.status(403).json({
-        message: `'from_hadith' (${fromHadith}) exceeds max hadith number in the book (${book.pages_num})`
+        message: `'from_hadith' (${fromHadith}) exceeds max hadith number in the book (${book.hadith_num})`
       })
     }
 
-    if (toHadith > book.pages_num) {
+    if (toHadith > book.hadith_num) {
       return res.status(403).json({
-        message: `'to_hadith' (${toHadith}) exceeds max hadith number in the book (${book.pages_num})`
+        message: `'to_hadith' (${toHadith}) exceeds max hadith number in the book (${book.hadith_num})`
       })
     }
 

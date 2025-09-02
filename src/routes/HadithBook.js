@@ -25,15 +25,15 @@ const { authMiddleware, adminOnly ,authorizeRoles, teacherOnly} = require('../mi
  *             type: object
  *             required:
  *               - name
- *               - pages_num
+ *               - hadith_num
  *             properties:
  *               name:
  *                 type: string
- *               pages_num:
+ *               hadith_num:
  *                 type: integer
  *           example:
  *             name: صحيح البخاري
- *             pages_num: 500
+ *             hadith_num: 500
  *     responses:
  *       200:
  *         description: Hadith book created successfully.
@@ -86,11 +86,11 @@ router.get('/getAllBook', authMiddleware,authorizeRoles(adminOnly,teacherOnly) ,
  *             properties:
  *               name:
  *                 type: string
- *               pages_num:
+ *               hadith_num:
  *                 type: integer
  *           example:
  *             name: سنن الترمذي
- *             pages_num: 400
+ *             hadith_num: 400
  *     responses:
  *       200:
  *         description: Hadith book updated successfully.

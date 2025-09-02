@@ -1,112 +1,147 @@
 const asyncHandler = require('express-async-handler')
-const { QuranRecitation,UndividualRecitationQuran,User,Surah,Ayah,CircleSession,QuranTalkeen} = require('../models')
+const { QuranRecitation,UndividualRecitationQuran,User,Surah,Ayah,CircleSession,Circle,QuranTalkeen} = require('../models')
 const {
-  ValidateUpdateHadithRecitation,
-  ValidateCreateHadithRecitation
+  TalkeenRecitationValidation_create,
+  TalkeenRecitationValidation_update
 } = require('../validations/TalkeenRecitation')
+const dayjs = require('dayjs');
 
 const createQuranRecitation = asyncHandler(async (req, res) => {
   try {
-    const { error } = ValidateCreateHadithRecitation(req.body)
+    const { error } = TalkeenRecitationValidation_create(req.body);
     if (error) {
-      return res.status(400).json({
-        message: error.details[0].message
-      })
+      return res.status(400).json({ message: error.details[0].message });
     }
 
-    const existingRecord = await QuranRecitation.findOne({
-      where: {
-        student_id: req.body.student_id,
-        session_id: req.body.session_id
-      }
-    })
+    const { session_id, student_id, from_sura_id, from_verse, to_sura_id, to_verse, attendance } = req.body;
 
+    const teacherId = req.user?.id;
+    if (!teacherId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const existingRecord = await QuranTalkeen.findOne({
+      where: { student_id, session_id }
+    });
     if (existingRecord) {
       return res.status(409).json({
-        message:
-          'This student already has a Quran Talkeen recitation record for this session.'
-      })
+        message: 'This student already has a Quran Talkeen recitation record for this session.'
+      });
     }
-   const student = await User.findByPk(req.body.student_id);
+
+    const student = await User.findByPk(student_id);
     if (!student) {
       return res.status(404).json({ message: 'Student not found.' });
     }
 
-    const session = await CircleSession.findByPk(req.body.session_id);
+    const session = await CircleSession.findOne({
+      where: { id: session_id },
+      include: [{ model: Circle, as: 'circle' }]
+    });
     if (!session) {
       return res.status(404).json({ message: 'Session not found.' });
     }
-    const teacherId = req.user.id
-   
-    const newRecitation = await QuranTalkeen.create({
-      session_id: req.body.session_id,
-      student_id: req.body.student_id,
-      teacher_id: teacherId,
-      from_sura_id: req.body.from_sura_id,
-      from_verse: req.body.from_verse,
-      to_sura_id: req.body.to_sura_id,
-      to_verse: req.body.to_verse,
-      attendance: req.body.attendance
-    })
+    if (!session.circle || session.circle.circle_type_id !== 3) {
+      return res.status(400).json({ message: 'This circle is not a Talkeen circle' });
+    }
 
-    return res.status(200).json({
+    if (from_sura_id > to_sura_id) {
+      return res.status(400).json({ message: "Invalid surah range" });
+    }
+    if (from_sura_id === to_sura_id && from_verse > to_verse) {
+      return res.status(400).json({ message: "Invalid ayah range" });
+    }
+
+    const newRecitation = await QuranTalkeen.create({
+      session_id,
+      student_id,
+      teacher_id: teacherId,
+      from_sura_id,
+      from_verse,
+      to_sura_id,
+      to_verse,
+      attendance
+    });
+
+    return res.status(201).json({
       message: 'Quran Talkeen recitation record created successfully.',
       data: newRecitation
-    })
+    });
+
   } catch (err) {
-    console.error('Database error:', err)
+    console.error('Database error:', err);
     return res.status(500).json({
       message: 'Internal server error',
       details: err.message
-    })
+    });
   }
-})
+});
 
 ////////////update
 const updateQuranRecitation = asyncHandler(async (req, res) => {
   try {
-    const { error } = ValidateUpdateHadithRecitation(req.body)
+    const { error } = TalkeenRecitationValidation_update(req.body);
     if (error) {
       return res.status(400).json({
         message: error.details[0].message
-      })
+      });
     }
 
-    const IdQuranRecitation = req.params.id
+    const IdQuranRecitation = req.params.id;
 
     const quranRecitation = await QuranTalkeen.findOne({
       where: { id: IdQuranRecitation }
-    })
+    });
 
     if (!quranRecitation) {
-      return res
-        .status(404)
-        .json({ message: 'Quran recitation record not found.' })
+      return res.status(404).json({ message: 'Quran Talkeen recitation record not found.' });
+    }
+
+    if (
+      req.body.from_sura_id !== undefined &&
+      req.body.to_sura_id !== undefined &&
+      req.body.from_sura_id > req.body.to_sura_id
+    ) {
+      return res.status(400).json({ message: "Invalid surah range" });
+    }
+
+    if (
+      req.body.from_sura_id !== undefined &&
+      req.body.to_sura_id !== undefined &&
+      req.body.from_sura_id === req.body.to_sura_id &&
+      req.body.from_verse !== undefined &&
+      req.body.to_verse !== undefined &&
+      req.body.from_verse > req.body.to_verse
+    ) {
+      return res.status(400).json({ message: "Invalid ayah range" });
     }
 
     if (req.body.from_sura_id !== undefined)
-      quranRecitation.from_sura_id = req.body.from_sura_id
+      quranRecitation.from_sura_id = req.body.from_sura_id;
     if (req.body.from_verse !== undefined)
-      quranRecitation.from_verse = req.body.from_verse
+      quranRecitation.from_verse = req.body.from_verse;
     if (req.body.to_sura_id !== undefined)
-      quranRecitation.to_sura_id = req.body.to_sura_id
+      quranRecitation.to_sura_id = req.body.to_sura_id;
     if (req.body.to_verse !== undefined)
-      quranRecitation.to_verse = req.body.to_verse
+      quranRecitation.to_verse = req.body.to_verse;
+    if (req.body.attendance !== undefined)
+      quranRecitation.attendance = req.body.attendance;
 
-    await quranRecitation.save()
+    await quranRecitation.save();
 
     return res.status(200).json({
       message: 'Quran Talkeen recitation record updated successfully.',
       data: quranRecitation
-    })
+    });
   } catch (err) {
-    console.error('Database error:', err)
+    console.error('Database error:', err);
     return res.status(500).json({
       message: 'Internal server error',
       details: err.message
-    })
+    });
   }
-})
+});
+
 //////////////show all quranRecitation for student
 const showAllRecitationsForStudent = asyncHandler(async (req, res) => {
   try {
@@ -133,12 +168,29 @@ const showAllRecitationsForStudent = asyncHandler(async (req, res) => {
         message: 'No Quran recitation records found for this student.'
       });
     }
+quranRecitations.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
+    const resultsQuran = quranRecitations.map(element => {
+      const dateObj = dayjs(element.date);
+      return {
+        date: dateObj.format("YYYY-MM-DD"),
+        day: dateObj.format("dddd"),
+        attendance: !!element.session, // true إذا كان داخل الحلقة
+        fromSurahName: element.from_sura?.name || null,
+        fromAyah: element.from_ayah?.ayah_number || null,
+        toSurahName: element.to_sura?.name || null,
+        toAyah: element.to_ayah?.ayah_number || null,
+      };
+    });
 
     return res.status(200).json({
       message: 'Retrieved all Quran recitations for the student.',
-      data: quranRecitations
+      studentID,
+      studentFirstName: quranRecitations[0]?.student?.first_name || null,
+      studentLastName: quranRecitations[0]?.student?.last_name || null,
+      data: resultsQuran
     });
+
 
   } catch (err) {
     console.error('Database error:', err);

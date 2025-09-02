@@ -3,7 +3,7 @@ const Joi = require('joi');
 function HadithBookValidation_create(data){
 const schema = Joi.object({
   name: Joi.string().min(3).max(100).required(),
-  pages_num: Joi.number().min(1).required(),
+  hadith_num: Joi.number().min(1).required(),
 });
  return schema.validate(data);
 }
@@ -12,7 +12,7 @@ const schema = Joi.object({
 function  HadithBookValidation_update(data){
 const schema = Joi.object({
    name: Joi.string().min(3).max(100),
-  pages_num: Joi.number().min(1),
+  hadith_num: Joi.number().min(1),
 });
  return schema.validate(data);
 }

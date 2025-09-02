@@ -24,7 +24,7 @@ module.exports = {
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE'
       },
-      pages_num: {
+      hadith_num: {
         type: Sequelize.INTEGER,
         allowNull: false
       },
