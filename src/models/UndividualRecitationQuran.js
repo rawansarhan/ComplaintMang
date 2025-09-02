@@ -16,22 +16,22 @@ module.exports = (sequelize, DataTypes) => {
 
       UndividualRecitationQuran.belongsTo(models.Surah, {
         foreignKey: 'from_sura_id',
-        as: 'from_sura',
+        as: 'fromSurah',
       });
 
       UndividualRecitationQuran.belongsTo(models.Ayah, {
         foreignKey: 'from_verse_id',
-        as: 'from_ayah',
+        as: 'fromVerse',
       });
 
       UndividualRecitationQuran.belongsTo(models.Surah, {
         foreignKey: 'to_sura_id',
-        as: 'to_sura',
+        as: 'toSurah',
       });
 
       UndividualRecitationQuran.belongsTo(models.Ayah, {
         foreignKey: 'to_verse_id',
-        as: 'to_ayah',
+        as: 'toVerse',
       });
     }
   }

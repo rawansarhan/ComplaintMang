@@ -1,9 +1,10 @@
 const asyncHandler = require('express-async-handler')
-const { QuranRecitation,UndividualRecitationQuran,User,Surah,Ayah,CircleSession} = require('../models')
+const { QuranRecitation,UndividualRecitationQuran,User,Surah,Ayah,CircleSession,Circle} = require('../models')
 const {
   quranRecitationValidation_update,
   quranRecitationValidation_create
 } = require('../validations/QuranRecitationValidation')
+const dayjs = require('dayjs');
 
 const createQuranRecitation = asyncHandler(async (req, res) => {
   try {
@@ -31,7 +32,10 @@ const createQuranRecitation = asyncHandler(async (req, res) => {
 
     const [existingRecord, session, student] = await Promise.all([
       QuranRecitation.findOne({ where: { student_id, session_id } }),
-      CircleSession.findByPk(session_id),
+      CircleSession.findOne({
+        where: { id: session_id }, // ✅ غيّر لـ id إذا المفتاح الأساسي هو id
+        include: [{ model: Circle, as: 'circle' }]
+      }),
       User.findByPk(student_id)
     ]);
 
@@ -49,6 +53,14 @@ const createQuranRecitation = asyncHandler(async (req, res) => {
       return res.status(404).json({ message: "Student not found" });
     }
 
+    if (!session.circle) {
+      return res.status(400).json({ message: "Session does not belong to any circle" });
+    }
+
+    if (session.circle.circle_type_id !== 1) {
+      return res.status(400).json({ message: "This circle is not a Quran circle" });
+    }
+
     const newRecitation = await QuranRecitation.create({
       session_id,
       student_id,
@@ -62,7 +74,7 @@ const createQuranRecitation = asyncHandler(async (req, res) => {
       attendance
     });
 
-    return res.status(200).json({
+    return res.status(201).json({
       message: 'Quran recitation record created successfully.',
       data: newRecitation
     });
@@ -74,6 +86,7 @@ const createQuranRecitation = asyncHandler(async (req, res) => {
     });
   }
 });
+
 
 ////////////update
 const updateQuranRecitation = asyncHandler(async (req, res) => {
@@ -149,7 +162,11 @@ const showAllRecitationsForStudent = asyncHandler(async (req, res) => {
       where: { student_id: studentID },
       include: [
         { model: User, as: 'student' },
-        { model: User, as: 'teacher' }
+        { model: User, as: 'teacher' },
+         { model: Surah, as: 'fromSurah' },
+        { model: Surah, as: 'toSurah' },
+        { model: Ayah, as: 'fromVerse' },
+        { model: Ayah, as: 'toVerse' },
       ],
       raw: true,
       nest: true
@@ -163,21 +180,28 @@ const showAllRecitationsForStudent = asyncHandler(async (req, res) => {
       });
     }
 
+    // sort desc by created_at
     allRecitations.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-     let attendance = false;
-     allRecitations.forEach(element => {
-      if(element === quranRecitations){
-        
-       return {
-        day : element.c
-       }
-      }
-      
-      
-     });
+
+    const resultsQuran = allRecitations.map(element => {
+      const dateObj = dayjs(element.date);
+      return {
+        date: dateObj.format("YYYY-MM-DD"),
+        day: dateObj.format("dddd"),
+        attendance: !!element.circleSession, // true إذا كان داخل الحلقة
+        fromSurahName: element.fromSurah?.name || null,
+        fromAyah: element.fromVerse?.ayah_number || null,
+        toSurahName: element.toSurah?.name || null,
+        toAyah: element.toVerse?.ayah_number || null,
+      };
+    });
+
     return res.status(200).json({
       message: 'Retrieved all Quran recitations for the student.',
-      data: allRecitations
+      studentID,
+      studentFirstName: allRecitations[0]?.student?.first_name || null,
+      studentLastName: allRecitations[0]?.student?.last_name || null,
+      data: resultsQuran
     });
 
   } catch (err) {

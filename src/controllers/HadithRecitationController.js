@@ -12,6 +12,8 @@ const {
   ValidateCreateHadithRecitation,
   ValidateUpdateHadithRecitation
 } = require('../validations/HadithRecitationValidation')
+const dayjs = require('dayjs');
+
 
 const createHadithRecitation = asyncHandler(async (req, res) => {
   try {
@@ -72,7 +74,10 @@ if (req.body.to_hadith < req.body.from_hadith) {
         }
       ]
     });
+if(session.circle.circle_type_id !== 2){
+      return res.status(404).json({ message: 'this circle not hadith circle' });
 
+}
     if (!session) {
       return res.status(404).json({ message: 'Not found session' });
     }
@@ -216,7 +221,8 @@ const showAllRecitationsForStudent = asyncHandler(async (req, res) => {
       where: { student_id: studentID },
       include: [
         { model: User, as: 'student' },
-        { model: User, as: 'teacher' }
+        { model: User, as: 'teacher' },
+         { model: HadithBook, as: 'book' }
       ],
       raw: true,
       nest: true
@@ -234,10 +240,24 @@ const showAllRecitationsForStudent = asyncHandler(async (req, res) => {
       (a, b) => new Date(b.created_at) - new Date(a.created_at)
     )
 
+   const resultsHadith = allRecitations.map(element => {
+      const dateObj = dayjs(element.date);
+      return {
+        date: dateObj.format("YYYY-MM-DD"),
+        day: dateObj.format("dddd"),
+        attendance: !!element.session, // true إذا كان داخل الحلقة
+        bookName: element.book?.name || null,
+        pageNamber: element.book?.pages_num || null,
+      };
+    });
+
     return res.status(200).json({
       message: 'Retrieved all Hadith recitations for the student.',
-      data: allRecitations
-    })
+      studentID,
+      studentFirstName: allRecitations[0]?.student?.first_name || null,
+      studentLastName: allRecitations[0]?.student?.last_name || null,
+      data: resultsHadith
+    });
   } catch (err) {
     console.error('Database error:', err)
     return res.status(500).json({
