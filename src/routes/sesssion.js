@@ -72,11 +72,38 @@ router.post('/create', authMiddleware, teacherOnly, sessionCreate);
  *         description: Circle ID
  *     responses:
  *       200:
- *         description: Successfully retrieved session 
+ *         description: Successfully retrieved sessions (may be empty if no sessions found)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: All sessions for this circle
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                         example: 1
+ *                       circle_id:
+ *                         type: integer
+ *                         example: 10
+ *                       date:
+ *                         type: string
+ *                         example: "2025-09-03"
+ *                       day:
+ *                         type: string
+ *                         example: "الأربعاء"
  *       500:
  *         description: Internal server error
- * 
+ *       404 : 
+ *        description : not found
  */
+
 
 router.get('/showAll/:id',authMiddleware,teacherOnly,showAllSession);
 

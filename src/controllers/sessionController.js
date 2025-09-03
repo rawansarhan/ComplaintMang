@@ -62,6 +62,9 @@ const sessionCreate = asyncHandler(async (req, res) => {
 ////////////////show all session
 
 
+require("dayjs/locale/ar");
+dayjs.locale("ar");
+
 const showAllSession = asyncHandler(async (req, res) => {
   try {
     const circle_id = req.params.id;
@@ -71,7 +74,8 @@ const showAllSession = asyncHandler(async (req, res) => {
 
     if (!sessions || sessions.length === 0) {
       return res.status(404).json({
-        message: "There are no sessions in this circle"
+        message: "There are no sessions in this circle",
+        data: []
       });
     }
 
@@ -79,7 +83,7 @@ const showAllSession = asyncHandler(async (req, res) => {
       const sessionData = s.toJSON();
       const dateObj = dayjs(sessionData.date);
       sessionData.date = dateObj.format("YYYY-MM-DD");
-      sessionData.day = dateObj.format("dddd"); 
+      sessionData.day = dateObj.format("dddd"); // اليوم بالعربي
       return sessionData;
     });
 
@@ -88,9 +92,9 @@ const showAllSession = asyncHandler(async (req, res) => {
       data: formattedSessions
     });
   } catch (err) {
-    console.error('Database error:', err);
+    console.error("Database error:", err);
     return res.status(500).json({
-      message: 'Database error',
+      message: "Database error",
       details: err.message
     });
   }

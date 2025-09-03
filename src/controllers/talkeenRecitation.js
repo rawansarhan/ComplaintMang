@@ -5,7 +5,8 @@ const {
   TalkeenRecitationValidation_update
 } = require('../validations/TalkeenRecitation')
 const dayjs = require('dayjs');
-
+require("dayjs/locale/ar");
+dayjs.locale("ar");
 const createQuranRecitation = asyncHandler(async (req, res) => {
   try {
     const { error } = TalkeenRecitationValidation_create(req.body);

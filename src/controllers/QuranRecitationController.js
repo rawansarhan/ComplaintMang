@@ -1,10 +1,12 @@
 const asyncHandler = require('express-async-handler')
-const { QuranRecitation,UndividualRecitationQuran,User,Surah,Ayah,CircleSession,Circle} = require('../models')
+const { QuranRecitation,UndividualRecitationQuran,User,SessionAttendance,Surah,Ayah,CircleSession,Circle} = require('../models')
 const {
   quranRecitationValidation_update,
   quranRecitationValidation_create
 } = require('../validations/QuranRecitationValidation')
 const dayjs = require('dayjs');
+require("dayjs/locale/ar");
+dayjs.locale("ar");
 
 const createQuranRecitation = asyncHandler(async (req, res) => {
   try {
@@ -34,7 +36,7 @@ const createQuranRecitation = asyncHandler(async (req, res) => {
     if (from_sura_id > to_sura_id) {
       return res.status(400).json({ message: "Invalid surah range" });
     }
-
+    
     const [existingRecord, session, student] = await Promise.all([
       QuranRecitation.findOne({ where: { student_id, session_id } }),
       CircleSession.findOne({
@@ -78,7 +80,17 @@ const createQuranRecitation = asyncHandler(async (req, res) => {
       is_exam,
       attendance
     });
-
+// if (newRecitation.attendance === true){
+//   const session_attendances = await SessionAttendance.findOne({
+//     where : { 
+//       session_id:student_id ,
+//       user_id :session.id
+//      }
+//   })
+// //   if(!session_attendances){
+// // const SessionAttendance = await SessionAttendance.create
+// //   }
+// }
     return res.status(201).json({
       message: 'Quran recitation record created successfully.',
       data: newRecitation

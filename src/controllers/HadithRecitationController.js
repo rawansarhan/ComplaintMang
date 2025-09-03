@@ -14,7 +14,8 @@ const {
 } = require('../validations/HadithRecitationValidation')
 const dayjs = require('dayjs');
 
-
+require("dayjs/locale/ar");
+dayjs.locale("ar");
 const createHadithRecitation = asyncHandler(async (req, res) => {
   try {
     const { error } = ValidateCreateHadithRecitation(req.body);
