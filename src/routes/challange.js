@@ -35,18 +35,11 @@ router.get('/allAgeGroup',authMiddleware,authorizeRoles('student','admin'),AllAg
 
 /**
  * @swagger
- * /api/challenge/ageGroupById/{id}:
+ * /api/challenge/allTasksForStudent/{id}:
  *   get:
- *     summary: Get a specific age group by ID (student)
+ *     summary: Get a tasks for student (student)
  *     tags:
  *       - Challenge
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *         description: Age group ID
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -61,7 +54,7 @@ router.get('/allAgeGroup',authMiddleware,authorizeRoles('student','admin'),AllAg
  *       404:
  *         description: Age group not found
  */
-router.get('/ageGroupById/:id', authMiddleware, studentOnly, AgeGroupById);
+router.get('/allTasksForStudent/:id', authMiddleware, studentOnly, AgeGroupById);
 
 
 /**

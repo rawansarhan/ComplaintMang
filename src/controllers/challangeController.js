@@ -40,14 +40,42 @@ const AllAgeGroups = asyncHandler(async (req, res) => {
 /////////////// show group by id =>studentOnly
 const AgeGroupById = asyncHandler(async (req, res) => {
   try {
-    const ID = Number(req.params.id) 
-    const ageGroupById = await AgeGroup.findOne({ where: { id: ID } })
-
-    if (!ageGroupById) {
-      return res.status(404).json({ message: 'Not found' })
-    }
-
+   
     const studentId = req.user.id
+const challange = await Challenge.findOne({
+  where :{student_id : studentId}
+})
+if(!challange){
+  return res.status(404).json({
+    message : "not found challenge for this student "
+  })
+}
+   const challengeTask = await ChallengeTask.findAll({
+  where: { challenge_id: challange.id},
+  include: [
+    {
+      model: Task,
+      as: 'task'
+    },
+    {
+      model: Sublevel,
+      as: 'sublevel'
+    }
+  ]
+});
+if (challengeTask.length === 0) {
+  return res.status(200).json({ message: 'No tasks found for this challenge.' });
+}
+
+const result = challengeTask.map(ct => ({
+  id: ct.id,
+  challenge_id: ct.challenge_id,
+  is_done: ct.is_done,
+  task: ct.task,
+  sublevel: ct.sublevel
+}));
+
+
     const wallet = await Wallet.findOne({
        where: { student_id: studentId } ,
       include: [
@@ -62,9 +90,10 @@ const AgeGroupById = asyncHandler(async (req, res) => {
       return res.status(404).json({ message: "You don't have a wallet" })
     }
 
+
     return res.status(200).json({
       message: 'Age group retrieved successfully',
-      ageGroup: ageGroupById,
+      task: result,
       wallet: wallet
     })
   } catch (err) {
@@ -90,7 +119,7 @@ const handleComplexChallenge = async (challenge, ageGroupId) => {
     const task = group.task
     if (!task) continue
 
-    if (task.name === 'Quran') {
+    if (task.name === 'قران') {
       quranTask.push(task)
       continue
     } else {
@@ -129,7 +158,6 @@ const createChallenge = asyncHandler(async (req, res) => {
     const ageGroupId = parseInt(req.params.id)
 
     if (ageGroupId === 1) {
-      // جلب جميع العلاقات بين العمر والمهام
       const taskAgeGroups = await TaskAgeGroup.findAll({
         where: { age_groups_id: ageGroupId }
       })
@@ -205,7 +233,7 @@ const createLevel1 = asyncHandler(async (req, res) => {
   });
 
   for (const challengeTask of existingTasks) {
-    if (challengeTask.task?.name === 'Quran') {
+    if (challengeTask.task?.name === 'قران') {
       return res.status(403).json({ message: 'This challenge already has a task named Quran' });
     }
   }
@@ -215,7 +243,7 @@ const createLevel1 = asyncHandler(async (req, res) => {
     return res.status(404).json({ message: 'Task not found.' });
   }
 
-  if (task.name !== 'Quran') {
+  if (task.name !== 'قران') {
     return res.status(400).json({ message: "This task's name is not Quran." });
   }
 
@@ -246,10 +274,13 @@ const createLevel1 = asyncHandler(async (req, res) => {
     }
 
     if (challengeTask.sublevel_id !== null) {
-      tasksWithSublevels.push({
+      if(subLevels.length !=0){
+           tasksWithSublevels.push({
         challange_task: challengeTask,
         subLevels
-      });
+      }); 
+      }
+  
     }
   }
 
@@ -346,7 +377,7 @@ const challangeTeasher = asyncHandler(async (req, res) => {
   const updatedTasks = [];
   const dataItems = req.body.data;
 
-  let totalPointsToAdd = 0; 
+  let totalPointsToAdd = 0;
 
   for (const dataItem of dataItems) {
     const challengeTasks = await ChallengeTask.findAll({
@@ -357,75 +388,72 @@ const challangeTeasher = asyncHandler(async (req, res) => {
     });
 
     for (const task of challengeTasks) {
-      if (task.is_done === false) {
-        if (dataItem.is_done !== undefined) {
-          task.is_done = dataItem.is_done;
-        }
+      if (dataItem.is_done !== undefined) {
+        const oldStatus = task.is_done;
+        const newStatus = dataItem.is_done;
 
+        // تحديث حالة المهمة
+        task.is_done = newStatus;
         await task.save();
         updatedTasks.push(task);
 
-        if (task.is_done === true) {
-          if (task.sublevels_id !== null) {
-            const sublevels = await Sublevel.findOne({
-              where: { id: task.sublevels_id }
-            });
+        // حساب النقاط فقط إذا تغيرت الحالة
+        if (oldStatus !== newStatus) {
+          if (newStatus === true) {
+            if (task.sublevels_id !== null) {
+              const sublevel = await Sublevel.findOne({
+                where: { id: task.sublevels_id }
+              });
 
-            if (!sublevels) {
-              return res.status(404).json({ message: 'Sublevel not found' });
+              if (!sublevel) {
+                return res.status(404).json({ message: 'Sublevel not found' });
+              }
+
+              console.log(` Adding ${sublevel.point} points from sublevel`);
+              wallet.scores += sublevel.point;
+              totalPointsToAdd += sublevel.point;
+            } else {
+              const taskCh = await Task.findOne({
+                where: { id: dataItem.task_id }
+              });
+
+              if (!taskCh) {
+                return res.status(404).json({ message: 'Task not found' });
+              }
+
+              console.log(`Adding ${taskCh.point} points from task`);
+              wallet.scores += taskCh.point;
+              totalPointsToAdd += taskCh.point;
             }
+          } else if (newStatus === false) {
+            if (task.sublevels_id !== null) {
+              const sublevel = await Sublevel.findOne({
+                where: { id: task.sublevels_id }
+              });
 
-            wallet.scores += sublevels.point;
-            totalPointsToAdd += sublevels.point; 
-            await wallet.save();
-          } else {
-            const taskCh = await Task.findOne({
-              where: { id: dataItem.task_id }
-            });
+              if (!sublevel) {
+                return res.status(404).json({ message: 'Sublevel not found' });
+              }
 
-            if (!taskCh) {
-              return res.status(404).json({ message: 'Task not found' });
+              console.log(` Removing ${sublevel.point} points from sublevel`);
+              wallet.scores -= sublevel.point;
+              totalPointsToAdd -= sublevel.point;
+            } else {
+              const taskCh = await Task.findOne({
+                where: { id: dataItem.task_id }
+              });
+
+              if (!taskCh) {
+                return res.status(404).json({ message: 'Task not found' });
+              }
+
+              console.log(` Removing ${taskCh.point} points from task`);
+              wallet.scores -= taskCh.point;
+              totalPointsToAdd -= taskCh.point;
             }
-
-            wallet.scores += taskCh.point;
-            totalPointsToAdd += taskCh.point; 
-            await wallet.save();
           }
-        }
-      } else if (task.is_done === true) {
-        if (dataItem.is_done !== undefined) {
-          task.is_done = dataItem.is_done;
-        }
 
-        await task.save();
-        updatedTasks.push(task);
-
-        if (task.is_done === false) {
-          if (task.sublevels_id !== null) {
-            const sublevels = await Sublevel.findOne({
-              where: { id: task.sublevels_id }
-            });
-
-            if (!sublevels) {
-              return res.status(404).json({ message: 'Sublevel not found' });
-            }
-
-            wallet.scores -= sublevels.point;
-            totalPointsToAdd -= sublevels.point; 
-            await wallet.save();
-          } else {
-            const taskCh = await Task.findOne({
-              where: { id: dataItem.task_id }
-            });
-
-            if (!taskCh) {
-              return res.status(404).json({ message: 'Task not found' });
-            }
-
-            wallet.scores -= taskCh.point;
-            totalPointsToAdd -= taskCh.point; 
-            await wallet.save();
-          }
+          await wallet.save();
         }
       }
     }
@@ -437,6 +465,7 @@ const challangeTeasher = asyncHandler(async (req, res) => {
     wallet
   });
 });
+
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
