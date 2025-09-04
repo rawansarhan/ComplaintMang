@@ -329,9 +329,19 @@ const show_circle_for_teacher = asyncHandler(async (req, res) => {
       ) .map(student => {
           return {
              id: student.id,
+          mosque_id: student.mosque_id,
           first_name: student.first_name,
           last_name: student.last_name,
           phone: student.phone,
+          father_phone: student.father_phone,
+          birth_date: student.birth_date,
+          email: student.email,
+          address: student.address,
+          certificates: student.certificates,
+          code: student.code,
+          experiences: student.experiences,
+          memorized_parts: student.memorized_parts,
+          role_id: student.role_id,
           is_save_quran: student.is_save_quran
           };
         });
@@ -360,7 +370,7 @@ const showCircleTypeForTeacher = asyncHandler(async (req, res) => {
   try {
     const TEACHER_ROLE_ID = 2;
     const STUDENT_ROLE_ID = 1;
-    const circle_id = res.params.id
+
     const circleTypes = await CircleType.findAll({
       where: {
         id: { [Op.ne]: 4 } 

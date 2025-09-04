@@ -80,17 +80,20 @@ const createQuranRecitation = asyncHandler(async (req, res) => {
       is_exam,
       attendance
     });
-// if (newRecitation.attendance === true){
-//   const session_attendances = await SessionAttendance.findOne({
-//     where : { 
-//       session_id:student_id ,
-//       user_id :session.id
-//      }
-//   })
-// //   if(!session_attendances){
-// // const SessionAttendance = await SessionAttendance.create
-// //   }
-// }
+if (newRecitation.attendance === true){
+  const session_attendances = await SessionAttendance.findOne({
+    where : { 
+      session_id:session.id,
+      user_id :student_id
+     }
+  })
+  if(!session_attendances){
+const SessionAttendance = await SessionAttendance.create({
+   session_id:session.id,
+      user_id :student_id
+})
+  }
+}
     return res.status(201).json({
       message: 'Quran recitation record created successfully.',
       data: newRecitation

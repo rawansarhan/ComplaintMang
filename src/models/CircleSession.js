@@ -21,7 +21,7 @@ module.exports = (sequelize, DataTypes) => {
 
       CircleSession.hasMany(models.SessionAttendance, {
         foreignKey: 'session_id',
-        as: 'attendances',
+        as: 'session',
       });
 
       CircleSession.hasMany(models.HadithRecitation, {
@@ -36,7 +36,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    
+
     date: {
       type: DataTypes.DATE,
       allowNull: false,

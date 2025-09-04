@@ -119,7 +119,6 @@ const mosqueAllShow = asyncHandler(async (req, res) => {
   }
 })
 
-// عرض المسجد حسب الـ ID
 const mosqueShowById = asyncHandler(async (req, res) => {
   try {
     const mosqueId = req.params.id
@@ -136,8 +135,12 @@ const mosqueShowById = asyncHandler(async (req, res) => {
     const decodedCode = decodeCode(mosque.code)
 
     const admin = await User.findOne({
-      where: { mosque_id: mosque.id, role_id: 3 }
+      where: { mosque_id: mosque.id, role_id: 3 },
+      attributes: ['first_name', 'last_name', 'code'] // تأكد إنك تجيب code هنا
     })
+
+    const decodeCodeAdmin = admin?.code ? decodeCode(admin.code) : null
+
     const teacher = await User.findAll({
       where: { mosque_id: mosque.id, role_id: 2 }
     })
@@ -146,15 +149,15 @@ const mosqueShowById = asyncHandler(async (req, res) => {
     const students = await User.findAll({
       where: { mosque_id: mosque.id, role_id: 1 }
     })
-
     const studentNum = students.length
 
     return res.status(200).json({
       ...mosque.toJSON(),
       code: decodedCode,
-      admin: admin || null,
-      teacherNumber: teacherNum || 0,
-      studentNumber: studentNum || 0
+      adminInf: [admin.first_name , admin.last_name]|| null,
+      adminCode: decodeCodeAdmin,
+      teacherNumber: teacherNum,
+      studentNumber: studentNum
     })
   } catch (err) {
     console.error('Database error:', err)

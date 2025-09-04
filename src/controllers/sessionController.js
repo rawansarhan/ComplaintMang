@@ -83,7 +83,7 @@ const showAllSession = asyncHandler(async (req, res) => {
       const sessionData = s.toJSON();
       const dateObj = dayjs(sessionData.date);
       sessionData.date = dateObj.format("YYYY-MM-DD");
-      sessionData.day = dateObj.format("dddd"); // اليوم بالعربي
+      sessionData.day = dateObj.format("dddd"); 
       return sessionData;
     });
 
