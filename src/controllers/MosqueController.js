@@ -81,92 +81,102 @@ const mosqueAllShow = asyncHandler(async (req, res) => {
   try {
     const mosques = await Mosque.findAll({
       attributes: ['id', 'name', 'address', 'code', 'created_at', 'updated_at']
-    })
+    });
 
-    const results = []
+    const results = [];
 
     for (const mosque of mosques) {
-      const decodedCode = decodeCode(mosque.code)
+      const decodedCode = decodeCode(mosque.code);
 
       const admin = await User.findOne({
-        where: { mosque_id: mosque.id, role_id: 3 }
-      })
+        where: { mosque_id: mosque.id, role_id: 3 },
+        attributes: ['first_name', 'last_name', 'code', 'phone']
+      });
 
-      const students = await User.findAll({
+      const decodedCodeAdmin = admin?.code ? decodeCode(admin.code) : null;
+
+      const studentNum = await User.count({
         where: { mosque_id: mosque.id, role_id: 1 }
-      })
+      });
 
-      const studentNum = students.length
-      const teacher = await User.findAll({
+      const teacherNum = await User.count({
         where: { mosque_id: mosque.id, role_id: 2 }
-      })
-      const teacherNum = teacher.length
+      });
+
       results.push({
         ...mosque.toJSON(),
         code: decodedCode,
-        Admin: admin || 0,
-        teacherNumber: teacherNum || 0,
-        studentNumber: studentNum || 0
-      })
+        adminInf: admin
+          ? {
+              firstName: admin.first_name,
+              lastName: admin.last_name,
+              adminPhone: admin.phone,
+              adminCode: decodedCodeAdmin
+            }
+          : "not found",
+        teacherNumber: teacherNum,
+        studentNumber: studentNum
+      });
     }
 
-    return res.status(200).json(results)
+    return res.status(200).json(results);
   } catch (err) {
-    console.error('Database error:', err)
-    return res
-      .status(500)
-      .json({ message: 'Database error', details: err.message })
+    console.error('Database error:', err);
+    return res.status(500).json({
+      message: 'Database error',
+      details: err.message
+    });
   }
-})
+});
 
 const mosqueShowById = asyncHandler(async (req, res) => {
   try {
-    const mosqueId = req.params.id
+    const mosqueId = req.params.id;
 
     const mosque = await Mosque.findOne({
       where: { id: mosqueId },
       attributes: ['id', 'name', 'address', 'code', 'created_at', 'updated_at']
-    })
+    });
 
     if (!mosque) {
-      return res.status(404).json({ message: 'Mosque not found' })
+      return res.status(404).json({ message: 'Mosque not found' });
     }
 
-    const decodedCode = decodeCode(mosque.code)
+    const decodedCode = decodeCode(mosque.code);
 
     const admin = await User.findOne({
       where: { mosque_id: mosque.id, role_id: 3 },
-      attributes: ['first_name', 'last_name', 'code'] // تأكد إنك تجيب code هنا
-    })
+      attributes: ['first_name', 'last_name', 'code', 'email', 'phone', 'address']
+    });
+    
+    const decodeCodeAdmin = admin?.code ? decodeCode(admin.code) : null;
 
-    const decodeCodeAdmin = admin?.code ? decodeCode(admin.code) : null
-
-    const teacher = await User.findAll({
-      where: { mosque_id: mosque.id, role_id: 2 }
-    })
-    const teacherNum = teacher.length
-
-    const students = await User.findAll({
-      where: { mosque_id: mosque.id, role_id: 1 }
-    })
-    const studentNum = students.length
+    const teacherNum = await User.count({ where: { mosque_id: mosque.id, role_id: 2 } });
+    const studentNum = await User.count({ where: { mosque_id: mosque.id, role_id: 1 } });
 
     return res.status(200).json({
       ...mosque.toJSON(),
       code: decodedCode,
-      adminInf: [admin.first_name , admin.last_name]|| null,
-      adminCode: decodeCodeAdmin,
+      adminInf: admin
+        ? {
+            firstName: admin.first_name,
+            lastName: admin.last_name,
+            adminPhone: admin.phone,
+            adminCode: decodeCodeAdmin
+          }
+        : "not found",
       teacherNumber: teacherNum,
       studentNumber: studentNum
-    })
+    });
   } catch (err) {
-    console.error('Database error:', err)
+    console.error('Database error:', err);
     return res.status(500).json({
       message: 'Database error',
       details: err.message
-    })
+    });
   }
-})
+});
+
 
 /////update mosque
 const mosqueUpdate = asyncHandler(async (req, res) => {
