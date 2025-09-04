@@ -146,9 +146,9 @@ const createChallenge = asyncHandler(async (req, res) => {
       where: { student_id: studentId }
     })
 
-    // if (existingChallenge) {
-    //   return res.status(400).json({ message: "This user already has a challenge" });
-    // }
+    if (existingChallenge) {
+      return res.status(400).json({ message: "This user already has a challenge" });
+    }
 
     const challenge = await Challenge.create({
       student_id: studentId,

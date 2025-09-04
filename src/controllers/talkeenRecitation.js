@@ -165,7 +165,7 @@ const showAllRecitationsForStudent = asyncHandler(async (req, res) => {
 
 
     if (quranRecitations.length === 0) {
-      return res.status(404).json({
+      return res.status(200).json({
         message: 'No Quran recitation records found for this student.'
       });
     }
@@ -176,11 +176,12 @@ quranRecitations.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
       return {
         date: dateObj.format("YYYY-MM-DD"),
         day: dateObj.format("dddd"),
-        attendance: !!element.session, // true إذا كان داخل الحلقة
+        attendance: !!element.session ? "تم الحضور" :"تم الغياب", // true إذا كان داخل الحلقة
         fromSurahName: element.from_sura?.name || null,
         fromAyah: element.from_ayah?.ayah_number || null,
         toSurahName: element.to_sura?.name || null,
         toAyah: element.to_ayah?.ayah_number || null,
+        is_counted: "محسوبة" 
       };
     });
 

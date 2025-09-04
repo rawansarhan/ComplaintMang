@@ -32,11 +32,12 @@ const createQuranRecitation = asyncHandler(async (req, res) => {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    // تحقق من نطاق السور (يفترض البداية <= النهاية)
-    if (from_sura_id > to_sura_id) {
-      return res.status(400).json({ message: "Invalid surah range" });
+    // تحقق من النطاق (السورة + الآية)
+    if (from_sura_id > to_sura_id || 
+        (from_sura_id === to_sura_id && from_verse > to_verse)) {
+      return res.status(400).json({ message: "Invalid surah/ayah range" });
     }
-    
+
     const [existingRecord, session, student] = await Promise.all([
       QuranRecitation.findOne({ where: { student_id, session_id } }),
       CircleSession.findOne({
@@ -68,6 +69,7 @@ const createQuranRecitation = asyncHandler(async (req, res) => {
       return res.status(400).json({ message: "This circle is not a Quran circle" });
     }
 
+    // أنشئ التلاوة
     const newRecitation = await QuranRecitation.create({
       session_id,
       student_id,
@@ -80,23 +82,35 @@ const createQuranRecitation = asyncHandler(async (req, res) => {
       is_exam,
       attendance
     });
-if (newRecitation.attendance === true){
-  const session_attendances = await SessionAttendance.findOne({
-    where : { 
-      session_id:session.id,
-      user_id :student_id
-     }
-  })
-  if(!session_attendances){
-const SessionAttendance = await SessionAttendance.create({
-   session_id:session.id,
-      user_id :student_id
-})
-  }
-}
+
+    // إذا حاضر سجّل حضوره
+    if (newRecitation.attendance === true) {
+      const existingAttendance = await SessionAttendance.findOne({
+        where: { session_id: session.id, user_id: student_id }
+      });
+
+      if (!existingAttendance) {
+        await SessionAttendance.create({
+          session_id: session.id,
+          user_id: student_id
+        });
+      }
+    }
+
     return res.status(201).json({
       message: 'Quran recitation record created successfully.',
-      data: newRecitation
+      data: {
+        id: newRecitation.id,
+        student_id: newRecitation.student_id,
+        session_id: newRecitation.session_id,
+        from_sura_id: newRecitation.from_sura_id,
+        from_verse: newRecitation.from_verse,
+        to_sura_id: newRecitation.to_sura_id,
+        to_verse: newRecitation.to_verse,
+        is_counted: newRecitation.is_counted,
+        is_exam: newRecitation.is_exam,
+        attendance: newRecitation.attendance
+      }
     });
   } catch (err) {
     console.error('Database error:', err);
@@ -106,6 +120,7 @@ const SessionAttendance = await SessionAttendance.create({
     });
   }
 });
+
 
 
 ////////////update
@@ -187,7 +202,7 @@ const showAllRecitationsForStudent = asyncHandler(async (req, res) => {
       include: [
         { model: User, as: 'student' },
         { model: User, as: 'teacher' },
-         { model: Surah, as: 'fromSurah' },
+        { model: Surah, as: 'fromSurah' },
         { model: Surah, as: 'toSurah' },
         { model: Ayah, as: 'fromVerse' },
         { model: Ayah, as: 'toVerse' },
@@ -199,7 +214,7 @@ const showAllRecitationsForStudent = asyncHandler(async (req, res) => {
     const allRecitations = [...quranRecitations, ...quranRecitationsOnline];
 
     if (allRecitations.length === 0) {
-      return res.json({
+      return res.status(404).json({
         message: 'No Quran recitation records found for this student.'
       });
     }
@@ -212,11 +227,12 @@ const showAllRecitationsForStudent = asyncHandler(async (req, res) => {
       return {
         date: dateObj.format("YYYY-MM-DD"),
         day: dateObj.format("dddd"),
-        attendance: !!element.circleSession, // true إذا كان داخل الحلقة
+        attendance: !!element.circleSession ? "تم الحضور" :"تم الغياب", // true إذا كان داخل الحلقة
         fromSurahName: element.fromSurah?.name || null,
         fromAyah: element.fromVerse?.ayah_number || null,
         toSurahName: element.toSurah?.name || null,
         toAyah: element.toVerse?.ayah_number || null,
+        is_counted: element.is_counted ? "محسوبة" : "غير محسوبة"
       };
     });
 

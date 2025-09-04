@@ -232,7 +232,7 @@ const showAllRecitationsForStudent = asyncHandler(async (req, res) => {
     const allRecitations = [...hadithRecitations, ...HadithRecitationsOnline]
 
     if (allRecitations.length === 0) {
-      return res.status(404).json({
+      return res.status(200).json({
         message: 'No Hadith recitation records found for this student.'
       })
     }
@@ -246,9 +246,10 @@ const showAllRecitationsForStudent = asyncHandler(async (req, res) => {
       return {
         date: dateObj.format("YYYY-MM-DD"),
         day: dateObj.format("dddd"),
-        attendance: !!element.session, // true إذا كان داخل الحلقة
+        attendance: !!element.session ? "تم الحضور" :"تم الغياب", // true إذا كان داخل الحلقة
         bookName: element.book?.name || null,
         pageNamber: element.book?.hadith_num || null,
+        is_counted: element.is_counted ? "محسوبة" : "غير محسوبة"
       };
     });
 
