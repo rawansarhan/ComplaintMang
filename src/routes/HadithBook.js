@@ -60,7 +60,13 @@ router.post('/create', authMiddleware, adminOnly, createBook);
  *       500:
  *         description: Internal server error.
  */
-router.get('/getAllBook', authMiddleware,authorizeRoles(adminOnly,teacherOnly) , getAllBooks);
+router.get(
+  '/getAllBook',
+  authMiddleware,
+  authorizeRoles('admin', 'teacher'),  
+  getAllBooks
+);
+
 
 /**
  * @swagger
