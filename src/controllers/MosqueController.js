@@ -273,25 +273,25 @@ const showStudentAndTeacher = asyncHandler(async (req, res) => {
     where: { mosque_id: user.mosque_id, role_id: 1 }
   })
 
-  if (!students || students.length === 0) {
-    return res.status(404).json({ message: 'No students found' })
-  }
-
+  if (students || students.length !== 0) {
   for (const student of students) {
     AllStudent.push(student)
   }
+  }
+
+ 
 
   const teachers = await User.findAll({
     where: { mosque_id: user.mosque_id, role_id: 2 }
   })
 
-  if (!teachers || teachers.length === 0) {
-    return res.status(404).json({ message: 'No teachers found' })
-  }
-
-  for (const teacher of teachers) {
+  if (teachers || teachers.length !== 0) {
+   for (const teacher of teachers) {
     AllTeacher.push(teacher)
   }
+  }
+
+ 
 
   return res.status(200).json({
     message: 'Fetched all students and teachers in this mosque',
