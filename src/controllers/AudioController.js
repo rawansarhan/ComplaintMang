@@ -100,7 +100,7 @@ const getAllAudiosForStudent = asyncHandler(async (req, res) => {
   })
 
   if (audios.length === 0) {
-    return res.status(404).json({ message: "You don't have any audio yet",date :[] })
+    return res.status(200).json({ message: "You don't have any audio yet",date :[] })
   }
 
   return res.status(200).json({

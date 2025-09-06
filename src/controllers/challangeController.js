@@ -367,7 +367,7 @@ const challangeTeasher = asyncHandler(async (req, res) => {
   });
 
   if (!challenge) {
-    return res.status(404).json({ message: 'Challenge not found' ,date :[]});
+    return res.status(200).json({ message: 'Challenge not found' ,date :[]});
   }
 
   const wallet = await Wallet.findOne({ where: { student_id: studentId } });
