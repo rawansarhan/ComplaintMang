@@ -10,11 +10,16 @@ const statistics_create = Joi.object({
 });
 
 const attendance = async (user_id, fromDate, toDate) => {
+  const from = new Date(fromDate);
+  from.setHours(0,0,0,0);
+  const to = new Date(toDate);
+  to.setHours(23,59,59,999);
+
     const sessionAttendance = await SessionAttendance.findAll({
         where: {
             user_id,
             created_at: {
-                [Op.between]: [fromDate, toDate]
+                [Op.between]: [from, to]
             }
         },
         include: [
@@ -35,13 +40,16 @@ const attendance = async (user_id, fromDate, toDate) => {
 };
 
 const savedQuran = async (user_id, fromDate, toDate) => {
+    const from = new Date(fromDate);
+    from.setHours(0, 0, 0, 0);
+    const to = new Date(toDate);
+    to.setHours(23, 59, 59, 999);
+
     const quranRecitations = await QuranRecitation.findAll({
         where: {
             student_id: user_id,
             is_counted: true,
-            created_at: {
-                [Op.between]: [fromDate, toDate]
-            }
+            created_at: { [Op.between]: [from, to] }
         },
         include: [
             { model: Surah, as: "fromSurah" },
@@ -55,9 +63,7 @@ const savedQuran = async (user_id, fromDate, toDate) => {
         where: {
             student_id: user_id,
             is_counted: true,
-            created_at: {
-                [Op.between]: [fromDate, toDate]
-            }
+            created_at: { [Op.between]: [from, to] }
         },
         include: [
             { model: Surah, as: "fromSurah" },
@@ -67,89 +73,91 @@ const savedQuran = async (user_id, fromDate, toDate) => {
         ],
     });
 
-    if (quranRecitations.length === 0 && quranRecitationsOnline.length === 0) {
-        return 0;
-    }
-
     let combinedRecitations = [...quranRecitations, ...quranRecitationsOnline];
+    if (combinedRecitations.length === 0) return 0;
 
-    const uniqueRecitationsMap = new Map();
-    combinedRecitations.forEach((rec) => {
-        const key = `${rec.fromVerse?.id}-${rec.toVerse?.id}`;
-        if (!uniqueRecitationsMap.has(key)) {
-            uniqueRecitationsMap.set(key, rec);
-        }
-    });
-    const uniqueRecitations = Array.from(uniqueRecitationsMap.values());
+    const coveredVerses = new Set();
 
-    const lastAyat = await Ayah.findAll({
-        attributes: [
-            "page_number",
-            [Sequelize.fn("MAX", Sequelize.col("ayah_number")), "last_ayah"],
-        ],
-        group: ["page_number"],
-    });
+    for (const rec of combinedRecitations) {
+        const fromSurahId = rec.fromSurah.id;
+        const fromAyahNumber = rec.fromVerse.ayah_number;
+        const toSurahId = rec.toSurah.id;
+        const toAyahNumber = rec.toVerse.ayah_number;
 
-    const pageAyahMax = {};
-    lastAyat.forEach((p) => {
-        pageAyahMax[p.page_number] = parseInt(p.get("last_ayah"), 10);
-    });
-
-    let completedPages = new Set();
-
-    for (const rec of uniqueRecitations) {
-        const { fromSurah, toSurah, fromVerse, toVerse } = rec;
-        if (!fromSurah || !toSurah || !fromVerse || !toVerse) continue;
-
-        const verses = await Ayah.findAll({
+        const versesInRange = await Ayah.findAll({
             where: {
                 [Op.or]: [
                     {
-                        surah_id: fromSurah.id,
-                        ayah_number: { [Op.gte]: fromVerse.ayah_number },
+                        surah_id: fromSurahId,
+                        ayah_number: { [Op.gte]: fromAyahNumber }
                     },
                     {
-                        surah_id: toSurah.id,
-                        ayah_number: { [Op.lte]: toVerse.ayah_number },
+                        surah_id: toSurahId,
+                        ayah_number: { [Op.lte]: toAyahNumber }
                     },
                     {
-                        surah_id: { [Op.gt]: fromSurah.id, [Op.lt]: toSurah.id },
-                    },
-                ],
+                        surah_id: { [Op.gt]: fromSurahId, [Op.lt]: toSurahId }
+                    }
+                ]
             },
+            order: [['page_number', 'ASC'], ['ayah_number', 'ASC']]
         });
 
-        const pageGroups = {};
-        verses.forEach((v) => {
-            if (v.page_number) {
-                if (!pageGroups[v.page_number]) pageGroups[v.page_number] = [];
-                pageGroups[v.page_number].push(v);
-            }
-        });
-
-        for (const page in pageGroups) {
-            const ayatInPage = pageGroups[page];
-            const maxAyahNumberRead = Math.max(...ayatInPage.map((v) => v.ayah_number));
-            const lastAyahOfPage = pageAyahMax[page];
-
-            if (lastAyahOfPage && maxAyahNumberRead >= lastAyahOfPage) {
-                completedPages.add(Number(page));
-            }
+        for (const verse of versesInRange) {
+            coveredVerses.add(`${verse.surah_id}-${verse.ayah_number}`);
         }
     }
 
-    return completedPages.size;
+    // First, find the last verse of each page
+    const lastVerseOfEachPage = await Ayah.findAll({
+        attributes: [
+            'page_number',
+            [Sequelize.fn('MAX', Sequelize.col('ayah_number')), 'last_ayah_number'],
+            'surah_id'
+        ],
+        group: ['page_number', 'surah_id'],
+        order: [['page_number', 'ASC'], ['surah_id', 'DESC']]
+    });
+
+    const pageCompletionStatus = {};
+    for (const item of lastVerseOfEachPage) {
+        const pageNum = item.page_number;
+        if (!pageCompletionStatus[pageNum]) {
+            // Store the verse key for the last verse on the page
+            pageCompletionStatus[pageNum] = `${item.surah_id}-${item.get('last_ayah_number')}`;
+        }
+    }
+
+    let completedPagesCount = 0;
+    for (const pageNum in pageCompletionStatus) {
+        const lastVerseKey = pageCompletionStatus[pageNum];
+        // A page is considered complete only if its last verse is in the set of covered verses
+        if (coveredVerses.has(lastVerseKey)) {
+            completedPagesCount++;
+        }
+    }
+
+    return completedPagesCount;
 };
 
+
 const savedHadith = async (user_id, fromDate, toDate) => {
+    const from = new Date(fromDate);
+    from.setHours(0, 0, 0, 0);
+    const to = new Date(toDate);
+    to.setHours(23, 59, 59, 999);
+
     const hadithRecitations = await HadithRecitation.findAll({
         where: {
             student_id: user_id,
             is_counted: true,
             created_at: {
-                [Op.between]: [fromDate, toDate]
-            }
+                [Op.between]: [from, to]
+            },
         },
+        include: [
+            { model: HadithBook, as: "book" },
+        ],
     });
 
     const hadithRecitationsOnline = await UndividualRecitationHadith.findAll({
@@ -157,23 +165,29 @@ const savedHadith = async (user_id, fromDate, toDate) => {
             student_id: user_id,
             is_counted: true,
             created_at: {
-                [Op.between]: [fromDate, toDate]
-            }
+                [Op.between]: [from, to]
+            },
         },
+        include: [
+            { model: HadithBook, as: "book" },
+        ],
     });
-
-    if (hadithRecitations.length === 0 && hadithRecitationsOnline.length === 0) return 0;
 
     const allHadithRecitations = [...hadithRecitations, ...hadithRecitationsOnline];
 
-    const completedHadiths = allHadithRecitations.reduce((acc, r) => {
-        if (typeof r.from_hadith === "number" && typeof r.to_hadith === "number") {
-            return acc + Math.abs(r.to_hadith - r.from_hadith) + 1;
-        }
-        return acc;
-    }, 0);
+    if (allHadithRecitations.length === 0) return 0;
 
-    return completedHadiths;
+    const uniqueHadiths = new Set();
+
+    for (const rec of allHadithRecitations) {
+        if (rec.book && typeof rec.from_hadith === "number" && typeof rec.to_hadith === "number") {
+            for (let i = rec.from_hadith; i <= rec.to_hadith; i++) {
+                uniqueHadiths.add(`${rec.book.id}-${i}`);
+            }
+        }
+    }
+
+    return uniqueHadiths.size;
 };
 
 const statisticsForAdmin = asyncHandler(async (req, res) => {
