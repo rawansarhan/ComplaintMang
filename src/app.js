@@ -1,7 +1,9 @@
 const express = require('express');
 const app = express();
 require('dotenv').config();
+
 // 👇 تفعيل CORS لكل الدومينات
+const cors = require('cors');
 app.use(cors());
 
 // 👇 السماح بـ preflight requests لكل الدومينات

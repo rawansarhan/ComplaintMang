@@ -27,7 +27,7 @@ const createQuranRecitation = asyncHandler(async (req, res) => {
       attendance
     } = req.body;
 
-    const teacherId = req.user?.id;
+    const teacherId = req.user.id;
     if (!teacherId) {
       return res.status(401).json({ message: "Unauthorized" });
     }
@@ -112,13 +112,15 @@ const createQuranRecitation = asyncHandler(async (req, res) => {
         attendance: newRecitation.attendance
       }
     });
-  } catch (err) {
-    console.error('Database error:', err);
+  }  catch (err) {
+    console.error(err); // 👈 اطبع كامل الخطأ
     return res.status(500).json({
       message: 'Internal server error',
-      details: process.env.NODE_ENV === 'development' ? err.message : undefined
+      details: err.message,
+      stack: err.stack // 👈 مفيد أثناء التطوير
     });
-  }
+}
+
 });
 
 
