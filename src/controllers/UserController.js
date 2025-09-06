@@ -224,6 +224,51 @@ const AdminRole =3;
   }
 })
 
+/////////////////////
+const getAllAdmins = asyncHandler(async (req, res) => {
+  try {
+    const ADMIN_ROLE_ID = 3; // نفترض أن رقم دور المسؤول هو 3
+
+    const admins = await User.findAll({
+      where: { role_id: ADMIN_ROLE_ID },
+      attributes: [
+        'id',
+        'first_name',
+        'last_name',
+        'email',
+        'phone',
+        'birth_date',
+        'address',
+        'certificates',
+        'experiences',
+        'is_save_quran',
+        'memorized_parts',
+        'role_id',
+        'mosque_id',
+        'createdAt',
+        'updatedAt',
+        'code' 
+      ]
+    });
+
+    // نفك تشفير code لكل مسؤول
+    const adminsDecoded = admins.map(admin => {
+      return {
+        ...admin.toJSON(), // نحول من instance لـ plain object
+        code: decodeCode(admin.code) // نفك التشفير
+      };
+    });
+
+    return res.status(200).json(adminsDecoded);
+
+  } catch (err) {
+    console.error('Database error:', err);
+    return res.status(500).json({
+      message: 'Database error',
+      details: err.message
+    });
+  }
+});
 //////////////////////////////
 const encodeMap = {
     '0': 'aa', '1': 'bb', '2': 'cc', '3': 'dd', '4': 'ee',
@@ -250,5 +295,6 @@ userAllShow,
 userDelete,
 userDeleteForAdmin,
 userShowById,
-userShowMyProfile
+userShowMyProfile,
+getAllAdmins
 }
