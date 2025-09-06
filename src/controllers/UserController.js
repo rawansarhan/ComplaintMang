@@ -96,6 +96,11 @@ const userAllShow = asyncHandler(async (req, res) => {
       const decodedCode = decodeCode(user.code);
       const userData = { ...user.toJSON(), code: decodedCode };
 
+      // إذا الدور معلم لا نعرض father_phone
+      if (userData.role_id === TEACHER_ROLE_ID) {
+        delete userData.father_phone;
+      }
+
       if (user.role_id === STUDENT_ROLE_ID) {
         student.push(userData);
       } else if (user.role_id === TEACHER_ROLE_ID) {
@@ -115,7 +120,6 @@ const userAllShow = asyncHandler(async (req, res) => {
     });
   }
 });
-
 
 function decodeCode(encoded) {
   if (!encoded) return '';
