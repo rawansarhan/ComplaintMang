@@ -15,6 +15,10 @@ const {
 const { where, Op } = require('sequelize')
 const e = require('express')
 const { date } = require('joi')
+const { sendNotification } = require("../services/firebase-notification");
+ // استدعاء الدالة من server.js
+
+
 const examCreate = asyncHandler(async (req, res) => {
   const { error } = exam_create(req.body);
   if (error) {
@@ -97,6 +101,9 @@ const examGetAll = asyncHandler(async (req, res) => {
 //////////////////////////////////
 /////////////////////////////////
 /////Add marks for examconst 
+
+
+
 const AddMarksCreate = asyncHandler(async (req, res) => {
   const { error } = Add_marks(req.body);
   if (error) {
@@ -106,60 +113,97 @@ const AddMarksCreate = asyncHandler(async (req, res) => {
   const examId = req.params.id;
   const exam = await Exam.findOne({ where: { id: examId } });
   if (!exam) {
-    return res.status(404).json({ message: 'Exam not found' });
+    return res.status(404).json({ message: "Exam not found" });
   }
 
   const groupOfData = req.body.data;
 
   try {
-    const results = await Promise.all(groupOfData.map(async (entry) => {
-      const user = await User.findOne({ where: { id: entry.student_id } });
-      if (!user) {
-        throw new Error(`Student with ID ${entry.student_id} not found`);
-      }
-
-      const circleUser = await CircleUser.findOne({
-        where: { circle_id: exam.circle_id, user_id: user.id }
-      });
-      if (!circleUser) {
-        throw new Error(`Student with ID ${entry.student_id} not found in this circle`);
-      }
-
-      const existingMark = await ExamResult.findOne({
-        where: {
-          exam_id: examId,
-          student_id: user.id,
+    const results = await Promise.all(
+      groupOfData.map(async (entry) => {
+        const user = await User.findOne({ where: { id: entry.student_id } });
+        if (!user) {
+          throw new Error(`Student with ID ${entry.student_id} not found`);
         }
-      });
 
-      if (existingMark) {
-        if (entry.score !== undefined) existingMark.score = entry.score;
-        if (entry.has_taken_exam !== undefined) existingMark.has_taken_exam = entry.has_taken_exam;
-        if (entry.notes) existingMark.notes = entry.notes;
-        await existingMark.save();
-        return existingMark;
-      }
+        const circleUser = await CircleUser.findOne({
+          where: { circle_id: exam.circle_id, user_id: user.id },
+        });
+        if (!circleUser) {
+          throw new Error(
+            `Student with ID ${entry.student_id} not found in this circle`
+          );
+        }
 
-      const newMark = await ExamResult.create({
-        exam_id: examId,
-        student_id: user.id,
-        score: entry.score,
-        has_taken_exam: entry.has_taken_exam,
-        notes: entry.notes || null
-      });
+        const existingMark = await ExamResult.findOne({
+          where: {
+            exam_id: examId,
+            student_id: user.id,
+          },
+        });
 
-      return newMark;
-    }));
+        let result;
+        if (existingMark) {
+          if (entry.score !== undefined) existingMark.score = entry.score;
+          if (entry.has_taken_exam !== undefined)
+            existingMark.has_taken_exam = entry.has_taken_exam;
+          if (entry.notes) existingMark.notes = entry.notes;
+          await existingMark.save();
+          result = existingMark;
+
+          // 🔔 إشعار عند تعديل العلامة
+          console.log("Sending notification to token:", user.fcm_token);
+          if (user.fcm_token) {
+            const success = await sendNotification(
+              user.fcm_token,
+              "تعديل علامة الامتحان",
+              `تم تعديل علامتك في الامتحان (${exam.title || "امتحان"}) إلى ${existingMark.score}`
+            );
+            console.log(
+              `Notification for user ${user.id} ${
+                success ? "sent ✅" : "failed ❌"
+              }`
+            );
+          }
+        } else {
+          const newMark = await ExamResult.create({
+            exam_id: examId,
+            student_id: user.id,
+            score: entry.score,
+            has_taken_exam: entry.has_taken_exam,
+            notes: entry.notes || null,
+          });
+          result = newMark;
+
+          // 🔔 إشعار عند إضافة علامة جديدة
+          console.log("Sending notification to token:", user.fcm_token);
+          if (user.fcm_token) {
+            const success = await sendNotification(
+              user.fcm_token,
+              "إضافة علامة الامتحان",
+              `تم إضافة علامتك في الامتحان (${exam.title || "امتحان"}): ${newMark.score}`
+            );
+            console.log(
+              `Notification for user ${user.id} ${
+                success ? "sent ✅" : "failed ❌"
+              }`
+            );
+          }
+        }
+
+        return result;
+      })
+    );
 
     return res.status(200).json({
-      message: 'Exam marks processed successfully',
-      data: results
+      message: "Exam marks processed successfully",
+      data: results,
     });
-
   } catch (err) {
     return res.status(400).json({ message: err.message });
   }
 });
+
 ////////////////////
 const getAllMarks = asyncHandler(async (req, res) => {
   const studentId = req.user.id;

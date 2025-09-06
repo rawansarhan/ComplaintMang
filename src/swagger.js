@@ -39,7 +39,8 @@ const swaggerOptions = {
             address: { type: 'string', example: 'Damascus, Syria' },
             certificates: { type: 'string', example: 'Ijaza in Hafs' },
             experiences: { type: 'string', example: '5 years teaching Quran' },
-            memorized_parts: { type: 'integer', example: 30 }
+            memorized_parts: { type: 'integer', example: 30 },
+             fcm_token: { type: 'string', example: 'fcm_token_here', description: 'Optional FCM device token for push notifications' }
           }
         },
         RegisterResponse: {
@@ -51,6 +52,7 @@ const swaggerOptions = {
             last_name: { type: 'string', example: 'Ahmad' },
             mosque_id: { type: 'integer', example: 1 },
             role_id: { type: 'integer', example: 3 },
+             fcm_token: { type: 'string', example: 'fcm_token_here', description: 'FCM device token if provided' },
             token: {
               type: 'string',
               example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
@@ -72,7 +74,8 @@ const swaggerOptions = {
             address: { type: 'string', example: 'Damascus, Syria' },
             certificates: { type: 'string', example: 'Ijaza in Hafs' },
             experiences: { type: 'string', example: '5 years teaching Quran' },
-            memorized_parts: { type: 'integer', example: 30 }
+            memorized_parts: { type: 'integer', example: 30 },
+             fcm_token: { type: 'string', example: 'fcm_token_here', description: 'FCM device token if provided' },
           }
         },
         RegisterResponse: {
@@ -120,43 +123,50 @@ const swaggerOptions = {
             }
           }
         },
-        LoginRequest: {
-          type: 'object',
-          required: ['code_user', 'mosque_id'],
-          properties: {
-            code_user: { type: 'integer', example: "123456" },
-            mosque_code: { type: 'integer', example: "15624" }
-          }
-        },
-        LoginResponse: {
-          type: 'object',
-          properties: {
-            id: { type: 'integer', example: 1 },
-            email: { type: 'string', example: 'user@example.com' },
-            first_name: { type: 'string', example: 'Ali' },
-            last_name: { type: 'string', example: 'Ahmad' },
-            mosque_id: { type: 'integer', example: 1 },
-            token: { type: 'string', example: 'jwt.token.here' }
-          }
-        },LoginRequest: {
-          type: 'object',
-          required: ['code_user', 'mosque_id'],
-          properties: {
-            email: { type: 'string' },
-            password: {type: 'string'  }
-          }
-        },
-        LoginResponse: {
-          type: 'object',
-          properties: {
-            id: { type: 'integer'},
-            email: { type: 'string'},
-            first_name: { type: 'string', example: 'Ali' },
-            last_name: { type: 'string', example: 'Ahmad' },
-            role_id:{type: 'integer'},
-            token: { type: 'string', example: 'jwt.token.here' }
-          }
-        },
+       LoginByCodeRequest: {
+  type: 'object',
+  required: ['code_user', 'mosque_code'],
+  properties: {
+    code_user: { type: 'integer', example: 123456 },
+    mosque_code: { type: 'integer', example: 15624 },
+    fcm_token: { type: 'string', example: 'fcm_token_here', description: 'FCM device token if provided' },
+  }
+},
+
+LoginByCodeResponse: {
+  type: 'object',
+  properties: {
+    id: { type: 'integer', example: 1 },
+    email: { type: 'string', example: 'user@example.com' },
+    first_name: { type: 'string', example: 'Ali' },
+    last_name: { type: 'string', example: 'Ahmad' },
+    mosque_id: { type: 'integer', example: 1 },
+    fcm_token: { type: 'string', example: 'fcm_token_here' },
+    token: { type: 'string', example: 'jwt.token.here' }
+  }
+},
+
+LoginByEmailRequest: {
+  type: 'object',
+  required: ['email', 'password'],
+  properties: {
+    email: { type: 'string', example: 'user@example.com' },
+    password: { type: 'string', example: 'password123' }
+  }
+},
+
+LoginByEmailResponse: {
+  type: 'object',
+  properties: {
+    id: { type: 'integer', example: 1 },
+    email: { type: 'string', example: 'user@example.com' },
+    first_name: { type: 'string', example: 'Ali' },
+    last_name: { type: 'string', example: 'Ahmad' },
+    role_id: { type: 'integer', example: 2 },
+    token: { type: 'string', example: 'jwt.token.here' }
+  }
+}
+,
         mosqueCreateRequest: {
           type: 'object',
           properties: {

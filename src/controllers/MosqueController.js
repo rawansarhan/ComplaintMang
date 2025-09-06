@@ -82,7 +82,7 @@ const mosqueAllShow = asyncHandler(async (req, res) => {
     const mosques = await Mosque.findAll({
       attributes: ['id', 'name', 'address', 'code', 'created_at', 'updated_at']
     });
-
+   
     const results = [];
 
     for (const mosque of mosques) {

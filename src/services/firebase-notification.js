@@ -1,19 +1,17 @@
 const admin = require("firebase-admin");
-const serviceAccount = require("../config/firebase-service-account.json");
+require("dotenv").config();
+
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
 
-// دالة لإرسال إشعار
 async function sendNotification(deviceToken, title, body, data = {}) {
   const message = {
     token: deviceToken,
-    notification: {
-      title,
-      body,
-    },
-    data, // بيانات إضافية يمكن أن يقرأها التطبيق
+    notification: { title, body },
+    data, 
   };
 
   try {

@@ -20,6 +20,8 @@ function ValidateRegisterUser(data) {
     experiences: Joi.string().optional().allow(null),
     memorized_parts: Joi.number().integer().min(0).max(30).required().allow(null),
     is_save_quran: Joi.boolean().required(),
+    fcm_token: Joi.string().optional().allow(null, ''), // <-- أضفنا FCM Token
+
   }).or('phone', 'father_phone');
 
   return schema.validate(data);
@@ -49,15 +51,18 @@ function ValidateRegisterAdmin(data) {
   return schema.validate(data);
 }
 
+
 //login
 function ValidateLoginUser(data) {
   const schema = Joi.object({
     code_user: Joi.string().min(3).max(50).required(),
-    mosque_code: Joi.string().required() 
+    mosque_code: Joi.string().required(),
+    fcm_token: Joi.string().optional().allow(null, '') // <-- إضافة FCM Token
   });
 
   return schema.validate(data);
 }
+
 //login for super Admin
 function ValidateLoginSuperAdmin(data) {
   const schema = Joi.object({
