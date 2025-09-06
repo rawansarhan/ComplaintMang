@@ -16,6 +16,7 @@ const {
   ValidateTeacherChallange,
   ValidateCreate1Challange
 } = require('../validations/challangeValidation')
+const { date } = require('joi')
 
 /////////////////// show all age groups =>(student , admin)
 const AllAgeGroups = asyncHandler(async (req, res) => {
@@ -46,8 +47,8 @@ const challange = await Challenge.findOne({
   where :{student_id : studentId}
 })
 if(!challange){
-  return res.status(404).json({
-    message : "not found challenge for this student "
+  return res.status(200).json({
+    message : "not found challenge for this student " ,date :[]
   })
 }
    const challengeTask = await ChallengeTask.findAll({
@@ -366,7 +367,7 @@ const challangeTeasher = asyncHandler(async (req, res) => {
   });
 
   if (!challenge) {
-    return res.status(404).json({ message: 'Challenge not found' });
+    return res.status(404).json({ message: 'Challenge not found' ,date :[]});
   }
 
   const wallet = await Wallet.findOne({ where: { student_id: studentId } });
@@ -477,7 +478,7 @@ const challange = await Challenge.findOne({
 })
 if(!challange){
   return res.status(404).json({
-    message : "not found challenge for this student "
+    message : "not found challenge for this student ",date :[]
   })
 }
    const challengeTask = await ChallengeTask.findAll({
@@ -494,7 +495,7 @@ if(!challange){
   ]
 });
 if (challengeTask.length === 0) {
-  return res.status(200).json({ message: 'No tasks found for this challenge.' });
+  return res.status(200).json({ message: 'No tasks found for this challenge.' ,date :[]});
 }
 
 const result = challengeTask.map(ct => ({

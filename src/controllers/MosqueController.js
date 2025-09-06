@@ -5,6 +5,8 @@ const {
 } = require('../validations/mosqueValidation')
 const { Mosque, User } = require('../models')
 const bcrypt = require('bcryptjs')
+const { date } = require('joi')
+const { messaging } = require('firebase-admin')
 
 const mosqueCreate = asyncHandler(async (req, res) => {
   try {
@@ -82,7 +84,9 @@ const mosqueAllShow = asyncHandler(async (req, res) => {
     const mosques = await Mosque.findAll({
       attributes: ['id', 'name', 'address', 'code', 'created_at', 'updated_at']
     });
-   
+   if(mosques.length === 0){
+    return res.status(200).json({message :"not found mosque",date :[]})
+   }
     const results = [];
 
     for (const mosque of mosques) {
@@ -287,6 +291,8 @@ const showStudentAndTeacher = asyncHandler(async (req, res) => {
   for (const student of students) {
     AllStudent.push(student)
   }
+  }else{
+    return res.status(200).json({message :"not found students",date :[]});
   }
 
  
@@ -299,6 +305,8 @@ const showStudentAndTeacher = asyncHandler(async (req, res) => {
    for (const teacher of teachers) {
     AllTeacher.push(teacher)
   }
+  }else {
+    return res.status(200).json({message :"not found teacher",date :[]})
   }
 
  

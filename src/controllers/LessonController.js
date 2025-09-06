@@ -88,7 +88,7 @@ const GetAllSessionesLession = asyncHandler(async (req, res) => {
     attributes :['id','date' ,'title']
   })
   if (lessonSession.length === 0) {
-    return res.status(404).json('No lesson sessions found')
+    return res.status(200).json({message :'No lesson sessions found', date :[]})
   }
 
   return res.status(200).json({
@@ -179,7 +179,7 @@ const getAllStudent = asyncHandler(async (req, res) => {
     where: { circle_id: circle.id, role_id: 1 }
   });
   if (!userCircles || userCircles.length === 0) {
-    return res.status(404).json({ message: 'No students found for this circle' });
+    return res.status(200).json({ message: 'No students found for this circle' ,date :[]});
   }
 
   const studentsAttendanceStatus = [];

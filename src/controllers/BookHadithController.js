@@ -1,6 +1,7 @@
 const asyncHandler = require('express-async-handler');
 const { User, Role, Mosque, Circle, CircleUser, CircleType, HadithBook } = require('../models');
 const { HadithBookValidation_create, HadithBookValidation_update } = require('../validations/HadithBookValidation');
+const { date } = require('joi');
 
 //create new book
 const createBook = asyncHandler(async (req, res) => {
@@ -36,7 +37,7 @@ const getAllBooks = asyncHandler(async (req, res) => {
     });
 
     if (books.length === 0) {
-      return res.status(200).json({ message: 'No Hadith books found.' });
+      return res.status(200).json({ message: 'No Hadith books found.' ,date :[]});
     }
 
     return res.status(200).json({

@@ -14,6 +14,7 @@ const {
   ValidateCreateComment,
   ValidateCreateAudio
 } = require('../validations/audioValidation')
+const { date } = require('joi')
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -99,7 +100,7 @@ const getAllAudiosForStudent = asyncHandler(async (req, res) => {
   })
 
   if (audios.length === 0) {
-    return res.status(404).json({ message: "You don't have any audio yet" })
+    return res.status(404).json({ message: "You don't have any audio yet",date :[] })
   }
 
   return res.status(200).json({
@@ -242,7 +243,7 @@ const getAllAudiosForTeacher = asyncHandler(async (req, res) => {
 
     if (!studentIds.length) {
       return res
-        .json({ message: "No students found in teacher's circles" })
+        .json({ message: "No students found in teacher's circles" ,date :[]})
     }
 
     audios = await UserAudio.findAll({

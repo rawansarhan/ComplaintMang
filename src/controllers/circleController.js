@@ -6,6 +6,7 @@ const {
   ValidateDeleteCircles
 } = require('../validations/circlesValidation')
 const { where, Op } = require('sequelize')
+const { date } = require('joi')
 ///////////////create
 const createCircle = asyncHandler(async (req, res) => {
   const { error } = ValidateCreateCircles(req.body)
@@ -213,7 +214,10 @@ const showAll = asyncHandler(async (req, res) => {
         }
       ]
     })
+   if(circles.length === 0){
+    return res.status(200).json({ message: "Not found circles " ,date:[]});
 
+     }
     const formatted = circles.map(circle => {
       const teachers = []
       const students = []
@@ -316,7 +320,10 @@ const show_circle_for_teacher = asyncHandler(async (req, res) => {
         }
       ]
     });
+   if(circles.length === 0){
+    return res.status(200).json({ message: "No circles found for this teacher" ,date:[]});
 
+     }
     const teacherCircles = circles.filter(circle =>
       circle.users.some(user =>
         user.id === req.user.id && user.CircleUser.role_id === TEACHER_ROLE_ID
@@ -388,7 +395,10 @@ const showCircleTypeForTeacher = asyncHandler(async (req, res) => {
           }
         ]
       });
+   if(circles.length === 0){
+    return res.status(200).json({ message: "No circles found for this teacher" ,date:[]});
 
+     }
       const teacherCircles = circles.filter(circle =>
         circle.users.some(user =>
           user.id === req.user.id && user.CircleUser.role_id === TEACHER_ROLE_ID
@@ -461,7 +471,10 @@ const show_Circle_Teacher_Dars = asyncHandler(async (req, res) => {
           }
         ]
       });
+     if(circles.length === 0){
+    return res.status(200).json({ message: "No circles Dars found for this teacher" ,date:[]});
 
+     }
       const teacherCircles = circles.filter(circle =>
         circle.users.some(user =>
           user.id === req.user.id && user.CircleUser.role_id === TEACHER_ROLE_ID
@@ -520,7 +533,7 @@ const showCircleDarsForStudent = asyncHandler(async (req, res) => {
   });
 
   if (circlesUser.length === 0) {
-    return res.status(404).json({ message: "not found circle for this student" });
+    return res.status(200).json({ message: "not found circle for this student" , date :[] });
   }
 
   const circleIds = circlesUser.map(cu => cu.circle_id);
@@ -547,7 +560,7 @@ const getAllcircleDarsForStudentWithExam = asyncHandler(async (req, res) => {
   });
 
   if (circlesUser.length === 0) {
-    return res.status(404).json({ message: "No circles found for this student" });
+    return res.status(200).json({ message: "No circles found for this student" ,date:[]});
   }
 
   const circleIds = circlesUser.map((cu) => cu.circle_id);
@@ -561,7 +574,7 @@ const getAllcircleDarsForStudentWithExam = asyncHandler(async (req, res) => {
   });
 
   if (circles.length === 0) {
-    return res.status(404).json({ message: "No Dars circles found" });
+    return res.status(200).json({ message: "No Dars circles found" ,date :[]});
   }
 
   const AllCircles = [];

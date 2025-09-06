@@ -228,12 +228,16 @@ const statisticsForAdmin = asyncHandler(async (req, res) => {
     }
 
     const students = await User.findAll({
-        where: { mosque_id: admin.mosque_id, role_id: 1 },
+        where: { mosque_id: admin.mosque_id, role_id: 1,
+             created_at: {
+                [Op.between]: [from, to]
+            },
+         },
         attributes: ["id", "first_name", "last_name"]
     });
 
     if (students.length === 0) {
-        return res.status(404).json({ message: "لا يوجد طلاب في هذا المسجد" });
+        return res.status(200).json({ message: "لا يوجد طلاب في هذا المسجد" ,date :[]});
     }
 
     const results = [];
@@ -256,7 +260,7 @@ const statisticsForAdmin = asyncHandler(async (req, res) => {
     }
 
     if (results.length === 0) {
-        return res.status(404).json({ message: "لا يوجد احصائيات" });
+        return res.status(200).json({ message: "لا يوجد احصائيات" });
     }
 
     res.json({
