@@ -166,7 +166,11 @@ module.exports = (sequelize, DataTypes) => {
       is_save_quran: {
         type: DataTypes.BOOLEAN,
         allowNull: false
-      }
+      },
+        fcm_token: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
     },
     {
       sequelize,
