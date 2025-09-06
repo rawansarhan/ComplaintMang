@@ -233,7 +233,7 @@ const showAllRecitationsForStudent = asyncHandler(async (req, res) => {
 
     if (allRecitations.length === 0) {
       return res.status(200).json({
-        message: 'No Hadith recitation records found for this student.'
+        message: 'No Hadith recitation records found for this student.',data: []
       })
     }
 

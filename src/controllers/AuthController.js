@@ -99,7 +99,8 @@ const registerUserWithRole = roleName =>
       certificates: req.body.certificates,
       experiences: req.body.experiences,
       memorized_parts: req.body.memorized_parts,
-      role_id: role.id
+      role_id: role.id,
+       fcm_token: req.body.fcm_token || null,
     })
     if (user.role_id == 1) {
       await Wallet.create({
@@ -198,23 +199,29 @@ if (error)
   })
 // login(student,teacher)
 const loginUser = asyncHandler(async (req, res) => {
-  const { error } = ValidateLoginUser(req.body)
-  if (error) return res.status(400).json({ message: error.details[0].message })
+  const { error } = ValidateLoginUser(req.body);
+  if (error) return res.status(400).json({ message: error.details[0].message });
 
-  const encodedUserCode = encodeCode(req.body.code_user.toString())
-  const encodedMosqueCode = encodeCode(req.body.mosque_code.toString())
+  const encodedUserCode = encodeCode(req.body.code_user.toString());
+  const encodedMosqueCode = encodeCode(req.body.mosque_code.toString());
 
-  const user = await User.findOne({ where: { code: encodedUserCode } })
-  if (!user) return res.status(400).json({ message: 'Invalid user code' })
+  const user = await User.findOne({ where: { code: encodedUserCode } });
+  if (!user) return res.status(400).json({ message: 'Invalid user code' });
 
-  const mosque = await Mosque.findOne({ where: { code: encodedMosqueCode } })
-  if (!mosque) return res.status(400).json({ message: 'Mosque not found' })
+  const mosque = await Mosque.findOne({ where: { code: encodedMosqueCode } });
+  if (!mosque) return res.status(400).json({ message: 'Mosque not found' });
 
   if (user.mosque_id !== mosque.id) {
-    return res.status(400).json({ message: 'Invalid mosque code' })
+    return res.status(400).json({ message: 'Invalid mosque code' });
   }
 
-  const role = await Role.findOne({ where: { id: user.role_id } })
+  // تحديث fcm_token إذا تم إرساله
+  if (req.body.fcm_token) {
+    user.fcm_token = req.body.fcm_token;
+    await user.save();
+  }
+
+  const role = await Role.findOne({ where: { id: user.role_id } });
 
   const token = jwt.sign(
     {
@@ -226,13 +233,13 @@ const loginUser = asyncHandler(async (req, res) => {
     },
     SECRET_KEY,
     { expiresIn: '40d' }
-  )
+  );
 
-  const { password, code, ...userData } = user.toJSON()
-  const code_user = decodeCode(code.toString())
+  const { password, code, ...userData } = user.toJSON();
+  const code_user = decodeCode(code.toString());
 
-  res.status(200).json({ ...userData, code_user, token })
-})
+  res.status(200).json({ ...userData, code_user, token });
+});
 
 // login SuperAdmin
 const loginSuperAdmin = async (req, res) => {
