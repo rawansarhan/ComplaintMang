@@ -32,13 +32,16 @@ const attendance = async (user_id, session_id, startOfDay, endOfDay) => {
 
 /////////////////get pages number for student
 
+const { Sequelize } = require('sequelize'); // ضيفها فوق مع باقي الـ requires
+
 const savedQuran = async (user_id, session_id, startOfDay, endOfDay) => {
+  // داخل الجلسة (QuranRecitation)
   const quranRecitations = await QuranRecitation.findAll({
     where: {
       student_id: user_id,
-      session_id: session_id,
+      session_id : session_id, // بس هون موجود
       is_counted: true,
-      created_at: { [Op.between]: [startOfDay.toISOString(), endOfDay.toISOString()] }
+   
     },
     include: [
       { model: Surah, as: 'fromSurah' },
@@ -49,11 +52,11 @@ const savedQuran = async (user_id, session_id, startOfDay, endOfDay) => {
     order: [['created_at', 'ASC']]
   });
 
+  // فردي (UndividualRecitationQuran) ما في session_id
   const quranRecitationsOnline = await UndividualRecitationQuran.findAll({
     where: {
       student_id: user_id,
       is_counted: true,
-      created_at: { [Op.between]: [startOfDay.toISOString(), endOfDay.toISOString()] }
     },
     include: [
       { model: Surah, as: 'fromSurah' },
@@ -63,101 +66,128 @@ const savedQuran = async (user_id, session_id, startOfDay, endOfDay) => {
     ],
     order: [['created_at', 'ASC']]
   });
+   if(quranRecitations.length === 0){
+    return 0
+   }
+  if ( quranRecitationsOnline.length === 0) return 0;
+// دمج الاثنين
+let combinedRecitations = [...quranRecitations, ...quranRecitationsOnline];
 
-  if (quranRecitations.length === 0 && quranRecitationsOnline.length === 0) return 0;
+// إزالة التكرار حسب fromVerse و toVerse
+const uniqueRecitationsMap = new Map();
 
-  // نجيب آخر آية بكل صفحة مرة وحدة
+combinedRecitations.forEach(rec => {
+  // مفتاح فريد لكل recitation بناءً على fromVerse و toVerse
+  const key = `${rec.fromVerse?.id}-${rec.toVerse?.id}`;
+  if (!uniqueRecitationsMap.has(key)) {
+    uniqueRecitationsMap.set(key, rec);
+  }
+});
+
+// النتيجة النهائية بدون تكرار
+const uniqueRecitations = Array.from(uniqueRecitationsMap.values());
+
+  // آخر آية بكل صفحة
   const pageAyahMax = {};
   const lastAyat = await Ayah.findAll({
-    attributes: [
-      'page_number',
-      [Sequelize.fn('MAX', Sequelize.col('ayah_number')), 'last_ayah']
-    ],
-    group: ['page_number']
-  });
-  lastAyat.forEach(p => {
-    pageAyahMax[p.page_number] = parseInt(p.get('last_ayah'), 10);
-  });
+  attributes: [
+    'page_number',
+    [Sequelize.fn('MAX', Sequelize.col('ayah_number')), 'last_ayah']
+  ],
+  group: ['page_number'],
+  order: [['page_number', 'ASC']] // ترتيب حسب الصفحة
+});
+
+// تحويل النتيجة لقائمة
+const lastAyahList = lastAyat.map(p => ({
+  page_number: p.page_number,
+  last_ayah: parseInt(p.get('last_ayah'), 10)
+}));
+
+
 
   let completedPages = new Set();
+ for (const element of uniqueRecitations){
+  for(const lastAyah1 of lastAyahList){
+    if(element.)
+  }
+ }
+// helper function
+const processRecitation = async (rec) => {
+  const { fromSurah, toSurah, fromVerse, toVerse } = rec;
+  if (!fromSurah || !toSurah || !fromVerse || !toVerse) return;
 
-  const processRecitation = async (rec) => {
-    const { fromSurah, toSurah, fromVerse, toVerse } = rec;
-    if (!fromSurah || !toSurah || !fromVerse || !toVerse) return;
+  const verses = await Ayah.findAll({
+    where: {
+      [Op.or]: [
+        { surah_id: fromSurah.id, ayah_number: { [Op.gte]: fromVerse.ayah_number } },
+        { surah_id: toSurah.id, ayah_number: { [Op.lte]: toVerse.ayah_number } },
+        { surah_id: { [Op.gt]: fromSurah.id, [Op.lt]: toSurah.id } }
+      ]
+    },
+    order: [['surah_id', 'ASC'], ['ayah_number', 'ASC']]
+  });
 
-    const verses = await Ayah.findAll({
-      where: {
-        [Op.or]: [
-          { surah_id: fromSurah.id, ayah_number: { [Op.gte]: fromVerse.ayah_number } },
-          { surah_id: toSurah.id, ayah_number: { [Op.lte]: toVerse.ayah_number } },
-          { surah_id: { [Op.gt]: fromSurah.id, [Op.lt]: toSurah.id } }
-        ]
-      },
-      order: [['surah_id', 'ASC'], ['ayah_number', 'ASC']]
-    });
+  // قسم الآيات حسب الصفحات
+  const pageGroups = {};
+  verses.forEach(v => {
+    if (v.page_number && !pageGroups[v.page_number]) pageGroups[v.page_number] = [];
+    if (v.page_number) pageGroups[v.page_number].push(v);
+  });
 
-    const pageGroups = {};
-    verses.forEach(v => {
-      if (!pageGroups[v.page_number]) pageGroups[v.page_number] = [];
-      pageGroups[v.page_number].push(v);
-    });
-
-    for (const [page, ayat] of Object.entries(pageGroups)) {
-      const maxRead = Math.max(...ayat.map(v => v.ayah_number));
-      const lastAyah = pageAyahMax[page];
-
-      if (maxRead === lastAyah) {
-        completedPages.add(page);
-      }
+  // شوف إذا الطالب وصل لآخر آية بالصفحة
+  for (const [page, ayat] of Object.entries(pageGroups)) {
+    const maxRead = Math.max(...ayat.map(v => v.ayah_number));
+    const lastAyah = pageAyahMax[page];
+    if (maxRead === lastAyah) {
+      completedPages.add(Number(page)); // تحويل للرقم لضمان عدم التكرار
     }
-  };
-
-  for (const rec of quranRecitations) {
-    await processRecitation(rec);
   }
-  for (const rec of quranRecitationsOnline) {
-    await processRecitation(rec);
-  }
-
-  return completedPages.size;
 };
+
+// معالجة جميع التلاوات
+await Promise.all([
+  ...quranRecitations.map(rec => processRecitation(rec)),
+  ...quranRecitationsOnline.map(rec => processRecitation(rec))
+]);
+
+return lastAyahList;
+}
+
 ////////////////////////get hadith number for student
 
 const savedHadith = async (user_id, session_id, startOfDay, endOfDay) => {
+  // داخل الجلسة
   const hadithRecitations = await HadithRecitation.findAll({
     where: {
       student_id: user_id,
-      session_id: session_id,
+      session_id, // موجود
       is_counted: true,
-      created_at: { [Op.between]: [startOfDay.toISOString(), endOfDay.toISOString()] }
+  
     },
     include: [{ model: HadithBook, as: 'book' }],
-    order: [['created_at', 'ASC']]
   });
 
+  // فردي (مافي session_id)
   const hadithRecitationsOnline = await UndividualRecitationHadith.findAll({
     where: {
       student_id: user_id,
       is_counted: true,
-      created_at: { [Op.between]: [startOfDay.toISOString(), endOfDay.toISOString()] }
+
     },
     include: [{ model: HadithBook, as: 'book' }],
-    order: [['created_at', 'ASC']]
   });
 
   if (hadithRecitations.length === 0 && hadithRecitationsOnline.length === 0) return 0;
 
-  let completedHadiths = 0;
-  const allRecitations = [...hadithRecitations, ...hadithRecitationsOnline];
 
-  for (const element of allRecitations) {
-    const fromHadith = element.from_hadith;
-    const toHadith = element.to_hadith;
-    if (fromHadith && toHadith) {
-      const count = Math.abs(toHadith - fromHadith) + 1;
-      completedHadiths += count;
-    }
+  const completedHadiths = [...hadithRecitations, ...hadithRecitationsOnline].reduce((acc, r) => {
+  if (typeof r.from_hadith === 'number' && typeof r.to_hadith === 'number') {
+    return acc + Math.abs(r.to_hadith - r.from_hadith) + 1;
   }
+  return acc;
+}, 0);
+
 
   return completedHadiths;
 };
@@ -190,48 +220,47 @@ const statisticsForAdmin = asyncHandler(async (req, res) => {
   const results = [];
 
   for (const student of students) {
-    const sessions = await CircleSession.findAll({
-      include: [
-        {
-          model: SessionAttendance,
-          as: 'session', // تأكد إنه مطابق لتعريف الـ association
-          where: { user_id: student.id },
-          required: true
-        }
-      ],
-      attributes: ['id', 'date']
-    });
+  let attendanceStudent = 0;
+  let savedQuranStudent = 0;
+  let savedHadithStudent = 0; // ✅ بدال completedHadiths
 
-    let attendanceStudent = 0;
-    let savedQuranStudent = 0;
-    let savedHadithStudent = 0;
+  const sessions = await CircleSession.findAll({
+    include: [
+      {
+        model: SessionAttendance,
+        as: 'session',
+        where: { user_id: student.id },
+        required: true
+      }
+    ],
+    attributes: ['id', 'date']
+  });
 
-    for (const session of sessions) {
-      const startOfDay = new Date(session.date);
-      startOfDay.setHours(0, 0, 0, 0);
+  for (const session of sessions) {
+    const startOfDay = new Date(session.date);
+    startOfDay.setHours(0, 0, 0, 0);
 
-      const endOfDay = new Date(session.date);
-      endOfDay.setHours(23, 59, 59, 999);
+    const endOfDay = new Date(session.date);
+    endOfDay.setHours(23, 59, 59, 999);
 
-      attendanceStudent += await attendance(student.id, session.id, startOfDay, endOfDay);
-
-      // مبدئياً صفر لأنك لسه ما عرّفت دوال savedQuran / savedHadith
+    attendanceStudent += await attendance(student.id, session.id, startOfDay, endOfDay);
     savedQuranStudent += await savedQuran(student.id, session.id, startOfDay, endOfDay);
-savedHadithStudent += await savedHadith(student.id, session.id, startOfDay, endOfDay);
+    savedHadithStudent += await savedHadith(student.id, session.id, startOfDay, endOfDay);
 
-    }
-
-    results.push({
-      studentInf: {
-        id : student.id,
-        firstName: student.first_name,
-        lastName: student.last_name
-      },
-      attendance: attendanceStudent || 0,
-      savedQuran: savedQuranStudent || 0,
-      savedHadith: savedHadithStudent || 0
-    });
   }
+
+  results.push({
+    studentInf: {
+      id: student.id,
+      firstName: student.first_name,
+      lastName: student.last_name
+    },
+    attendance: attendanceStudent,
+    savedQuran: savedQuranStudent,
+    savedHadith: savedHadithStudent  
+  });
+}
+
 
   if (results.length === 0) {
     return res.status(404).json({ message: "لا يوجد احصائيات" });
@@ -243,4 +272,5 @@ savedHadithStudent += await savedHadith(student.id, session.id, startOfDay, endO
   });
 });
 
-module.exports = { statisticsForAdmin ,savedHadith,savedHadith,attendance};
+module.exports = { statisticsForAdmin, savedHadith, attendance };
+
