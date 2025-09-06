@@ -84,7 +84,6 @@ function ValidateUpdateUser(data) {
 
     birth_date: Joi.date(),
     email: Joi.string().email().trim().min(5).max(100),
-    password: Joi.string().min(6).max(20).required(),
 
     address: Joi.string(),
     certificates: Joi.string().allow(null),

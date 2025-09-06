@@ -22,9 +22,12 @@ const updateUser = asyncHandler(async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    if( req.user.mosque_id !== user.mosque_id){
-      return res.status(404).json({message:"no permission"})
+
+    if (req.user.mosque_id !== user.mosque_id) {
+      return res.status(403).json({ message: "No permission" });
     }
+
+    // تحديث البيانات
     user.first_name = req.body.first_name || user.first_name;
     user.last_name = req.body.last_name || user.last_name;
     user.phone = req.body.phone || user.phone;
@@ -50,9 +53,14 @@ const updateUser = asyncHandler(async (req, res) => {
 
     await user.save();
 
+    // تحويل الـ Sequelize instance إلى object عادي وفك التشفير
+    const userData = user.toJSON();
+    userData.code = decodeCode(userData.code); // فك تشفير الـ code
+    delete userData.password; // حذف كلمة السر من الاستجابة
+
     return res.status(200).json({
       message: "User updated successfully",
-      user
+      user: userData
     });
 
   } catch (err) {
@@ -64,7 +72,6 @@ const updateUser = asyncHandler(async (req, res) => {
   }  
 });
 
-
 ///////////////////show all users
 const userAllShow = asyncHandler(async (req, res) => {
   try {
@@ -73,17 +80,26 @@ const userAllShow = asyncHandler(async (req, res) => {
     const TEACHER_ROLE_ID = 2;
     const STUDENT_ROLE_ID = 1;
 
+    // جلب المستخدمين الذين لهم نفس mosque_id
     const users = await User.findAll({
       where: {
-        role_id: [1, 2]
+        mosque_id: req.user.mosque_id,
+        role_id: [STUDENT_ROLE_ID, TEACHER_ROLE_ID]
+      },
+      attributes: {
+        exclude: ['password'] // لا نعرض كلمة السر
       }
     });
 
+    // فك التشفير وتصنيفهم
     users.forEach(user => {
-      if (user.role_id === STUDENT_ROLE_ID && user.mosque_id === req.user.mosque_id) {
-        student.push(user);
-      } else if (user.role_id === TEACHER_ROLE_ID && user.mosque_id === req.user.mosque_id) {
-        teacher.push(user);
+      const decodedCode = decodeCode(user.code);
+      const userData = { ...user.toJSON(), code: decodedCode };
+
+      if (user.role_id === STUDENT_ROLE_ID) {
+        student.push(userData);
+      } else if (user.role_id === TEACHER_ROLE_ID) {
+        teacher.push(userData);
       }
     });
 
@@ -99,6 +115,14 @@ const userAllShow = asyncHandler(async (req, res) => {
     });
   }
 });
+
+
+function decodeCode(encoded) {
+  if (!encoded) return '';
+  const parts = encoded.match(/.{1,2}/g) || [];
+  return parts.map(pair => decodeMap[pair] || '').join('');
+}
+
 
 //////////////// show by Id
 const userShowById = asyncHandler(async (req, res) => {
@@ -245,8 +269,6 @@ const getAllAdmins = asyncHandler(async (req, res) => {
         'memorized_parts',
         'role_id',
         'mosque_id',
-        'createdAt',
-        'updatedAt',
         'code' 
       ]
     });
