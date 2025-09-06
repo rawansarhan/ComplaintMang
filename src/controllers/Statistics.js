@@ -73,7 +73,7 @@ const savedQuran = async (user_id, fromDate, toDate) => {
         ],
     });
 
-    let combinedRecitations = [...quranRecitations, ...quranRecitationsOnline];
+    const combinedRecitations = [...quranRecitations, ...quranRecitationsOnline];
     if (combinedRecitations.length === 0) return 0;
 
     const coveredVerses = new Set();
@@ -84,61 +84,80 @@ const savedQuran = async (user_id, fromDate, toDate) => {
         const toSurahId = rec.toSurah.id;
         const toAyahNumber = rec.toVerse.ayah_number;
 
-        const versesInRange = await Ayah.findAll({
-            where: {
-                [Op.or]: [
-                    {
-                        surah_id: fromSurahId,
-                        ayah_number: { [Op.gte]: fromAyahNumber }
-                    },
-                    {
-                        surah_id: toSurahId,
-                        ayah_number: { [Op.lte]: toAyahNumber }
-                    },
-                    {
-                        surah_id: { [Op.gt]: fromSurahId, [Op.lt]: toSurahId }
-                    }
-                ]
-            },
-            order: [['page_number', 'ASC'], ['ayah_number', 'ASC']]
-        });
+        // -- بداية التعديل الجوهري --
+        let versesInRange;
+        if (fromSurahId === toSurahId) {
+            // الحالة 1: القراءة في نفس السورة
+            versesInRange = await Ayah.findAll({
+                where: {
+                    surah_id: fromSurahId,
+                    ayah_number: { [Op.between]: [fromAyahNumber, toAyahNumber] }
+                }
+            });
+        } else {
+            // الحالة 2: القراءة عبر سور متعددة
+            versesInRange = await Ayah.findAll({
+                where: {
+                    [Op.or]: [
+                        // الآيات من سورة البداية
+                        {
+                            surah_id: fromSurahId,
+                            ayah_number: { [Op.gte]: fromAyahNumber }
+                        },
+                        // الآيات من سورة النهاية
+                        {
+                            surah_id: toSurahId,
+                            ayah_number: { [Op.lte]: toAyahNumber }
+                        },
+                        // الآيات من السور التي بينهما
+                        {
+                            surah_id: { [Op.gt]: fromSurahId, [Op.lt]: toSurahId }
+                        }
+                    ]
+                }
+            });
+        }
+        // -- نهاية التعديل الجوهري --
 
         for (const verse of versesInRange) {
             coveredVerses.add(`${verse.surah_id}-${verse.ayah_number}`);
         }
     }
 
-    // First, find the last verse of each page
-    const lastVerseOfEachPage = await Ayah.findAll({
-        attributes: [
-            'page_number',
-            [Sequelize.fn('MAX', Sequelize.col('ayah_number')), 'last_ayah_number'],
-            'surah_id'
-        ],
-        group: ['page_number', 'surah_id'],
-        order: [['page_number', 'ASC'], ['surah_id', 'DESC']]
+    // الكود التالي يبقى كما هو (منطق التحقق من الصفحات المكتملة)
+    const allVersesInDB = await Ayah.findAll({
+        attributes: ['page_number', 'surah_id', 'ayah_number'],
+        order: [['page_number', 'ASC']]
     });
 
-    const pageCompletionStatus = {};
-    for (const item of lastVerseOfEachPage) {
-        const pageNum = item.page_number;
-        if (!pageCompletionStatus[pageNum]) {
-            // Store the verse key for the last verse on the page
-            pageCompletionStatus[pageNum] = `${item.surah_id}-${item.get('last_ayah_number')}`;
+    const pagesData = {};
+    for (const verse of allVersesInDB) {
+        if (!pagesData[verse.page_number]) {
+            pagesData[verse.page_number] = [];
         }
+        pagesData[verse.page_number].push(`${verse.surah_id}-${verse.ayah_number}`);
     }
 
     let completedPagesCount = 0;
-    for (const pageNum in pageCompletionStatus) {
-        const lastVerseKey = pageCompletionStatus[pageNum];
-        // A page is considered complete only if its last verse is in the set of covered verses
-        if (coveredVerses.has(lastVerseKey)) {
+    for (const pageNum in pagesData) {
+        const versesInPage = pagesData[pageNum];
+        let isPageComplete = true;
+
+        for (const verseKey of versesInPage) {
+            if (!coveredVerses.has(verseKey)) {
+                isPageComplete = false;
+                break;
+            }
+        }
+
+        if (isPageComplete) {
             completedPagesCount++;
         }
     }
 
     return completedPagesCount;
 };
+
 
 
 const savedHadith = async (user_id, fromDate, toDate) => {
