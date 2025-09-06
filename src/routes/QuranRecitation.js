@@ -11,7 +11,8 @@ const {
 const {
   createQuranRecitation,
   updateQuranRecitation,
-  showAllRecitationsForStudent
+  showAllRecitationsForStudent,
+  mySaved
 } = require('../controllers/QuranRecitationController')
 const {
   createQuranRecitationOnline,
@@ -163,6 +164,27 @@ router.get(
   authMiddleware,
   teacherOnly,
   showAllRecitationsForStudent
+)
+/**
+ * @swagger
+ * /api/quran-recitation/getMySaved:
+ *   get:
+ *     summary: Get all Quran recitations for a student => (onlystudent)
+ *     tags: [QuranRecitation]
+ *     responses:
+ *       200:
+ *         description: List of Quran recitations
+ *       404:
+ *         description: No Quran recitations found for this student
+ *       500:
+ *         description: Internal server error
+ */
+
+router.get(
+  '/getMySaved',
+  authMiddleware,
+  studentOnly,
+  mySaved
 )
 
 /**

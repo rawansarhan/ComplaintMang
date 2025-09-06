@@ -5,6 +5,7 @@ const {
   quranRecitationValidation_create
 } = require('../validations/QuranRecitationValidation')
 const dayjs = require('dayjs');
+const { where } = require('sequelize');
 require("dayjs/locale/ar");
 dayjs.locale("ar");
 
@@ -254,10 +255,83 @@ const showAllRecitationsForStudent = asyncHandler(async (req, res) => {
     });
   }
 });
+ const mySaved = asyncHandler(async(req,res)=>{
+  try{
+ const studentID = req.user.id;
 
+    const quranRecitations = await QuranRecitation.findAll({
+      where: { student_id: studentID },
+      include: [
+        { model: User, as: 'student' },
+        { model: User, as: 'teacher' },
+        { model: CircleSession, as: 'circleSession' },
+        { model: Surah, as: 'fromSurah' },
+        { model: Surah, as: 'toSurah' },
+        { model: Ayah, as: 'fromVerse' },
+        { model: Ayah, as: 'toVerse' },
+      ],
+      raw: true,
+      nest: true
+    });
+
+    const quranRecitationsOnline = await UndividualRecitationQuran.findAll({
+      where: { student_id: studentID },
+      include: [
+        { model: User, as: 'student' },
+        { model: User, as: 'teacher' },
+        { model: Surah, as: 'fromSurah' },
+        { model: Surah, as: 'toSurah' },
+        { model: Ayah, as: 'fromVerse' },
+        { model: Ayah, as: 'toVerse' },
+      ],
+      raw: true,
+      nest: true
+    });
+
+    const allRecitations = [...quranRecitations, ...quranRecitationsOnline];
+
+    if (allRecitations.length === 0) {
+      return res.status(200).json({
+        message: 'No Quran recitation records found for this student.',  data: []
+      });
+    }
+
+    // sort desc by created_at
+    allRecitations.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+    const resultsQuran = allRecitations.map(element => {
+      const dateObj = dayjs(element.date);
+      return {
+        date: dateObj.format("YYYY-MM-DD"),
+        day: dateObj.format("dddd"),
+        fromSurahName: element.fromSurah?.name || null,
+        fromAyah: element.fromVerse?.ayah_number || null,
+        toSurahName: element.toSurah?.name || null,
+        toAyah: element.toVerse?.ayah_number || null,
+        is_counted: element.is_counted ? "محسوبة" : "غير محسوبة"
+      };
+    });
+
+    return res.status(200).json({
+      message: 'Retrieved all Quran recitations for the student.',
+      studentID,
+      studentFirstName: allRecitations[0]?.student?.first_name || null,
+      studentLastName: allRecitations[0]?.student?.last_name || null,
+      data: resultsQuran
+    });
+
+  } catch (err) {
+    console.error('Database error:', err);
+    return res.status(500).json({
+      message: 'Internal server error',
+      details: err.message
+    });
+  }
+});
 
 module.exports = {
   createQuranRecitation,
   updateQuranRecitation,
-  showAllRecitationsForStudent
+  showAllRecitationsForStudent,
+  mySaved
 }
