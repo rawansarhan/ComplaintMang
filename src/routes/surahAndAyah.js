@@ -15,7 +15,7 @@ const {
  * @swagger
  * /api/SurahAndAyah/AllSurahAndAyah:
  *   get:
- *     summary: Get all surahs and their ayahs (teacher only)
+ *     summary: Get all surahs and their ayahs (teacher and student)
  *     tags: [Surah]
  *     security:
  *       - bearerAuth: []
