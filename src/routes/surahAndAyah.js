@@ -48,5 +48,5 @@ const {
  */
 
 
-router.get('/AllSurahAndAyah',authMiddleware,teacherOnly,AllAyahAndSurah);
+router.get('/AllSurahAndAyah',authMiddleware,authorizeRoles(teacherOnly,studentOnly),AllAyahAndSurah);
 module.exports = router

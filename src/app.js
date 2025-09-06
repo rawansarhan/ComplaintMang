@@ -42,6 +42,8 @@ const LessonSession = require('./routes/lesson');
 app.use('/api/LessonSession', LessonSession);  
 const UserAudio = require('./routes/audio');
 app.use('/api/UserAudio', UserAudio);  
+const Statistics = require('./routes/statistics');
+app.use('/api/Statistics', Statistics);  
 
 
 module.exports = app;

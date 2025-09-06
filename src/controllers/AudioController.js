@@ -84,7 +84,7 @@ const uploadAudio = (req, res) => {
         updateAt: userAudio.updated_at
       })
     } catch (e) {
-      console.error('🔥 Error while saving:', e)
+      console.error(' Error while saving:', e)
       return res.status(500).json({ error: e.message })
     }
   })
@@ -228,7 +228,6 @@ const getAllAudiosForTeacher = asyncHandler(async (req, res) => {
 
     if (!userCircles.length) {
       return res
-        .status(404)
         .json({ message: 'No circles found for this teacher' })
     }
 
@@ -243,7 +242,6 @@ const getAllAudiosForTeacher = asyncHandler(async (req, res) => {
 
     if (!studentIds.length) {
       return res
-        .status(404)
         .json({ message: "No students found in teacher's circles" })
     }
 
