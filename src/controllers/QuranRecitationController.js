@@ -216,8 +216,8 @@ const showAllRecitationsForStudent = asyncHandler(async (req, res) => {
     const allRecitations = [...quranRecitations, ...quranRecitationsOnline];
 
     if (allRecitations.length === 0) {
-      return res.status(404).json({
-        message: 'No Quran recitation records found for this student.'
+      return res.status(200).json({
+        message: 'No Quran recitation records found for this student.',  data: []
       });
     }
 
