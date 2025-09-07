@@ -9,7 +9,7 @@ const {
   CircleUser
 } = require('../models')
 const asyncHandler = require('express-async-handler')
-const { where, Model } = require('sequelize')
+const { where, Model, Op } = require('sequelize')
 const {
   ValidateCreateComment,
   ValidateCreateAudio
@@ -215,93 +215,97 @@ const createComment = asyncHandler(async (req, res) => {
 })
 ////////get all audios for teacher
 const getAllAudiosForTeacher = asyncHandler(async (req, res) => {
-  const teacherId = req.user.id
+  const teacherId = req.user.id;
+  const mosqueId = req.user.mosque_id;
 
   const user = await User.findOne({
     where: { id: teacherId, is_save_quran: true }
-  })
+  });
 
-  let audios = []
+  let audios = [];
 
   if (user) {
-    // إذا كان عنده صلاحية حفظ القرآن، جيب كل الـ audios مع السورة والطالب
+    // إذا كان عنده صلاحية حفظ القرآن
     audios = await UserAudio.findAll({
       include: [
         {
           model: Surah,
-          as: 'surah',
-          attributes: ['id', 'name']
+          as: "surah",
+          attributes: ["id", "name"]
         },
         {
           model: User,
-          as: 'student',
-          attributes: ['first_name', 'last_name']
+          as: "student",
+          where: { mosque_id: mosqueId },
+          attributes: ["first_name", "last_name"]
         }
       ]
-    })
+    });
   } else {
+    // إذا ما عنده صلاحية حفظ القرآن → نجيب الدوائر
     const userCircles = await CircleUser.findAll({
       where: { user_id: teacherId },
       include: [
         {
           model: Circle,
-          as: 'circle_users',
+          as: "circle",
           where: { circle_type_id: 1 },
-          attributes: ['id', 'name']
+          attributes: ["id", "name"]
         }
       ]
-    })
+    });
 
     if (!userCircles.length) {
-      return res.json({ message: 'No circles found for this teacher'})
+      return res.json({ message: "No circles found for this teacher" });
     }
 
-    const circleIds = userCircles.map(entry => entry.circle_id)
+    const circleIds = userCircles.map((entry) => entry.circle_id);
 
     const studentCircles = await CircleUser.findAll({
-      where: { circle_id: circleIds, role: 1 },
-      attributes: ['user_id']
-    })
+      where: { circle_id: { [Op.in]: circleIds }, role_id: 1 },
+      attributes: ["user_id"]
+    });
 
-    const studentIds = studentCircles.map(entry => entry.user_id)
+    const studentIds = studentCircles.map((entry) => entry.user_id);
 
     if (!studentIds.length) {
-      return res.json({ message: "No students found in teacher's circles" })
+      return res.json({ message: "No students found in teacher's circles" });
     }
 
     audios = await UserAudio.findAll({
-      where: { student_id: studentIds },
+      where: { student_id: { [Op.in]: studentIds } },
       include: [
         {
           model: Surah,
-          as: 'surah',
-          attributes: ['id', 'name']
+          as: "surah",
+          attributes: ["id", "name"]
         },
         {
           model: User,
-          as: 'student',
-          attributes: ['first_name', 'last_name']
+          as: "student",
+          attributes: ["first_name", "last_name"]
         }
       ]
-    })
+    });
   }
 
-  const audioIds = audios.map(a => a.id)
+  // نجيب التعليقات ونحدد الأوديو اللي ما عليه تعليقات
+  const audioIds = audios.map((a) => a.id);
   const comments = await Comment.findAll({
-    where: { audio_id: audioIds },
-    attributes: ['audio_id']
-  })
-  const commentedAudioIds = comments.map(c => c.audio_id)
+    where: { audio_id: { [Op.in]: audioIds } },
+    attributes: ["audio_id"]
+  });
+  const commentedAudioIds = comments.map((c) => c.audio_id);
 
   const AudiosWithoutComments = audios.filter(
-    audio => !commentedAudioIds.includes(audio.id)
-  )
+    (audio) => !commentedAudioIds.includes(audio.id)
+  );
 
   return res.status(200).json({
-    message: 'All audios without comments',
+    message: "All audios without comments",
     Audios: AudiosWithoutComments
-  })
-})
+  });
+});
 
 
 
