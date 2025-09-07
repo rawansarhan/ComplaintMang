@@ -205,16 +205,22 @@ const showAll = asyncHandler(async (req, res) => {
     const TEACHER_ROLE_ID = 2;
     const STUDENT_ROLE_ID = 1;
 
-    // نستخدم بيانات اليوزر من الـ req
-    const adminId = req.user.id;
     const mosqueId = req.user.mosque_id;
 
-    // نجيب الدوائر مع المستخدمين
     const circles = await Circle.findAll({
       include: [
         {
           model: User,
           as: "users",
+          attributes: [
+            "id",
+            "first_name",
+            "last_name",
+            "phone",
+            "father_phone",
+            "address",
+            "code"
+          ],
           through: { attributes: ["role_id"] },
           where: { mosque_id: mosqueId }
         }
@@ -228,16 +234,29 @@ const showAll = asyncHandler(async (req, res) => {
       });
     }
 
-    // نرتب الداتا
-    const formatted = circles.map(circle => {
+    const formatted = circles.map((circle) => {
       const teachers = [];
       const students = [];
 
-      circle.users.forEach(user => {
+      circle.users.forEach((user) => {
+        const baseData = {
+          id: user.id,
+          first_name: user.first_name,
+          last_name: user.last_name,
+          phone: user.phone,
+          address: user.address,
+          decoded_code: user.code ? decodeCode(user.code) : null
+        };
+
         if (user.CircleUser.role_id === TEACHER_ROLE_ID) {
-          teachers.push(user);
+          // أستاذ → ما نعرض father_phone
+          teachers.push(baseData);
         } else if (user.CircleUser.role_id === STUDENT_ROLE_ID) {
-          students.push(user);
+          // طالب → نعرض father_phone
+          students.push({
+            ...baseData,
+            father_phone: user.father_phone
+          });
         }
       });
 
@@ -262,6 +281,7 @@ const showAll = asyncHandler(async (req, res) => {
     });
   }
 });
+
 
 
 //////show with ID
@@ -601,6 +621,50 @@ const getAllcircleDarsForStudentWithExam = asyncHandler(async (req, res) => {
     AllCircles,
   });
 });
+
+const encodeMap = {
+  0: 'aa',
+  1: 'bb',
+  2: 'cc',
+  3: 'dd',
+  4: 'ee',
+  5: 'ff',
+  6: 'gg',
+  7: 'hh',
+  8: 'ii',
+  9: 'jj'
+}
+
+const decodeMap = Object.fromEntries(
+  Object.entries(encodeMap).map(([k, v]) => [v, k])
+)
+
+function encodeCode (code) {
+  return code
+    .toString()
+    .split('')
+    .map(d => encodeMap[d])
+    .join('')
+}
+
+function decodeCode (encoded) {
+  const parts = encoded.match(/.{1,2}/g)
+  return parts.map(pair => decodeMap[pair]).join('')
+}
+
+async function generateUniqueCode () {
+  let code,
+    exists = true
+
+  while (exists) {
+    code = Math.floor(100000 + Math.random() * 900000)
+    const encodedCode = encodeCode(code.toString())
+    const userWithCode = await User.findOne({ where: { code: encodedCode } })
+    exists = !!userWithCode
+  }
+
+  return code
+}
 module.exports = {
   createCircle,
   updateCircle,
