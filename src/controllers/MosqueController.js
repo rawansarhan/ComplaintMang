@@ -280,43 +280,53 @@ function decodeCode (encoded) {
 const showStudentAndTeacher = asyncHandler(async (req, res) => {
   const Id = req.user.id
   const user = await User.findOne({ where: { id: Id } })
-  const AllStudent = []
-  const AllTeacher = []
+
+  if (!user) {
+    return res.status(404).json({ message: "not found user" })
+  }
 
   const students = await User.findAll({
     where: { mosque_id: user.mosque_id, role_id: 1 }
   })
 
-  if (students || students.length !== 0) {
-  for (const student of students) {
-    AllStudent.push(student)
-  }
-  }else{
-    return res.status(200).json({message :"not found students",date :[]});
-  }
-
- 
+  const AllStudent = students && students.length > 0 
+    ? students.map(student => ({
+        ...student.toJSON(),
+        code: student.code ? decodeCode(student.code) : null
+      }))
+    : []
 
   const teachers = await User.findAll({
     where: { mosque_id: user.mosque_id, role_id: 2 }
   })
 
-  if (teachers || teachers.length !== 0) {
-   for (const teacher of teachers) {
-    AllTeacher.push(teacher)
-  }
-  }else {
-    return res.status(200).json({message :"not found teacher",date :[]})
+  // process teachers + decode code if exists
+  const AllTeacher = teachers && teachers.length > 0 
+    ? teachers.map(teacher => ({
+        ...teacher.toJSON(),
+        code: teacher.code ? decodeCode(teacher.code) : null
+      }))
+    : []
+
+  if (AllStudent.length === 0 && AllTeacher.length === 0) {
+    return res.status(200).json({
+      message: "",
+      AllStudent: [],
+      AllTeacher: []
+    })
   }
 
- 
-
+  // إرجاع الطلاب والأساتذة بعد فك التشفير
   return res.status(200).json({
-    message: 'Fetched all students and teachers in this mosque',
-    AllStudent: AllStudent,
-    AllTeacher: AllTeacher
+    message: 'get all student and teacher for mosque',
+    AllStudent,
+    AllTeacher
   })
 })
+
+
+
+
 
 module.exports = {
   mosqueCreate,
