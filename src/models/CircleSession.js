@@ -16,7 +16,7 @@ module.exports = (sequelize, DataTypes) => {
 
       CircleSession.hasMany(models.QuranRecitation, {
         foreignKey: 'session_id',
-        as: 'quran_recitations',
+        as: 'circleSession',
       });
 
       CircleSession.hasMany(models.SessionAttendance, {

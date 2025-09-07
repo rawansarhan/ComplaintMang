@@ -1,5 +1,5 @@
 const asyncHandler = require('express-async-handler')
-const { QuranRecitation,UndividualRecitationQuran,User,SessionAttendance,Surah,Ayah,CircleSession,Circle} = require('../models')
+const { QuranRecitation,UndividualRecitationQuran,User,HadithRecitation ,HadithBook ,UndividualRecitationHadith ,SessionAttendance,QuranTalkeen,Surah,Ayah,CircleSession,Circle} = require('../models')
 const {
   quranRecitationValidation_update,
   quranRecitationValidation_create
@@ -226,7 +226,7 @@ const showAllRecitationsForStudent = asyncHandler(async (req, res) => {
     allRecitations.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
     const resultsQuran = allRecitations.map(element => {
-      const dateObj = dayjs(element.date);
+      const dateObj = dayjs(element.circleSession.date);
       return {
         date: dateObj.format("YYYY-MM-DD"),
         day: dateObj.format("dddd"),
@@ -255,10 +255,13 @@ const showAllRecitationsForStudent = asyncHandler(async (req, res) => {
     });
   }
 });
- const mySaved = asyncHandler(async(req,res)=>{
-  try{
- const studentID = req.user.id;
 
+////////////////////////////////////////////////
+const mySaved = asyncHandler(async(req,res)=>{
+  try{
+    const studentID = req.user.id;
+
+    // --- Quran Recitations ---
     const quranRecitations = await QuranRecitation.findAll({
       where: { student_id: studentID },
       include: [
@@ -288,22 +291,15 @@ const showAllRecitationsForStudent = asyncHandler(async (req, res) => {
       nest: true
     });
 
-    const allRecitations = [...quranRecitations, ...quranRecitationsOnline];
+    const allQuranRecitations = [...quranRecitations, ...quranRecitationsOnline];
+    allQuranRecitations.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-    if (allRecitations.length === 0) {
-      return res.status(200).json({
-        message: 'No Quran recitation records found for this student.',  data: []
-      });
-    }
-
-    // sort desc by created_at
-    allRecitations.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-    const resultsQuran = allRecitations.map(element => {
-      const dateObj = dayjs(element.date);
+    const resultsQuran = allQuranRecitations.map(element => {
+      const dateObj = dayjs(element.circleSession?.date || element.date);
       return {
         date: dateObj.format("YYYY-MM-DD"),
         day: dateObj.format("dddd"),
+        quranId: element.id,
         fromSurahName: element.fromSurah?.name || null,
         fromAyah: element.fromVerse?.ayah_number || null,
         toSurahName: element.toSurah?.name || null,
@@ -312,12 +308,86 @@ const showAllRecitationsForStudent = asyncHandler(async (req, res) => {
       };
     });
 
+    // --- Hadith Recitations ---
+    const hadithRecitations = await HadithRecitation.findAll({
+      where: { student_id: studentID },
+      include: [
+        { model: User, as: 'student' },
+        { model: User, as: 'teacher' },
+        { model: CircleSession, as: 'session' },
+        { model: HadithBook, as: 'book' }
+      ],
+      raw: true,
+      nest: true
+    });
+
+    const hadithRecitationsOnline = await UndividualRecitationHadith.findAll({
+      where: { student_id: studentID },
+      include: [
+        { model: User, as: 'student' },
+        { model: User, as: 'teacher' },
+        { model: HadithBook, as: 'book' }
+      ],
+      raw: true,
+      nest: true
+    });
+
+    const allHadithRecitations = [...hadithRecitations, ...hadithRecitationsOnline];
+    allHadithRecitations.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+    const resultsHadith = allHadithRecitations.map(element => {
+      const dateObj = dayjs(element.session?.date || element.date);
+      return {
+        date: dateObj.format("YYYY-MM-DD"),
+        day: dateObj.format("dddd"),
+        HadithRecitationsId: element.id,
+        bookName: element.book?.name || "",
+        fromHadith: element.from_hadith || 0,
+        toHadith: element.to_hadith || 0,
+        is_counted: element.is_counted ? "محسوبة" : "غير محسوبة"
+      };
+    });
+
+    // --- Talkeen Recitations ---
+    const quranTalkeen = await QuranTalkeen.findAll({
+      where: { student_id: studentID },
+      include: [
+        { model: User, as: 'student' },
+        { model: User, as: 'teacher' },
+        { model: CircleSession, as: 'session' },
+        { model: Surah, as: 'from_sura' },
+        { model: Surah, as: 'to_sura' },
+        { model: Ayah, as: 'from_ayah' },
+        { model: Ayah, as: 'to_ayah' },
+      ],
+      raw: true,
+      nest: true
+    });
+
+    quranTalkeen.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+    const resultsTalkeen = quranTalkeen.map(element => {
+      const dateObj = dayjs(element.session?.date || element.date);
+      return {
+        date: dateObj.format("YYYY-MM-DD"),
+        day: dateObj.format("dddd"),
+        idTalkeen: element.id,
+        fromSurahName: element.from_sura?.name || null,
+        fromAyah: element.from_ayah?.ayah_number || null,
+        toSurahName: element.to_sura?.name || null,
+        toAyah: element.to_ayah?.ayah_number || null,
+        is_counted: "محسوبة"
+      };
+    });
+
     return res.status(200).json({
-      message: 'Retrieved all Quran recitations for the student.',
+      message: 'Retrieved all recitations for the student.',
       studentID,
-      studentFirstName: allRecitations[0]?.student?.first_name || null,
-      studentLastName: allRecitations[0]?.student?.last_name || null,
-      data: resultsQuran
+      studentFirstName: allQuranRecitations[0]?.student?.first_name || null,
+      studentLastName: allQuranRecitations[0]?.student?.last_name || null,
+      quran: resultsQuran,
+      hadith: resultsHadith,
+      talkeen: resultsTalkeen
     });
 
   } catch (err) {
@@ -328,6 +398,7 @@ const showAllRecitationsForStudent = asyncHandler(async (req, res) => {
     });
   }
 });
+
 
 module.exports = {
   createQuranRecitation,

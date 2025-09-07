@@ -12,6 +12,7 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'circle_id',
         as: 'circle_users',
       });
+      
     }
   }
 
