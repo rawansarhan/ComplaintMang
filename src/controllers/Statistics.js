@@ -229,9 +229,6 @@ const statisticsForAdmin = asyncHandler(async (req, res) => {
 
     const students = await User.findAll({
         where: { mosque_id: admin.mosque_id, role_id: 1,
-             created_at: {
-                [Op.between]: [from, to]
-            },
          },
         attributes: ["id", "first_name", "last_name"]
     });
