@@ -215,7 +215,7 @@ const showAll = asyncHandler(async (req, res) => {
       ]
     })
    if(circles.length === 0){
-    return res.status(200).json({ message: "Not found circles " ,date:[]});
+    return res.status(200).json({ message: "Not found circles " });
 
      }
     const formatted = circles.map(circle => {
