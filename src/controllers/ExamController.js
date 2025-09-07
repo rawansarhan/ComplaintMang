@@ -93,7 +93,7 @@ const examGetAll = asyncHandler(async (req, res) => {
     where: { circle_id: circleId }
   })
   if(exams.length === 0){
-    return res.status(200).json({ message: "Not found exams for this circle" ,date:[]});
+    return res.status(200).json({ message: "Not found exams for this circle"});
   }
   return res.status(200).json({
     message: 'get All exam for the circle',

@@ -88,7 +88,7 @@ const GetAllSessionesLession = asyncHandler(async (req, res) => {
     attributes :['id','date' ,'title']
   })
   if (lessonSession.length === 0) {
-    return res.status(200).json({message :'No lesson sessions found', date :[]})
+    return res.status(200).json({message :'No lesson sessions found'})
   }
 
   return res.status(200).json({

@@ -237,7 +237,7 @@ const statisticsForAdmin = asyncHandler(async (req, res) => {
     });
 
     if (students.length === 0) {
-        return res.status(200).json({ message: "لا يوجد طلاب في هذا المسجد" ,date :[]});
+        return res.status(200).json({ message: "لا يوجد طلاب في هذا المسجد" });
     }
 
     const results = [];

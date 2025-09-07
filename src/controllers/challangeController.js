@@ -48,7 +48,7 @@ const challange = await Challenge.findOne({
 })
 if(!challange){
   return res.status(200).json({
-    message : "not found challenge for this student " ,date :[]
+    message : "not found challenge for this student " 
   })
 }
    const challengeTask = await ChallengeTask.findAll({
@@ -367,7 +367,7 @@ const challangeTeasher = asyncHandler(async (req, res) => {
   });
 
   if (!challenge) {
-    return res.status(200).json({ message: 'Challenge not found' ,date :[]});
+    return res.status(200).json({ message: 'Challenge not found'});
   }
 
   const wallet = await Wallet.findOne({ where: { student_id: studentId } });
@@ -478,7 +478,7 @@ const challange = await Challenge.findOne({
 })
 if(!challange){
   return res.status(404).json({
-    message : "not found challenge for this student ",date :[]
+    message : "not found challenge for this student "
   })
 }
    const challengeTask = await ChallengeTask.findAll({
@@ -495,7 +495,7 @@ if(!challange){
   ]
 });
 if (challengeTask.length === 0) {
-  return res.status(200).json({ message: 'No tasks found for this challenge.' ,date :[]});
+  return res.status(200).json({ message: 'No tasks found for this challenge.'});
 }
 
 const result = challengeTask.map(ct => ({

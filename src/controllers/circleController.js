@@ -321,7 +321,7 @@ const show_circle_for_teacher = asyncHandler(async (req, res) => {
       ]
     });
    if(circles.length === 0){
-    return res.status(200).json({ message: "No circles found for this teacher" ,date:[]});
+    return res.status(200).json({ message: "No circles found for this teacher" });
 
      }
     const teacherCircles = circles.filter(circle =>
@@ -396,7 +396,7 @@ const showCircleTypeForTeacher = asyncHandler(async (req, res) => {
         ]
       });
    if(circles.length === 0){
-    return res.status(200).json({ message: "No circles found for this teacher" ,date:[]});
+    return res.status(200).json({ message: "No circles found for this teacher"});
 
      }
       const teacherCircles = circles.filter(circle =>
@@ -472,7 +472,7 @@ const show_Circle_Teacher_Dars = asyncHandler(async (req, res) => {
         ]
       });
      if(circles.length === 0){
-    return res.status(200).json({ message: "No circles Dars found for this teacher" ,date:[]});
+    return res.status(200).json({ message: "No circles Dars found for this teacher"});
 
      }
       const teacherCircles = circles.filter(circle =>
@@ -533,7 +533,7 @@ const showCircleDarsForStudent = asyncHandler(async (req, res) => {
   });
 
   if (circlesUser.length === 0) {
-    return res.status(200).json({ message: "not found circle for this student" , date :[] });
+    return res.status(200).json({ message: "not found circle for this student" });
   }
 
   const circleIds = circlesUser.map(cu => cu.circle_id);
@@ -560,7 +560,7 @@ const getAllcircleDarsForStudentWithExam = asyncHandler(async (req, res) => {
   });
 
   if (circlesUser.length === 0) {
-    return res.status(200).json({ message: "No circles found for this student" ,date:[]});
+    return res.status(200).json({ message: "No circles found for this student"});
   }
 
   const circleIds = circlesUser.map((cu) => cu.circle_id);
@@ -574,7 +574,7 @@ const getAllcircleDarsForStudentWithExam = asyncHandler(async (req, res) => {
   });
 
   if (circles.length === 0) {
-    return res.status(200).json({ message: "No Dars circles found" ,date :[]});
+    return res.status(200).json({ message: "No Dars circles found" });
   }
 
   const AllCircles = [];

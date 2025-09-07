@@ -111,7 +111,7 @@ const getAllAudiosForStudent = asyncHandler(async (req, res) => {
       ]  })
 
   if (audios.length === 0) {
-    return res.status(200).json({ message: "You don't have any audio yet",date :[] })
+    return res.status(200).json({ message: "You don't have any audio yet"})
   }
 
   return res.status(200).json({
@@ -253,7 +253,7 @@ const getAllAudiosForTeacher = asyncHandler(async (req, res) => {
     })
 
     if (!userCircles.length) {
-      return res.json({ message: 'No circles found for this teacher', data: [] })
+      return res.json({ message: 'No circles found for this teacher'})
     }
 
     const circleIds = userCircles.map(entry => entry.circle_id)
@@ -266,7 +266,7 @@ const getAllAudiosForTeacher = asyncHandler(async (req, res) => {
     const studentIds = studentCircles.map(entry => entry.user_id)
 
     if (!studentIds.length) {
-      return res.json({ message: "No students found in teacher's circles", data: [] })
+      return res.json({ message: "No students found in teacher's circles" })
     }
 
     audios = await UserAudio.findAll({
