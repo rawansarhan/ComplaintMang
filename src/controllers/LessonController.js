@@ -179,7 +179,7 @@ const getAllStudent = asyncHandler(async (req, res) => {
     where: { circle_id: circle.id, role_id: 1 }
   });
   if (!userCircles || userCircles.length === 0) {
-    return res.status(200).json({ message: 'No students found for this circle' ,date :[]});
+    return res.status(200).json({ message: 'No students found for this circle'});
   }
 
   const studentsAttendanceStatus = [];
