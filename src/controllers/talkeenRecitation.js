@@ -172,7 +172,7 @@ const showAllRecitationsForStudent = asyncHandler(async (req, res) => {
 quranRecitations.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
     const resultsQuran = quranRecitations.map(element => {
-      const dateObj = dayjs(element.date);
+      const dateObj = dayjs(element.session.date);
       return {
         date: dateObj.format("YYYY-MM-DD"),
         day: dateObj.format("dddd"),
