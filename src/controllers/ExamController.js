@@ -281,7 +281,7 @@ const getAllMarksForTeacher = asyncHandler(async (req, res) => {
           studentFirstName: student.user?.first_name || "N/A",
           studentLastName: student.user?.last_name || "N/A",
           exam_title: exam.title,
-          result_exam: resultExam?.score || "not add mark yet",
+          result_exam: resultExam?.score || 0,
           notes: resultExam?.notes || null,
           has_taken_exam: resultExam?.has_taken_exam || false
         };
