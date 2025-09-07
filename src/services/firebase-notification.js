@@ -9,19 +9,21 @@
 // async function sendNotification(deviceToken, title, body, data = {}) {
 //   const message = {
 //     token: deviceToken,
-//     notification: {
-//       title,
-//       body,
-//     },
+//     notification: { title, body },
 //     data, // بيانات إضافية يمكن أن يقرأها التطبيق
 //   };
 
 //   try {
 //     const response = await admin.messaging().send(message);
-//     console.log("✅ تم إرسال الإشعار:", response);
+//     console.log("✅ تم إرسال الإشعار بنجاح:", response);
 //     return true;
 //   } catch (error) {
-//     console.error("❌ خطأ في الإرسال:", error);
+//     // طباعة كل التفاصيل الممكنة للخطأ
+//     console.error("❌ خطأ في إرسال الإشعار:");
+//     console.error("Code:", error.code);
+//     console.error("Message:", error.message);
+//     if (error.details) console.error("Details:", error.details);
+
 //     return false;
 //   }
 // }

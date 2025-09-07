@@ -96,8 +96,19 @@ const getAllAudiosForStudent = asyncHandler(async (req, res) => {
   const studentId = req.user.id
 
   const audios = await UserAudio.findAll({
-    where: { student_id: studentId }
-  })
+    where: { student_id: studentId },
+    include: [
+        {
+          model: Surah,
+          as: 'surah',
+          attributes: ['id', 'name']
+        },
+        {
+          model: User,
+          as: 'student',
+          attributes: ['first_name', 'last_name']
+        }
+      ]  })
 
   if (audios.length === 0) {
     return res.status(200).json({ message: "You don't have any audio yet",date :[] })
@@ -213,7 +224,21 @@ const getAllAudiosForTeacher = asyncHandler(async (req, res) => {
   let audios = []
 
   if (user) {
-    audios = await UserAudio.findAll()
+    // إذا كان عنده صلاحية حفظ القرآن، جيب كل الـ audios مع السورة والطالب
+    audios = await UserAudio.findAll({
+      include: [
+        {
+          model: Surah,
+          as: 'surah',
+          attributes: ['id', 'name']
+        },
+        {
+          model: User,
+          as: 'student',
+          attributes: ['first_name', 'last_name']
+        }
+      ]
+    })
   } else {
     const userCircles = await CircleUser.findAll({
       where: { user_id: teacherId },
@@ -228,8 +253,7 @@ const getAllAudiosForTeacher = asyncHandler(async (req, res) => {
     })
 
     if (!userCircles.length) {
-      return res
-        .json({ message: 'No circles found for this teacher' })
+      return res.json({ message: 'No circles found for this teacher', data: [] })
     }
 
     const circleIds = userCircles.map(entry => entry.circle_id)
@@ -242,12 +266,23 @@ const getAllAudiosForTeacher = asyncHandler(async (req, res) => {
     const studentIds = studentCircles.map(entry => entry.user_id)
 
     if (!studentIds.length) {
-      return res
-        .json({ message: "No students found in teacher's circles" ,date :[]})
+      return res.json({ message: "No students found in teacher's circles", data: [] })
     }
 
     audios = await UserAudio.findAll({
-      where: { student_id: studentIds }
+      where: { student_id: studentIds },
+      include: [
+        {
+          model: Surah,
+          as: 'surah',
+          attributes: ['id', 'name']
+        },
+        {
+          model: User,
+          as: 'student',
+          attributes: ['first_name', 'last_name']
+        }
+      ]
     })
   }
 
@@ -267,6 +302,7 @@ const getAllAudiosForTeacher = asyncHandler(async (req, res) => {
     Audios: AudiosWithoutComments
   })
 })
+
 
 
 module.exports = {
