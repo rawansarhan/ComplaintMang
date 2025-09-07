@@ -155,19 +155,19 @@ const AddMarksCreate = asyncHandler(async (req, res) => {
           result = existingMark;
 
           // 🔔 إشعار عند تعديل العلامة
-          console.log("Sending notification to token:", user.fcm_token);
-          if (user.fcm_token) {
-            const success = await sendNotification(
-              user.fcm_token,
-              "تعديل علامة الامتحان",
-              `تم تعديل علامتك في الامتحان (${exam.title || "امتحان"}) إلى ${existingMark.score}`
-            );
-            console.log(
-              `Notification for user ${user.id} ${
-                success ? "sent ✅" : "failed ❌"
-              }`
-            );
-          }
+          // console.log("Sending notification to token:", user.fcm_token);
+          // if (user.fcm_token) {
+          //   const success = await sendNotification(
+          //     user.fcm_token,
+          //     "تعديل علامة الامتحان",
+          //     `تم تعديل علامتك في الامتحان (${exam.title || "امتحان"}) إلى ${existingMark.score}`
+          //   );
+          //   console.log(
+          //     `Notification for user ${user.id} ${
+          //       success ? "sent ✅" : "failed ❌"
+          //     }`
+          //   );
+          // }
         } else {
           const newMark = await ExamResult.create({
             exam_id: examId,
@@ -179,19 +179,19 @@ const AddMarksCreate = asyncHandler(async (req, res) => {
           result = newMark;
 
           // 🔔 إشعار عند إضافة علامة جديدة
-          console.log("Sending notification to token:", user.fcm_token);
-          if (user.fcm_token) {
-            const success = await sendNotification(
-              user.fcm_token,
-              "إضافة علامة الامتحان",
-              `تم إضافة علامتك في الامتحان (${exam.title || "امتحان"}): ${newMark.score}`
-            );
-            console.log(
-              `Notification for user ${user.id} ${
-                success ? "sent ✅" : "failed ❌"
-              }`
-            );
-          }
+          // console.log("Sending notification to token:", user.fcm_token);
+          // if (user.fcm_token) {
+          //   const success = await sendNotification(
+          //     user.fcm_token,
+          //     "إضافة علامة الامتحان",
+          //     `تم إضافة علامتك في الامتحان (${exam.title || "امتحان"}): ${newMark.score}`
+          //   );
+          //   console.log(
+          //     `Notification for user ${user.id} ${
+          //       success ? "sent ✅" : "failed ❌"
+          //     }`
+          //   );
+          // }
         }
 
         return result;
