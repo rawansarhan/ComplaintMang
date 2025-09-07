@@ -202,30 +202,44 @@ const deleteCircle = asyncHandler(async (req, res) => {
 
 const showAll = asyncHandler(async (req, res) => {
   try {
-    const TEACHER_ROLE_ID = 2
-    const STUDENT_ROLE_ID = 1
+    const TEACHER_ROLE_ID = 2;
+    const STUDENT_ROLE_ID = 1;
 
+    // نستخدم بيانات اليوزر من الـ req
+    const adminId = req.user.id;
+    const mosqueId = req.user.mosque_id;
+
+    // نجيب الدوائر مع المستخدمين
     const circles = await Circle.findAll({
       include: [
         {
           model: User,
-          as: 'users',
-          through: { attributes: ['role_id'] }
+          as: "users",
+          through: { attributes: ["role_id"] },
+          where: { mosque_id: mosqueId }
         }
       ]
-    })
-   
+    });
+
+    if (!circles || circles.length === 0) {
+      return res.status(200).json({
+        message: "not have circle yet",
+        circles: []
+      });
+    }
+
+    // نرتب الداتا
     const formatted = circles.map(circle => {
-      const teachers = []
-      const students = []
+      const teachers = [];
+      const students = [];
 
       circle.users.forEach(user => {
         if (user.CircleUser.role_id === TEACHER_ROLE_ID) {
-          teachers.push(user)
+          teachers.push(user);
         } else if (user.CircleUser.role_id === STUDENT_ROLE_ID) {
-          students.push(user)
+          students.push(user);
         }
-      })
+      });
 
       return {
         id: circle.id,
@@ -233,18 +247,22 @@ const showAll = asyncHandler(async (req, res) => {
         description: circle.description,
         teachers,
         students
-      }
-    })
+      };
+    });
 
-    return res.status(200).json({ circles: formatted })
+    return res.status(200).json({
+      message: "get all circle",
+      circles: formatted
+    });
   } catch (err) {
-    console.error('Database error:', err)
+    console.error("Database error:", err);
     return res.status(500).json({
-      message: 'Database error',
+      message: "Database error",
       details: err.message
-    })
+    });
   }
-})
+});
+
 
 //////show with ID
 const showWithId = asyncHandler(async (req, res) => {
