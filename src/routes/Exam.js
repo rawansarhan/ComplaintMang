@@ -10,7 +10,8 @@ const {
   examGetAll,
   examUpdate,
   AddMarksCreate,
-  getAllMarks
+  getAllMarks,
+  getAllMarksForTeacher
 } = require('../controllers/ExamController');
 /**
  * @swagger
@@ -256,5 +257,56 @@ router.get(
   authMiddleware,
   studentOnly,
   getAllMarks
+);
+/**
+ * @swagger
+ * /api/exam/getAllMarks_teacher/{id}:
+ *   get:
+ *     summary: Get all exam results (marks) for the logged-in student in a specific circle => (teacher)
+ *     tags: [Exam]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Exam ID
+ *     responses:
+ *       200:
+ *         description: List of all exams in the circle with student's marks
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: All exams with students marks
+ *                 results:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       exam_title:
+ *                         type: string
+ *                         example: "Midterm Exam"
+ *                       result_exam:
+ *                         type: integer
+ *                         nullable: true
+ *                         example: 85
+ *       404:
+ *         description: No exams found for this circle
+ *       401:
+ *         description: Unauthorized (missing or invalid token)
+ *       500:
+ *         description: Server error
+ */
+router.get(
+  "/getAllMarks_teacher/:id",
+  authMiddleware,
+  teacherOnly,
+  getAllMarksForTeacher
 );
 module.exports = router;

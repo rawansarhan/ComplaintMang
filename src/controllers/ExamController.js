@@ -16,6 +16,7 @@ const { where, Op } = require('sequelize')
 const e = require('express')
 const { date } = require('joi')
 const { sendNotification } = require("../services/firebase-notification");
+const { messaging } = require('firebase-admin')
  // استدعاء الدالة من server.js
 
 
@@ -236,7 +237,72 @@ return res.status(200).json({
 
 });
 /////////////////////////////////
+const getAllMarksForTeacher = asyncHandler(async (req, res) => {
+  try {
+    const teacherId = req.user.id;
+    const examId = req.params.id;
 
+    // نجيب الامتحان
+    const exam = await Exam.findOne({ where: { id: examId } });
+    if (!exam) {
+      return res.status(404).json({ message: "exam not found" });
+    }
+
+    // تحقق من أن المدرس داخل الـ circle
+    const circleUser = await CircleUser.findOne({
+      where: { circle_id: exam.circle_id, user_id: teacherId, role_id: 2 }
+    });
+    if (!circleUser) {
+      return res.status(403).json({ message: "you dont have permission" });
+    }
+
+    // نجيب الطلاب داخل الـ circle
+    const circleStudent = await CircleUser.findAll({
+      where: { circle_id: exam.circle_id, role_id: 1 },
+      include: [{ model: User, as: "user" }]
+    });
+
+    if (circleStudent.length === 0) {
+      return res.status(200).json({
+        message: "you dont have student in this circle",
+        data: []
+      });
+    }
+
+    // نجيب النتائج لكل طالب
+    const results = await Promise.all(
+      circleStudent.map(async (student) => {
+        const resultExam = await ExamResult.findOne({
+          where: { exam_id: examId, student_id: student.user_id }
+        });
+
+        return {
+          IdStudent: student.user?.id,
+          studentFirstName: student.user?.first_name || "N/A",
+          studentLastName: student.user?.last_name || "N/A",
+          exam_title: exam.title,
+          result_exam: resultExam?.score || "not add mark yet",
+          notes: resultExam?.notes || null,
+          has_taken_exam: resultExam?.has_taken_exam || false
+        };
+      })
+    );
+
+    return res.status(200).json({
+      message: "get all student with marks",
+      data: results
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      message: "Server error",
+      error: error.message
+    });
+  }
+});
+
+
+///////
 
 //////////////////
 module.exports = {
@@ -244,5 +310,6 @@ module.exports = {
   examGetAll,
   examUpdate,
   AddMarksCreate,
-  getAllMarks
+  getAllMarks,
+  getAllMarksForTeacher
 }
