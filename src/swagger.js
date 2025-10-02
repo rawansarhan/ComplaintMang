@@ -27,11 +27,8 @@ const swaggerOptions = {
           type: 'object',
           required: ['email', 'password', 'first_name', 'last_name', 'mosque_id', 'birth_date'],
           properties: {
-            email: { type: 'string', example: 'student@example.com' },
-            password: { type: 'string', example: 'password123' },
             first_name: { type: 'string', example: 'Ali' },
             last_name: { type: 'string', example: 'Ahmad' },
-            mosque_id: { type: 'integer', example: 1 },
             birth_date: { type: 'string', format: 'date', example: '2000-01-01' },
             is_save_quran: { type: 'boolean', example: true },
             phone: { type: 'string', example: '0999123456' },
@@ -40,19 +37,16 @@ const swaggerOptions = {
             certificates: { type: 'string', example: 'Ijaza in Hafs' },
             experiences: { type: 'string', example: '5 years teaching Quran' },
             memorized_parts: { type: 'integer', example: 30 },
-             fcm_token: { type: 'string', example: 'fcm_token_here', description: 'Optional FCM device token for push notifications' }
           }
         },
         RegisterResponse: {
           type: 'object',
           properties: {
             id: { type: 'integer', example: 1 },
-            email: { type: 'string', example: 'student@example.com' },
             first_name: { type: 'string', example: 'Ali' },
             last_name: { type: 'string', example: 'Ahmad' },
             mosque_id: { type: 'integer', example: 1 },
             role_id: { type: 'integer', example: 3 },
-             fcm_token: { type: 'string', example: 'fcm_token_here', description: 'FCM device token if provided' },
             token: {
               type: 'string',
               example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
@@ -63,11 +57,8 @@ const swaggerOptions = {
           type: 'object',
           required: ['email', 'password', 'first_name', 'last_name', 'mosque_id', 'birth_date'],
           properties: {
-            email: { type: 'string', example: 'teacher@example.com' },
-            password: { type: 'string', example: 'password123' },
             first_name: { type: 'string', example: 'Ali' },
             last_name: { type: 'string', example: 'Ahmad' },
-            mosque_id: { type: 'integer', example: 1 },
             birth_date: { type: 'string', format: 'date', example: '2000-01-01' },
             is_save_quran: { type: 'boolean', example: true },
             phone: { type: 'string', example: '0999123456' },
@@ -75,14 +66,12 @@ const swaggerOptions = {
             certificates: { type: 'string', example: 'Ijaza in Hafs' },
             experiences: { type: 'string', example: '5 years teaching Quran' },
             memorized_parts: { type: 'integer', example: 30 },
-             fcm_token: { type: 'string', example: 'fcm_token_here', description: 'FCM device token if provided' },
           }
         },
         RegisterResponse: {
           type: 'object',
           properties: {
             id: { type: 'integer', example: 1 },
-            email: { type: 'string', example: 'student@example.com' },
             first_name: { type: 'string', example: 'Ali' },
             last_name: { type: 'string', example: 'Ahmad' },
             mosque_id: { type: 'integer', example: 1 },
@@ -97,15 +86,10 @@ const swaggerOptions = {
           type: 'object',
           required: ['email', 'password', 'first_name', 'last_name', 'mosque_id', 'birth_date'],
           properties: {
-            email: { type: 'string', example: 'Admin@example.com' },
-            password: { type: 'string', example: 'password123' },
             first_name: { type: 'string', example: 'Ali' },
             last_name: { type: 'string', example: 'Ahmad' },
             mosque_id: { type: 'integer', example: 1 },
-            birth_date: { type: 'string', format: 'date', example: '2000-01-01' },
             phone: { type: 'string', example: '0999123456' },
-            address: { type: 'string', example: 'Damascus, Syria' },
-            experiences: { type: 'string', example: '5 years teaching Quran' },
           }
         },
         RegisterAdminResponse: {
@@ -129,7 +113,6 @@ const swaggerOptions = {
   properties: {
     code_user: { type: 'integer', example: 123456 },
     mosque_code: { type: 'integer', example: 15624 },
-    fcm_token: { type: 'string', example: 'fcm_token_here', description: 'FCM device token if provided' },
   }
 },
 
@@ -141,7 +124,6 @@ LoginByCodeResponse: {
     first_name: { type: 'string', example: 'Ali' },
     last_name: { type: 'string', example: 'Ahmad' },
     mosque_id: { type: 'integer', example: 1 },
-    fcm_token: { type: 'string', example: 'fcm_token_here' },
     token: { type: 'string', example: 'jwt.token.here' }
   }
 },

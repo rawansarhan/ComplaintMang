@@ -12,8 +12,6 @@ module.exports = {
       phone: '1234567890',
       father_phone: null,
       birth_date: new Date('1990-01-01'),
-      email: 'superadmin@gmail.com',
-      password: passwordHash,
       address: 'Admin Street 123',
       certificates: null,
       code: 'SUPER001',

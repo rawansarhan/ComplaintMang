@@ -16,16 +16,18 @@ const {
 } = require('../validations/audioValidation')
 const { date } = require('joi')
 
+const fs = require('fs')
+const ffmpeg = require('fluent-ffmpeg')
+const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path
+ffmpeg.setFfmpegPath(ffmpegPath)
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, 'public/audios/')
   },
   filename: (req, file, cb) => {
     const uniqueName =
-      Date.now() +
-      '-' +
-      Math.round(Math.random() * 1e9) +
-      path.extname(file.originalname)
+      Date.now() + '-' + Math.round(Math.random() * 1e9) + path.extname(file.originalname)
     cb(null, uniqueName)
   }
 })
@@ -48,8 +50,7 @@ const uploadAudio = (req, res) => {
   upload(req, res, async err => {
     try {
       if (err) return res.status(400).json({ error: err.message })
-      if (!req.file)
-        return res.status(400).json({ error: 'Please upload an audio file' })
+      if (!req.file) return res.status(400).json({ error: 'Please upload an audio file' })
 
       console.log('BODY:', req.body)
       console.log('USER:', req.user)
@@ -64,32 +65,52 @@ const uploadAudio = (req, res) => {
         return res.status(400).json({ error: 'Missing required fields' })
       }
 
-      const userAudio = await UserAudio.create({
-        student_id: studentId,
-        surah_id: surahId,
-        from_ayah_id: fromAyahId,
-        to_ayah_id: toAyahId,
-        file: `public/audios/${req.file.filename}`
+      // -------- تحويل الملف إلى mp3 --------
+      const inputPath = req.file.path
+      const outputFilename = `${Date.now()}-${Math.round(Math.random() * 1e9)}.mp3`
+      const outputPath = path.join('public/audios/', outputFilename)
 
-      })
+      ffmpeg(inputPath)
+        .toFormat('mp3')
+        .on('end', async () => {
+          // حذف الملف الأصلي بعد التحويل (اختياري)
+          fs.unlinkSync(inputPath)
 
-      const surah = await Surah.findOne({ where: { id: userAudio.surah_id } })
-      return res.json({
-        message: 'Audio uploaded and saved successfully',
-        id: userAudio.id,
-        surah_name: surah.name || null,
-        from_ayah_id: userAudio.from_ayah_id,
-        to_ayah_id: userAudio.to_ayah_id,
-        filePath: userAudio.file,
-        createAt: userAudio.created_at,
-        updateAt: userAudio.updated_at
-      })
+          // حفظ في قاعدة البيانات
+          const userAudio = await UserAudio.create({
+            student_id: studentId,
+            surah_id: surahId,
+            from_ayah_id: fromAyahId,
+            to_ayah_id: toAyahId,
+            file: outputPath
+          })
+
+          const surah = await Surah.findOne({ where: { id: userAudio.surah_id } })
+
+          return res.json({
+            message: 'Audio uploaded, converted to mp3, and saved successfully',
+            id: userAudio.id,
+            surah_name: surah?.name || null,
+            from_ayah_id: userAudio.from_ayah_id,
+            to_ayah_id: userAudio.to_ayah_id,
+            filePath: userAudio.file,
+            createdAt: userAudio.created_at,
+            updatedAt: userAudio.updated_at
+          })
+        })
+        .on('error', e => {
+          console.error('FFmpeg error:', e)
+          return res.status(500).json({ error: 'Error converting file to mp3' })
+        })
+        .save(outputPath)
+
     } catch (e) {
-      console.error(' Error while saving:', e)
+      console.error('Error while saving:', e)
       return res.status(500).json({ error: e.message })
     }
   })
 }
+
 
 //get all audios for student
 const getAllAudiosForStudent = asyncHandler(async (req, res) => {

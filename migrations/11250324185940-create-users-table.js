@@ -36,14 +36,6 @@ module.exports = {
       },
       birth_date: {
         type: Sequelize.DATE,
-        allowNull: false
-      },
-      email: {
-        type: Sequelize.STRING,
-        allowNull: true,
-      },
-      password: {
-        type: Sequelize.STRING,
         allowNull: true
       },
       address: {
