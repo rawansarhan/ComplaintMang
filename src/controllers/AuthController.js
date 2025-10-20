@@ -10,7 +10,7 @@ const {
 } = require('../validations/userValidation')
 const { where } = require('sequelize')
 
-const SECRET_KEY = process.env.JWT_SECRET
+const SECRET_KEY =process.env.JWT_SECRET || 'default_secret_key'
 
 //  Encode/Decode functions
 const encodeMap = {
@@ -177,6 +177,8 @@ if (error)
       },
       SECRET_KEY,
     )
+    console.log("REGISTER SECRET_KEY:", SECRET_KEY);
+
 
     const { code,is_save_quran,father_phone,certificates,birth_date, memorized_parts,experiences,address,role_id,fcm_token, ...userData } = user.toJSON()
     const code_user = decodeCode(code.toString())
@@ -201,7 +203,6 @@ const loginUser = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: 'Invalid mosque code' });
   }
 
-  // تحديث fcm_token إذا تم إرساله
   if (req.body.fcm_token) {
     user.fcm_token = req.body.fcm_token;
     await user.save();
@@ -226,53 +227,46 @@ const loginUser = asyncHandler(async (req, res) => {
   res.status(200).json({ ...userData, code_user, token });
 });
 
-// login SuperAdmin
 const loginSuperAdmin = async (req, res) => {
-  const { error } = ValidateLoginSuperAdmin(req.body)
-  if (error) return res.status(400).json({ message: error.details[0].message })
-
-  const { email, password } = req.body
+  const { error } = ValidateLoginSuperAdmin(req.body);
+  if (error) return res.status(400).json({ message: error.details[0].message });
 
   try {
+
     const user = await User.findOne({
-      where: { email, role_id: 4 } // SuperAdmin فقط
-    })
+      where: { code: req.body.code_user, role_id: 4 }
+    });
 
-    if (!user)
-      return res
-        .status(401)
-        .json({ message: 'Invalid email or not a super admin' })
+    if (!user) {
+      return res.status(401).json({ message: 'Invalid code' });
+    }
 
-    const validPassword = await bcrypt.compare(password, user.password)
-    if (!validPassword)
-      return res.status(401).json({ message: 'Invalid password' })
-
-    const role = await Role.findOne({ where: { id: user.role_id } })
+    const role = await Role.findOne({ where: { id: user.role_id } });
 
     const token = jwt.sign(
       {
         id: user.id,
-        email: user.email,
+        phone: user.phone,
         role_id: user.role_id,
         role: role?.name || 'unknown'
       },
       SECRET_KEY,
-    )
+    );
 
     res.status(200).json({
       message: 'Login successful',
+        id: user.id,
       token,
-      id: user.id,
-      email: user.email,
-      role_id: user.role_id,
-      role: role?.name,
-      name: `${user.first_name} ${user.last_name}`
-    })
+    
+       });
   } catch (err) {
-    console.error(err)
-    res.status(500).json({ message: 'Something went wrong' })
+    console.error(err);
+    res.status(500).json({ message: 'Something went wrong, please try again later' });
   }
-}
+};
+
+
+
 
 module.exports = {
   registerStudent: registerUserWithRole('student'),

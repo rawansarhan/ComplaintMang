@@ -23,6 +23,22 @@ const sessionCreate = asyncHandler(async (req, res) => {
     return res.status(404).json({ message: "Circle not found" });
   }
 
+  // التحقق من التاريخ ضمن شهر قبل وشهر بعد
+  const inputDate = new Date(req.body.date);
+  const now = new Date();
+
+  const minDate = new Date();
+  minDate.setMonth(minDate.getMonth() - 1); // شهر قبل
+
+  const maxDate = new Date();
+  maxDate.setMonth(maxDate.getMonth() + 1); // شهر بعد
+
+  if (inputDate < minDate || inputDate > maxDate) {
+    return res.status(400).json({
+      message: "التاريخ يجب أن يكون ضمن شهر قبل التاريخ الحالي"
+    });
+  }
+
   const startOfDay = new Date(req.body.date);
   startOfDay.setHours(0, 0, 0, 0);
   const endOfDay = new Date(req.body.date);
@@ -36,7 +52,9 @@ const sessionCreate = asyncHandler(async (req, res) => {
   });
 
   if (existingSession) {
-    return res.status(409).json({ message: "A session already exists on this date for this circle" });
+    return res.status(409).json({
+      message: "A session already exists on this date for this circle"
+    });
   }
 
   const formattedDate = dayjs(req.body.date).format("YYYY-MM-DD HH:mm:ss");

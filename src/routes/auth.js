@@ -118,15 +118,11 @@ router.post('/login', loginUser);
  *           schema:
  *             type: object
  *             required:
- *               - email
- *               - password
+ *               - code_user
  *             properties:
- *               email:
+ *               code_user:
  *                 type: string
- *                 example: superadmin@gmail.com
- *               password:
- *                 type: string
- *                 example: 123456
+ *                 example: SUPER001
  *     responses:
  *       200:
  *         description: Login successful

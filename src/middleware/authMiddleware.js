@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const ApiResponder = require('../utils/ApiResponder');
 const dotenv = require('dotenv');
 dotenv.config();
+const SECRET_KEY = process.env.JWT_SECRET || 'default_secret_key';
 
 // Middleware للتحقق من التوكن
 const authMiddleware = (req, res, next) => {
@@ -14,6 +15,7 @@ const authMiddleware = (req, res, next) => {
   if (!token) {
     return ApiResponder.unauthorizedResponse(res, 'No token provided');
   }
+console.log("AUTH SECRET_KEY:", process.env.JWT_SECRET || 'default_secret_key');
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'default_secret_key');

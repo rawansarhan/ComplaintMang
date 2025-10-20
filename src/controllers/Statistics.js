@@ -40,125 +40,87 @@ const attendance = async (user_id, fromDate, toDate) => {
 };
 
 const savedQuran = async (user_id, fromDate, toDate) => {
-    const from = new Date(fromDate);
-    from.setHours(0, 0, 0, 0);
-    const to = new Date(toDate);
-    to.setHours(23, 59, 59, 999);
+  const from = new Date(fromDate);
+  from.setHours(0, 0, 0, 0);
+  const to = new Date(toDate);
+  to.setHours(23, 59, 59, 999);
 
-    const quranRecitations = await QuranRecitation.findAll({
-        where: {
-            student_id: user_id,
-            is_counted: true,
-            created_at: { [Op.between]: [from, to] }
-        },
-        include: [
-            { model: Surah, as: "fromSurah" },
-            { model: Surah, as: "toSurah" },
-            { model: Ayah, as: "fromVerse" },
-            { model: Ayah, as: "toVerse" },
-        ],
+  const quranRecitations = await QuranRecitation.findAll({
+    where: {
+      student_id: user_id,
+      is_counted: true,
+      created_at: { [Op.between]: [from, to] },
+    },
+    include: [
+      { model: Ayah, as: "fromVerse" },
+      { model: Ayah, as: "toVerse" },
+    ],
+  });
+
+  const quranRecitationsOnline = await UndividualRecitationQuran.findAll({
+    where: {
+      student_id: user_id,
+      is_counted: true,
+      created_at: { [Op.between]: [from, to] },
+    },
+    include: [
+      { model: Ayah, as: "fromVerse" },
+      { model: Ayah, as: "toVerse" },
+    ],
+  });
+
+  const combined = [...quranRecitations, ...quranRecitationsOnline];
+  if (combined.length === 0) return 0;
+
+  let completedPagesCount = 0;
+
+  for (const rec of combined) {
+    const fromAyah = rec.fromVerse;
+    const toAyah = rec.toVerse;
+
+    if (!fromAyah || !toAyah) continue;
+
+    // الصفحات التي غطاها الطالب في الجلسة
+    const pages = await Ayah.findAll({
+      where: {
+        page_number: { [Op.between]: [fromAyah.page_number, toAyah.page_number] },
+      },
+      attributes: ["page_number"],
+      group: ["page_number"],
+      order: [["page_number", "ASC"]],
     });
 
-    const quranRecitationsOnline = await UndividualRecitationQuran.findAll({
-        where: {
-            student_id: user_id,
-            is_counted: true,
-            created_at: { [Op.between]: [from, to] }
-        },
-        include: [
-            { model: Surah, as: "fromSurah" },
-            { model: Surah, as: "toSurah" },
-            { model: Ayah, as: "fromVerse" },
-            { model: Ayah, as: "toVerse" },
-        ],
-    });
+    for (const p of pages) {
+      const pageNum = p.page_number;
 
-    const combinedRecitations = [...quranRecitations, ...quranRecitationsOnline];
-    if (combinedRecitations.length === 0) return 0;
+      const firstVerse = await Ayah.findOne({
+        where: { page_number: pageNum },
+        order: [["ayah_number", "ASC"]],
+      });
 
-    const coveredVerses = new Set();
+      const lastVerse = await Ayah.findOne({
+        where: { page_number: pageNum },
+        order: [["ayah_number", "DESC"]],
+      });
 
-    for (const rec of combinedRecitations) {
-        const fromSurahId = rec.fromSurah.id;
-        const fromAyahNumber = rec.fromVerse.ayah_number;
-        const toSurahId = rec.toSurah.id;
-        const toAyahNumber = rec.toVerse.ayah_number;
+      if (!firstVerse || !lastVerse) continue;
 
-        // -- بداية التعديل الجوهري --
-        let versesInRange;
-        if (fromSurahId === toSurahId) {
-            // الحالة 1: القراءة في نفس السورة
-            versesInRange = await Ayah.findAll({
-                where: {
-                    surah_id: fromSurahId,
-                    ayah_number: { [Op.between]: [fromAyahNumber, toAyahNumber] }
-                }
-            });
-        } else {
-            // الحالة 2: القراءة عبر سور متعددة
-            versesInRange = await Ayah.findAll({
-                where: {
-                    [Op.or]: [
-                        // الآيات من سورة البداية
-                        {
-                            surah_id: fromSurahId,
-                            ayah_number: { [Op.gte]: fromAyahNumber }
-                        },
-                        // الآيات من سورة النهاية
-                        {
-                            surah_id: toSurahId,
-                            ayah_number: { [Op.lte]: toAyahNumber }
-                        },
-                        // الآيات من السور التي بينهما
-                        {
-                            surah_id: { [Op.gt]: fromSurahId, [Op.lt]: toSurahId }
-                        }
-                    ]
-                }
-            });
-        }
-        // -- نهاية التعديل الجوهري --
+      const startedBeforeOrAtFirst =
+        fromAyah.page_number < pageNum ||
+        (fromAyah.page_number === pageNum && fromAyah.ayah_number <= firstVerse.ayah_number);
 
-        for (const verse of versesInRange) {
-            coveredVerses.add(`${verse.surah_id}-${verse.ayah_number}`);
-        }
+      const endedAfterOrAtLast =
+        toAyah.page_number > pageNum ||
+        (toAyah.page_number === pageNum && toAyah.ayah_number >= lastVerse.ayah_number);
+
+      if (startedBeforeOrAtFirst && endedAfterOrAtLast) {
+        completedPagesCount++;
+      }
     }
+  }
 
-    // الكود التالي يبقى كما هو (منطق التحقق من الصفحات المكتملة)
-    const allVersesInDB = await Ayah.findAll({
-        attributes: ['page_number', 'surah_id', 'ayah_number'],
-        order: [['page_number', 'ASC']]
-    });
-
-    const pagesData = {};
-    for (const verse of allVersesInDB) {
-        if (!pagesData[verse.page_number]) {
-            pagesData[verse.page_number] = [];
-        }
-        pagesData[verse.page_number].push(`${verse.surah_id}-${verse.ayah_number}`);
-    }
-
-    let completedPagesCount = 0;
-    for (const pageNum in pagesData) {
-        const versesInPage = pagesData[pageNum];
-        let isPageComplete = true;
-
-        for (const verseKey of versesInPage) {
-            if (!coveredVerses.has(verseKey)) {
-                isPageComplete = false;
-                break;
-            }
-        }
-
-        if (isPageComplete) {
-            completedPagesCount++;
-        }
-    }
-
-    return completedPagesCount;
+  return completedPagesCount;
 };
-
-
 
 const savedHadith = async (user_id, fromDate, toDate) => {
     const from = new Date(fromDate);

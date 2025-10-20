@@ -16,7 +16,6 @@ function ValidateRegisterUser (data) {
     experiences: Joi.string().optional().allow(null),
     memorized_parts: Joi.number().integer().min(0).max(30).allow(null),
     is_save_quran: Joi.boolean(),
-    fcm_token: Joi.string().optional().allow(null, '') // <-- أضفنا FCM Token
   }).or('phone', 'father_phone')
 
   return schema.validate(data)
@@ -40,7 +39,6 @@ function ValidateLoginUser (data) {
   const schema = Joi.object({
     code_user: Joi.string().min(3).max(50).required(),
     mosque_code: Joi.string().required(),
-    fcm_token: Joi.string().optional().allow(null, '') // <-- إضافة FCM Token
   })
 
   return schema.validate(data)
@@ -49,8 +47,8 @@ function ValidateLoginUser (data) {
 //login for super Admin
 function ValidateLoginSuperAdmin (data) {
   const schema = Joi.object({
-    email: Joi.string().email().trim().min(5).max(100),
-    password: Joi.string().min(6).max(20)
+    code_user: Joi.string().min(3).max(50).required(),
+
   })
 
   return schema.validate(data)
