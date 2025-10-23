@@ -90,6 +90,10 @@ module.exports = (sequelize, DataTypes) => {
      allowNull: false,
      defaultValue: true
     },
+     new_pages: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+      },
 
   }, {
     sequelize,

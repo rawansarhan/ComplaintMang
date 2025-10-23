@@ -72,7 +72,11 @@ module.exports = (sequelize, DataTypes) => {
     date: {
       type: DataTypes.DATE,
       allowNull: false,
-    }
+    },
+        new_pages: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+      },
   }, {
     sequelize,
     modelName: 'UndividualRecitationQuran',

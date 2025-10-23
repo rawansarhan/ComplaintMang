@@ -81,6 +81,11 @@ module.exports = {
         type: Sequelize.DATE,
         allowNull: false
       },
+        new_pages: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+         defaultValue:0
+      },
      created_at: {
         allowNull: false,
         type: Sequelize.DATE,

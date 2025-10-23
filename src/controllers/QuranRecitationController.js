@@ -25,7 +25,8 @@ const createQuranRecitation = asyncHandler(async (req, res) => {
       to_verse,
       is_counted,
       is_exam,
-      attendance
+      attendance,
+      new_pages
     } = req.body;
 
     const teacherId = req.user.id;
@@ -81,7 +82,8 @@ const createQuranRecitation = asyncHandler(async (req, res) => {
       to_verse,
       is_counted,
       is_exam,
-      attendance
+      attendance,
+      new_pages
     });
 
     // إذا حاضر سجّل حضوره
@@ -110,7 +112,8 @@ const createQuranRecitation = asyncHandler(async (req, res) => {
         to_verse: newRecitation.to_verse,
         is_counted: newRecitation.is_counted,
         is_exam: newRecitation.is_exam,
-        attendance: newRecitation.attendance
+        attendance: newRecitation.attendance,
+        new_pages : newRecitation.new_pages
       }
     });
   }  catch (err) {
@@ -144,7 +147,7 @@ const updateQuranRecitation = asyncHandler(async (req, res) => {
       return res.status(404).json({ message: 'Quran recitation record not found.' });
     }
 
-    const { from_sura_id, to_sura_id, from_verse, to_verse } = req.body;
+    const { from_sura_id, to_sura_id, from_verse, to_verse,new_pages } = req.body;
 
     if (from_sura_id !== undefined && to_sura_id !== undefined) {
       if (from_sura_id > to_sura_id) {
@@ -164,6 +167,7 @@ const updateQuranRecitation = asyncHandler(async (req, res) => {
     if (to_verse !== undefined) quranRecitation.to_verse = to_verse;
     if (req.body.is_counted !== undefined) quranRecitation.is_counted = req.body.is_counted;
     if (req.body.is_exam !== undefined) quranRecitation.is_exam = req.body.is_exam;
+    if (req.body.new_pages !== undefined) quranRecitation.new_pages = req.body.new_pages;
 
     await quranRecitation.save();
 

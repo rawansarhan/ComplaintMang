@@ -42,6 +42,7 @@ const {
  *               - is_counted
  *               - is_exam
  *               - attendance
+ *               - new_pages
  *             properties:
  *               session_id:
  *                 type: integer
@@ -61,16 +62,19 @@ const {
  *                 type: boolean
  *               attendance:
  *                 type: boolean
- *           example:
- *             session_id: 10
- *             student_id: 5
- *             from_sura_id: 2
- *             from_verse: 1
- *             to_sura_id: 2
- *             to_verse: 5
- *             is_counted: true
- *             is_exam: false
- *             attendance: true
+ *               new_pages:
+ *                 type: integer
+ *             example:
+ *               session_id: 10
+ *               student_id: 5
+ *               from_sura_id: 2
+ *               from_verse: 1
+ *               to_sura_id: 2
+ *               to_verse: 5
+ *               is_counted: true
+ *               is_exam: false
+ *               attendance: true
+ *               new_pages: 3
  *     responses:
  *       200:
  *         description: Quran recitation record created successfully.
@@ -117,7 +121,8 @@ router.post('/create', authMiddleware, teacherOnly, createQuranRecitation)
  *                 type: boolean
  *               is_exam:
  *                 type: boolean
-
+ *               new_pages:
+ *                 type: integer
  *           example:
  *             from_sura_id: 2
  *             from_verse: 5
@@ -125,6 +130,7 @@ router.post('/create', authMiddleware, teacherOnly, createQuranRecitation)
  *             to_verse: 10
  *             is_counted: false
  *             is_exam: true
+ *             new_pages: 5
  *     responses:
  *       200:
  *         description: Quran recitation record updated successfully.
@@ -228,6 +234,8 @@ router.get(
  *               date:
  *                 type: string
  *                 format: date
+ *              new_pages: 
+ *                  type: integer
  *           example:
  *             student_id: 5
  *             from_sura_id: 2
@@ -237,6 +245,7 @@ router.get(
  *             is_counted: true
  *             is_exam: false
  *             date: "2024-07-01"
+ *             new_pages :5
  *     responses:
  *       201:
  *         description: Quran recitation record created successfully.
@@ -293,6 +302,8 @@ router.post(
  *               date:
  *                 type: string
  *                 format: date
+ *               new_pages: 
+ *                  type: integer
  *           example:
  *             from_sura_id: 2
  *             from_verse: 5
@@ -301,6 +312,7 @@ router.post(
  *             is_counted: false
  *             is_exam: true
  *             date: "2024-07-01"
+ *             new_pages : 5
  *     responses:
  *       200:
  *         description: Quran recitation record updated successfully.

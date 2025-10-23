@@ -40,86 +40,34 @@ const attendance = async (user_id, fromDate, toDate) => {
 };
 
 const savedQuran = async (user_id, fromDate, toDate) => {
+  // 🔹 نجهّز النطاق الزمني
   const from = new Date(fromDate);
   from.setHours(0, 0, 0, 0);
   const to = new Date(toDate);
   to.setHours(23, 59, 59, 999);
 
-  const quranRecitations = await QuranRecitation.findAll({
+  // 🔹 نجمع الصفحات من جدول الجلسات الحضورية
+  const totalInPerson = await QuranRecitation.sum("new_pages", {
     where: {
       student_id: user_id,
       is_counted: true,
       created_at: { [Op.between]: [from, to] },
     },
-    include: [
-      { model: Ayah, as: "fromVerse" },
-      { model: Ayah, as: "toVerse" },
-    ],
   });
 
-  const quranRecitationsOnline = await UndividualRecitationQuran.findAll({
+  // 🔹 نجمع الصفحات من جدول الجلسات الفردية (الأونلاين)
+  const totalOnline = await UndividualRecitationQuran.sum("new_pages", {
     where: {
       student_id: user_id,
       is_counted: true,
       created_at: { [Op.between]: [from, to] },
     },
-    include: [
-      { model: Ayah, as: "fromVerse" },
-      { model: Ayah, as: "toVerse" },
-    ],
   });
 
-  const combined = [...quranRecitations, ...quranRecitationsOnline];
-  if (combined.length === 0) return 0;
+  // 🔹 نجمعهم معًا (ونرجع صفر إذا كان null)
+  const totalSaved = (totalInPerson || 0) + (totalOnline || 0);
 
-  let completedPagesCount = 0;
-
-  for (const rec of combined) {
-    const fromAyah = rec.fromVerse;
-    const toAyah = rec.toVerse;
-
-    if (!fromAyah || !toAyah) continue;
-
-    // الصفحات التي غطاها الطالب في الجلسة
-    const pages = await Ayah.findAll({
-      where: {
-        page_number: { [Op.between]: [fromAyah.page_number, toAyah.page_number] },
-      },
-      attributes: ["page_number"],
-      group: ["page_number"],
-      order: [["page_number", "ASC"]],
-    });
-
-    for (const p of pages) {
-      const pageNum = p.page_number;
-
-      const firstVerse = await Ayah.findOne({
-        where: { page_number: pageNum },
-        order: [["ayah_number", "ASC"]],
-      });
-
-      const lastVerse = await Ayah.findOne({
-        where: { page_number: pageNum },
-        order: [["ayah_number", "DESC"]],
-      });
-
-      if (!firstVerse || !lastVerse) continue;
-
-      const startedBeforeOrAtFirst =
-        fromAyah.page_number < pageNum ||
-        (fromAyah.page_number === pageNum && fromAyah.ayah_number <= firstVerse.ayah_number);
-
-      const endedAfterOrAtLast =
-        toAyah.page_number > pageNum ||
-        (toAyah.page_number === pageNum && toAyah.ayah_number >= lastVerse.ayah_number);
-
-      if (startedBeforeOrAtFirst && endedAfterOrAtLast) {
-        completedPagesCount++;
-      }
-    }
-  }
-
-  return completedPagesCount;
+  return totalSaved;
 };
 
 const savedHadith = async (user_id, fromDate, toDate) => {
@@ -178,6 +126,10 @@ const statisticsForAdmin = asyncHandler(async (req, res) => {
     }
 
     const { fromDate, toDate } = value;
+      // ✅ تحقق أن fromDate ليست أكبر من toDate
+    if (new Date(fromDate) > new Date(toDate)) {
+        return res.status(400).json({ message: "تاريخ البداية لا يمكن أن يكون بعد تاريخ النهاية" });
+    }
 
     const AdminId = req.user.id;
     const admin = await User.findOne({

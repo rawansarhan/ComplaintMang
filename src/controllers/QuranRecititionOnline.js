@@ -34,7 +34,8 @@ const createQuranRecitationOnline = asyncHandler(async (req, res) => {
       to_verse_id: req.body.to_verse,
       is_counted: req.body.is_counted,
       is_exam: req.body.is_exam,
-       date : req.body.date
+       date : req.body.date,
+       new_pages : req.body.new_pages
     })
 
     return res.status(200).json({
@@ -86,7 +87,8 @@ const updateQuranRecitationOnline = asyncHandler(async (req, res) => {
       quranRecitation.is_exam = req.body.is_exam
 if (req.body.date !== undefined)
       quranRecitation.date = req.body.date
-
+if (req.body.new_pages !== undefined)
+      quranRecitation.new_pages = req.body.new_pages
     await quranRecitation.save()
 
     return res.status(200).json({
