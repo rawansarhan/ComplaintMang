@@ -120,64 +120,172 @@ const savedHadith = async (user_id, fromDate, toDate) => {
 };
 
 const statisticsForAdmin = asyncHandler(async (req, res) => {
-    const { error, value } = statistics_create.validate(req.body);
-    if (error) {
-        return res.status(400).json({ message: error.details[0].message });
-    }
+  const { error, value } = statistics_create.validate(req.body);
+  if (error) {
+    return res.status(400).json({ message: error.details[0].message });
+  }
 
-    const { fromDate, toDate } = value;
-      // ✅ تحقق أن fromDate ليست أكبر من toDate
-    if (new Date(fromDate) > new Date(toDate)) {
-        return res.status(400).json({ message: "تاريخ البداية لا يمكن أن يكون بعد تاريخ النهاية" });
-    }
+  const { fromDate, toDate } = value;
 
-    const AdminId = req.user.id;
-    const admin = await User.findOne({
-        where: { id: AdminId },
-        attributes: ["first_name", "last_name", "code", "phone", "mosque_id"]
-    });
+  // ✅ تحقق أن fromDate ليست أكبر من toDate
+  if (new Date(fromDate) > new Date(toDate)) {
+    return res.status(400).json({ message: "تاريخ البداية لا يمكن أن يكون بعد تاريخ النهاية" });
+  }
 
-    if (!admin) {
-        return res.status(404).json({ message: "Admin not found" });
-    }
+  const adminId = req.user.id;
+  const admin = await User.findOne({
+    where: { id: adminId },
+    attributes: ["first_name", "last_name", "code", "phone", "mosque_id"],
+  });
 
-    const students = await User.findAll({
-        where: { mosque_id: admin.mosque_id, role_id: 1,
-         },
-        attributes: ["id", "first_name", "last_name"]
-    });
+  if (!admin) {
+    return res.status(404).json({ message: "Admin not found" });
+  }
 
-    if (students.length === 0) {
-        return res.status(200).json({ message: "لا يوجد طلاب في هذا المسجد" });
-    }
+  // 🕌 جميع الطلاب في نفس المسجد
+  const students = await User.findAll({
+    where: {
+      mosque_id: admin.mosque_id,
+      role_id: 1, // 1 = Student
+    },
+    attributes: ["id", "first_name", "last_name"],
+  });
 
-    const results = [];
+  if (students.length === 0) {
+    return res.status(200).json({ message: "لا يوجد طلاب في هذا المسجد" });
+  }
 
-    for (const student of students) {
-        const attendanceStudent = await attendance(student.id, fromDate, toDate);
-        const savedQuranStudent = await savedQuran(student.id, fromDate, toDate);
-        const savedHadithStudent = await savedHadith(student.id, fromDate, toDate);
+  // ⚡ تنفيذ متوازي لزيادة السرعة
+  const results = await Promise.all(
+    students.map(async (student) => {
+      const [attendanceStudent, savedQuranStudent, savedHadithStudent] = await Promise.all([
+        attendance(student.id, fromDate, toDate),
+        savedQuran(student.id, fromDate, toDate),
+        savedHadith(student.id, fromDate, toDate),
+      ]);
 
-        results.push({
-            studentInf: {
-                id: student.id,
-                firstName: student.first_name,
-                lastName: student.last_name
-            },
-            attendance: attendanceStudent,
-            savedQuran: savedQuranStudent,
-            savedHadith: savedHadithStudent
-        });
-    }
+      return {
+        studentInf: {
+          id: student.id,
+          firstName: student.first_name,
+          lastName: student.last_name,
+        },
+        attendance: attendanceStudent,
+        savedQuran: savedQuranStudent,
+        savedHadith: savedHadithStudent,
+      };
+    })
+  );
 
-    if (results.length === 0) {
-        return res.status(200).json({ message: "لا يوجد احصائيات" });
-    }
+  if (results.length === 0) {
+    return res.status(200).json({ message: "لا يوجد احصائيات" });
+  }
 
-    res.json({
-        message: "All Statistics",
-        result: results
-    });
+  res.status(200).json({
+    message: "All Statistics",
+    result: results,
+  });
 });
 
-module.exports = { statisticsForAdmin, savedHadith, attendance, savedQuran };
+
+
+const statisticsForTeacher = asyncHandler(async (req, res) => {
+  const { error, value } = statistics_create.validate(req.body);
+  if (error) {
+    return res.status(400).json({ message: error.details[0].message });
+  }
+
+  const { fromDate, toDate } = value;
+
+  if (new Date(fromDate) > new Date(toDate)) {
+    return res.status(400).json({ message: "تاريخ البداية لا يمكن أن يكون بعد تاريخ النهاية" });
+  }
+
+  const teacherId = req.user.id;
+  const teacher = await User.findOne({
+    where: { id: teacherId },
+    attributes: ["first_name", "last_name", "code", "phone", "mosque_id"]
+  });
+
+  if (!teacher) {
+    return res.status(404).json({ message: "teacher not found" });
+  }
+
+  const TEACHER_ROLE_ID = 2;
+  const STUDENT_ROLE_ID = 1;
+
+  const circles = await Circle.findAll({
+    include: [
+      {
+        model: User,
+        as: "users",
+        through: { attributes: ["role_id"] },
+        attributes: { exclude: ["password"] },
+      },
+    ],
+  });
+
+  const teacherCircles = circles.filter(circle =>
+    circle.users.some(user =>
+      user.id === req.user.id && user.CircleUser.role_id === TEACHER_ROLE_ID
+    )
+  );
+
+  const formatted = teacherCircles.flatMap(circle =>
+    circle.users
+      .filter(user => user.CircleUser.role_id === STUDENT_ROLE_ID)
+      .map(student => ({
+        id: student.id,
+        mosque_id: student.mosque_id,
+        first_name: student.first_name,
+        last_name: student.last_name,
+        phone: student.phone,
+        father_phone: student.father_phone,
+        birth_date: student.birth_date,
+        email: student.email,
+        address: student.address,
+        certificates: student.certificates,
+        code: student.code,
+        experiences: student.experiences,
+        memorized_parts: student.memorized_parts,
+        role_id: student.role_id,
+        is_save_quran: student.is_save_quran,
+      }))
+  );
+
+  if (formatted.length === 0) {
+    return res.status(200).json({ message: "لا يوجد طلاب لديك" });
+  }
+
+  const results = await Promise.all(
+    formatted.map(async (student) => {
+      const [attendanceStudent, savedQuranStudent, savedHadithStudent] = await Promise.all([
+        attendance(student.id, fromDate, toDate),
+        savedQuran(student.id, fromDate, toDate),
+        savedHadith(student.id, fromDate, toDate),
+      ]);
+
+      return {
+        studentInf: {
+          id: student.id,
+          firstName: student.first_name,
+          lastName: student.last_name,
+        },
+        attendance: attendanceStudent,
+        savedQuran: savedQuranStudent,
+        savedHadith: savedHadithStudent,
+      };
+    })
+  );
+
+  if (results.length === 0) {
+    return res.status(200).json({ message: "لا يوجد احصائيات" });
+  }
+
+  res.json({
+    message: "All Statistics",
+    result: results,
+  });
+});
+
+module.exports = { statisticsForAdmin, savedHadith, attendance, savedQuran , statisticsForTeacher };
