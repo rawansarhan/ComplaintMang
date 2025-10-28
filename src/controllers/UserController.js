@@ -33,7 +33,6 @@ const updateUser = asyncHandler(async (req, res) => {
     user.phone = req.body.phone || user.phone;
     user.father_phone = req.body.father_phone || user.father_phone;
     user.birth_date = req.body.birth_date || user.birth_date;
-    user.email = req.body.email || user.email;
     user.address = req.body.address || user.address;
     user.certificates = req.body.certificates || user.certificates;
     user.experiences = req.body.experiences || user.experiences;
@@ -263,7 +262,6 @@ const getAllAdmins = asyncHandler(async (req, res) => {
         'id',
         'first_name',
         'last_name',
-        'email',
         'phone',
         'birth_date',
         'address',

@@ -186,12 +186,7 @@ router.get(
  *         description: Internal server error
  */
 
-router.get(
-  '/getMySaved',
-  authMiddleware,
-  studentOnly,
-  mySaved
-)
+router.get('/getMySaved', authMiddleware, studentOnly, mySaved)
 
 /**
  * @swagger
@@ -234,7 +229,7 @@ router.get(
  *               date:
  *                 type: string
  *                 format: date
- *              new_pages: 
+ *               new_pages:
  *                  type: integer
  *           example:
  *             student_id: 5
@@ -245,7 +240,7 @@ router.get(
  *             is_counted: true
  *             is_exam: false
  *             date: "2024-07-01"
- *             new_pages :5
+ *             new_pages: 5
  *     responses:
  *       201:
  *         description: Quran recitation record created successfully.
@@ -261,7 +256,7 @@ router.post(
   authMiddleware,
   teacherOnly,
   createQuranRecitationOnline
-);
+)
 
 /**
  * @swagger
@@ -302,8 +297,8 @@ router.post(
  *               date:
  *                 type: string
  *                 format: date
- *               new_pages: 
- *                  type: integer
+ *               new_pages:
+ *                 type: integer
  *           example:
  *             from_sura_id: 2
  *             from_verse: 5
@@ -312,7 +307,7 @@ router.post(
  *             is_counted: false
  *             is_exam: true
  *             date: "2024-07-01"
- *             new_pages : 5
+ *             new_pages: 5
  *     responses:
  *       200:
  *         description: Quran recitation record updated successfully.
@@ -328,6 +323,6 @@ router.put(
   authMiddleware,
   teacherOnly,
   updateQuranRecitationOnline
-);
+)
 
-module.exports = router;
+module.exports = router
