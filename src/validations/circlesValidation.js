@@ -5,7 +5,7 @@ function ValidateCreateCircles(data) {
   const schema = Joi.object({
     circle_type_id: Joi.number().required(),
     name: Joi.string().required(),
-    description: Joi.string().max(300),
+    description: Joi.string().max(300).allow(""),
     student_id: Joi.array().items(Joi.number()).min(1).required(),
     teacher_id: Joi.array().items(Joi.number()).min(1).required(),
   });
@@ -17,7 +17,7 @@ function ValidateUpdateCircles(data) {
   const schema = Joi.object({
     circle_type_id: Joi.number(),
     name: Joi.string(),
-    description: Joi.string().max(300),
+    description: Joi.string().max(300).allow(""),
     student_id: Joi.array().items(Joi.number()),
     teacher_id: Joi.array().items(Joi.number()),
   });

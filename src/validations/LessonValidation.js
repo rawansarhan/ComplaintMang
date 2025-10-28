@@ -4,7 +4,7 @@ function SessionLesson_create (data) {
   const schema = Joi.object({
     title: Joi.string().min(3).max(400).required(),
     date: Joi.date().required(),
-    description: Joi.string().min(3).max(400).required()
+    description: Joi.string().min(3).max(400).required().allow("")
   })
   return schema.validate(data)
 }
@@ -13,7 +13,7 @@ function SessionLesson_update (data) {
   const schema = Joi.object({
     title: Joi.string().min(3).max(400),
     date: Joi.date(),
-    description: Joi.string().min(3).max(400)
+    description: Joi.string().min(3).max(400).allow("")
   })
   return schema.validate(data)
 }
@@ -37,7 +37,7 @@ function exam_create (data) {
   const schema = Joi.object({
     title: Joi.string().min(3).max(400).required(),
     date: Joi.date().required(),
-    description: Joi.string().min(3).max(400)
+    description: Joi.string().min(3).max(400).allow("")
   })
   return schema.validate(data)
 }
@@ -47,7 +47,7 @@ function exam_update (data) {
   const schema = Joi.object({
     title: Joi.string().min(3).max(400),
     date: Joi.date(),
-    description: Joi.string().min(3).max(400)
+    description: Joi.string().min(3).max(400).allow("")
   })
   return schema.validate(data)
 }
