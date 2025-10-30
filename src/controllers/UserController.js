@@ -45,17 +45,11 @@ const updateUser = asyncHandler(async (req, res) => {
       user.is_save_quran = req.body.is_save_quran;
     }
 
-    if (req.body.password) {
-      const salt = await bcrypt.genSalt(10);
-      user.password = await bcrypt.hash(req.body.password, salt);
-    }
-
     await user.save();
 
     // تحويل الـ Sequelize instance إلى object عادي وفك التشفير
     const userData = user.toJSON();
     userData.code = decodeCode(userData.code); // فك تشفير الـ code
-    delete userData.password; // حذف كلمة السر من الاستجابة
 
     return res.status(200).json({
       message: "User updated successfully",
@@ -84,9 +78,6 @@ const userAllShow = asyncHandler(async (req, res) => {
       where: {
         mosque_id: req.user.mosque_id,
         role_id: [STUDENT_ROLE_ID, TEACHER_ROLE_ID]
-      },
-      attributes: {
-        exclude: ['password'] // لا نعرض كلمة السر
       }
     });
 
@@ -134,8 +125,7 @@ const userShowById = asyncHandler(async (req, res) => {
     const userId = req.params.id;
 
     const user = await User.findOne({
-      where: { id: userId },
-      attributes: { exclude: ['password'] } // أبقِ 'code'
+      where: { id: userId }
     });
 
     if (!user) {
@@ -172,7 +162,6 @@ const userShowMyProfile = asyncHandler(async (req, res) => {
 
     const user = await User.findOne({
       where: { id: userId },
-      attributes: { exclude: ['password'] } // أبقِ 'code'
     });
 
     if (!user) {

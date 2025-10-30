@@ -219,8 +219,7 @@ const statisticsForTeacher = asyncHandler(async (req, res) => {
       {
         model: User,
         as: "users",
-        through: { attributes: ["role_id"] },
-        attributes: { exclude: ["password"] },
+        through: { attributes: ["role_id"] }
       },
     ],
   });
@@ -242,7 +241,6 @@ const statisticsForTeacher = asyncHandler(async (req, res) => {
         phone: student.phone,
         father_phone: student.father_phone,
         birth_date: student.birth_date,
-        email: student.email,
         address: student.address,
         certificates: student.certificates,
         code: student.code,

@@ -91,6 +91,7 @@ if (req.body.new_pages !== undefined)
       quranRecitation.new_pages = req.body.new_pages
     await quranRecitation.save()
 
+
     return res.status(200).json({
       message: 'Quran recitation record updated successfully.',
       data: quranRecitation

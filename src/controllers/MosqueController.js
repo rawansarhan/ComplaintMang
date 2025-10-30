@@ -150,7 +150,7 @@ const mosqueShowById = asyncHandler(async (req, res) => {
 
     const admin = await User.findOne({
       where: { mosque_id: mosque.id, role_id: 3 },
-      attributes: ['first_name', 'last_name', 'code', 'email', 'phone', 'address']
+      attributes: ['first_name', 'last_name', 'code', 'phone', 'address']
     });
     
     const decodeCodeAdmin = admin?.code ? decodeCode(admin.code) : null;

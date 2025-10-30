@@ -213,7 +213,6 @@ const loginUser = asyncHandler(async (req, res) => {
   const token = jwt.sign(
     {
       id: user.id,
-      email: user.email,
       role_id: user.role_id,
       mosque_id: user.mosque_id,
       role: role?.name || 'unknown'
@@ -221,7 +220,7 @@ const loginUser = asyncHandler(async (req, res) => {
     SECRET_KEY,
   );
 
-  const { password, code, ...userData } = user.toJSON();
+  const {  code, ...userData } = user.toJSON();
   const code_user = decodeCode(code.toString());
 
   res.status(200).json({ ...userData, code_user, token });
