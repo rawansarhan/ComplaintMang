@@ -6,9 +6,12 @@ dotenv.config();
 
 const PORT = process.env.PORT || 3000;
 
+// Connect to database
 sequelize.authenticate()
   .then(() => {
     console.log('Database connected');
+
+    // Start server
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
     });

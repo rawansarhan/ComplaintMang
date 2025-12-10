@@ -1,135 +1,130 @@
-const express = require('express');
-const router = express.Router();
+const express = require('express')
+const router = express.Router()
+const AuthController = require('../controllers/Auth')
 const {
-  registerStudent,
-  registerTeacher,
-  registerAdmin,
-  loginUser,
-  loginSuperAdmin
-} = require('../controllers/AuthController');
-const { authMiddleware,
-  studentOnly,
-  teacherOnly,
-  adminOnly,
-  superAdminOnly,
-  authorizeRoles } =require('../middleware/authMiddleware')
+  hasPermission,
+  authMiddlewaree
+} = require('../middlewares/authMiddleware') // ⬅️ افترض أن لديك middleware للتحقق من هوية المستخدم
+
+// -------------------- Register for employee ---------------------//
 /**
  * @swagger
- * tags:
- *   name: Auth
- *   description: Authentication and Registration Operations
- */
-
-/**
- * @swagger
- * /api/auth/register/student:
-*   post:
- *     summary: Register a new teacher => (adminOnly)
- *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/RegisterUser'
- *     responses:
- *       200:
- *         description: Teacher registered successfully
- */
-
-router.post('/register/student',authMiddleware,adminOnly, registerStudent);
-
-/**
- * @swagger
- * /api/auth/register/teacher:
+ * /api/auth/registerAdmin:
  *   post:
- *     summary: Register a new teacher => (adminOnly)
+ *     summary: Register a new employee => (adminOnly)
  *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/RegisterTeacher'
+ *             $ref: '#/components/schemas/RegisterEmployee'
  *     responses:
  *       200:
- *         description: Teacher registered successfully
+ *         description: Employee registered successfully
  */
-
-router.post('/register/teacher',authMiddleware,adminOnly, registerTeacher);
+router.post(
+  '/registerAdmin',
+  authMiddlewaree,
+  hasPermission('admin_register_employee'),
+  AuthController.registerEmployee
+)
+//---------------------- register for citizen ---------------------//
 
 /**
  * @swagger
- * /api/auth/register/admin:
+ * /api/auth/registerCitizen:
  *   post:
- *     summary: Register a new admin => (superAdminOnly)
+ *     summary: Register a new citizen => (citizen)
  *     tags: [Auth]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/RegisterAdmin'
+ *             $ref: '#/components/schemas/RegisterCitizen'
  *     responses:
  *       200:
- *         description: Admin registered successfully
+ *         description: Employee registered successfully
  */
+router.post('/registerCitizen', AuthController.registerCitizen)
 
-router.post('/register/admin' ,authMiddleware,authorizeRoles('superAdmin'),registerAdmin);
-
+////-------------------login for admin and Employee---------///
 /**
  * @swagger
  * /api/auth/login:
  *   post:
- *     summary: Login using user code and mosque code
+ *     summary: login for admin and employee
  *     tags: [Auth]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - code_user
- *               - mosque_code
- *             properties:
- *               code_user:
- *                 type: string
- *               mosque_code:
- *                 type: string
+ *             $ref: '#/components/schemas/Login'
  *     responses:
  *       200:
- *         description: Login successful with JWT token
- *       400:
- *         description: Invalid login credentials
+ *         description: login successfully
  */
+router.post('/login', AuthController.login)
 
-router.post('/login', loginUser);
+// -------------------- Login Step 1 --------------------//
 /**
  * @swagger
- * /api/auth/login/superadmin:
+ * /api/auth/loginStep1:
  *   post:
- *     summary: Super Admin login
+ *     summary: OTP (Login Step 1)
  *     tags: [Auth]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - code_user
- *             properties:
- *               code_user:
- *                 type: string
- *                 example: SUPER001
+ *             $ref: '#/components/schemas/LoginRequest'
  *     responses:
  *       200:
- *         description: Login successful
- *       400:
- *         description: Invalid email or password
+ *         description: login step 1 successfully
  */
+router.post('/loginStep1', AuthController.loginStep1)
 
-router.post('/login/superadmin', loginSuperAdmin);
+// -------------------- Verify OTP Step 2 --------------------
+/**
+ * @swagger
+ * /api/auth/verify_otp:
+ *   post:
+ *     summary: login step 2 (verify_otp)
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/VerifyOtp'
+ *     responses:
+ *       200:
+ *         description: login step 2 successfully
+ */
+router.post('/verify_otp', AuthController.verifyOtp)
 
-module.exports = router;
+/**
+ * @swagger
+ * /api/auth/permission:
+ *   get:
+ *     summary: Get all permission
+ *     tags: [Permission]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of permissions
+ */
+router.get(
+  '/permission',
+  authMiddlewaree,
+  hasPermission('get_all_permission'),
+  AuthController.getAllPermissionController
+)
+
+module.exports = router
