@@ -16,7 +16,7 @@ app.use(express.json());
 const { setupSwagger } = require('./swagger');
 setupSwagger(app);
 
-// Routes
+// Routes  
 const authRoutes = require('./routes/auth');
 app.use('/api/auth', authRoutes);
 const complaintRoutes = require('./routes/complaint');

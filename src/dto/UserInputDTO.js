@@ -1,12 +1,13 @@
 // UserInputDTO: register for admin
 class UserRegisterInputDTO {
-  constructor({ first_name, last_name, email, password,phone,role_id}) {
+  constructor({ first_name, last_name, email, password,phone,role_id ,fcm_token}) {
     this.first_name = first_name;
     this.last_name = last_name;
     this.email = email;
     this.password = password;
     this.phone = phone
-    this.role_id = role_id
+    this.role_id = role_id;
+    this.fcm_token = fcm_token
   }
 }
 

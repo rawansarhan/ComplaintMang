@@ -19,28 +19,28 @@ const {
   ValidateCreateComplaint,
   ValidateUpdateEmpComplaint
 } = require('../validations/complaintValidation')
+const client = require('../config/redis')
+const { sendNotification } = require('../services/notification.service')
+const ComplaintRepository = require('../repositories/ComplaintRepository')
 
 async function createComplaintService (userID, complaintData, files) {
   const transaction = await sequelize.transaction()
- const citizen = await Citizen.findOne({ where: { user_id: userID } });
-if (!citizen) {
-  return res.status(400).json({ message: 'المستخدم ليس مسجلاً كمواطن بعد' });
-}
+  const citizen = await Citizen.findOne({ where: { user_id: userID } })
+  if (!citizen) {
+    return res.status(400).json({ message: 'المستخدم ليس مسجلاً كمواطن بعد' })
+  }
 
-const citizenId = citizen.id; 
+  const citizenId = citizen.id
   try {
-   
     const images = files?.images?.map(f => `public/images/${f.filename}`) || []
     const attachments =
       files?.attachments?.map(f => `public/attachments/${f.filename}`) || []
 
     const dataToValidate = { ...complaintData, images, attachments }
 
-  
     const { error } = ValidateCreateComplaint(dataToValidate)
     if (error) throw new Error(error.details[0].message)
 
-   
     const inputComplaintDTO = new ComplaintCreateInputDTO({
       ...complaintData,
       citizen_id: citizenId,
@@ -49,7 +49,6 @@ const citizenId = citizen.id;
       attachments
     })
 
- 
     const dbData = {
       ...inputComplaintDTO,
       responsible_id: null,
@@ -61,7 +60,6 @@ const citizenId = citizen.id;
         : []
     }
 
-   
     const reference_number = await Complaint.generateReferenceNumber(
       dbData.government_entity,
       transaction
@@ -70,12 +68,11 @@ const citizenId = citizen.id;
     dbData.reference_number = reference_number
     console.log('Generated reference_number:', reference_number)
 
-
+    await client.del('all_complaints')
     const complaint = await Complaint.create(dbData, { transaction })
 
     console.log('Complaint created ID:', complaint.id)
 
-   
     const plainComplaint = complaint.get({ plain: true })
 
     const history = await ActivityLog.create(
@@ -86,7 +83,7 @@ const citizenId = citizen.id;
         entity_id: complaint.id,
         description: 'Complaint created',
         metadata: {
-          created_fields: plainComplaint 
+          created_fields: plainComplaint
         }
       },
       { transaction }
@@ -105,7 +102,6 @@ const citizenId = citizen.id;
     })
     console.log('==================================')
 
-    
     await transaction.commit()
 
     return new ComplaintCreateOutputDTO(plainComplaint)
@@ -144,7 +140,7 @@ async function updateComplaintService (employeeID, complaintId, updateData) {
     }
 
     const beforeData = complaint.get({ plain: true })
-
+    await client.del('all_complaints')
     const updatedComplaint = await complaint.update(
       {
         ...updateData,
@@ -198,22 +194,76 @@ async function updateComplaintService (employeeID, complaintId, updateData) {
     console.log(history)
 
     await transaction.commit()
+    ///notification//////////////////////////////////////
+
+    const citizen = await Citizen.findByPk(complaint.citizen_id, {
+      include: [{ model: User, as: 'user', attributes: ['fcm_token'] }]
+    })
+
+    const token = citizen?.user?.fcm_token
+    if (!token) return
+
+    const userId = citizen.user.id
+
+    // Socket
+    emitToUser(userId, 'complaint_updated', {
+      complaintId: complaint.id,
+      status: updateData.status,
+      notes: updateData.notes
+    })
+
+    // firebase
+    if (updateData.status) {
+      sendNotification({
+        token,
+        title: 'تم تحديث حالة الشكوى',
+        body: `حالة الشكوى أصبحت: ${updateData.status}`,
+        data: {
+          complaintId: complaint.id.toString(),
+          type: 'STATUS_UPDATE'
+        }
+      }).catch(console.error)
+    }
+
+    if (updateData.notes) {
+      sendNotification({
+        token,
+        title: 'ملاحظة جديدة على الشكوى',
+        body: 'قام الموظف بإضافة ملاحظة جديدة',
+        data: {
+          complaintId: complaint.id.toString(),
+          type: 'NEW_NOTE'
+        }
+      }).catch(console.error)
+    }
+
     return new ComplaintUpdateOutputDTO(updatedComplaint)
   } catch (err) {
     await transaction.rollback()
     throw err
   }
 }
-
 /**
- * Get all complaints (admin view)
+ * Get all complaints (admin view) with caching
  */
-async function getAllComplaintsService () {
-  const complaints = await Complaint.findAll({
+async function getAllComplaintsService (page, pageSize) {
+  const cacheKey = `complaints:all:page:${page}`
+
+  const cached = await client.get(cacheKey)
+  if (cached) {
+    console.log('⚡ Complaints from Redis cache')
+    return JSON.parse(cached)
+  }
+
+  console.log('🐢 Complaints from DATABASE')
+
+  const offset = (page - 1) * pageSize
+
+  const { rows, count: total } = await Complaint.findAndCountAll({
     include: [
       {
         model: Citizen,
-        as: 'citizen', // يجب أن يطابق الـ association
+        as: 'citizen',
         include: [
           {
             model: User,
@@ -224,7 +274,7 @@ async function getAllComplaintsService () {
       },
       {
         model: Employee,
-        as: 'employee', // يجب أن يطابق الـ association
+        as: 'employee',
         include: [
           {
             model: User,
@@ -234,17 +284,45 @@ async function getAllComplaintsService () {
         ]
       }
     ],
-    order: [['created_at', 'DESC']]
+    order: [['created_at', 'DESC']],
+    limit: pageSize,
+    offset: offset
   })
 
-  return complaints.map(c => new ComplaintCreateOutputDTO(c))
+  const data = rows.map(c => new ComplaintCreateOutputDTO(c))
+
+  const result = {
+    data,
+    pagination: {
+      total,
+      page,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize)
+    }
+  }
+
+  await client.setEx(cacheKey, 60, JSON.stringify(result))
+
+  return result
 }
 
 /**
- * Get complaints for a specific citizen
+ * Get complaints for a specific citizen (with pagination + redis cache)
  */
-async function getUserComplaintsService (citizenId) {
-  const complaints = await Complaint.findAll({
+async function getUserComplaintsService (citizenId, page, pageSize) {
+  const cacheKey = `complaints:citizen:${citizenId}:page:${page}`
+
+  const cached = await client.get(cacheKey)
+  if (cached) {
+    console.log('⚡ Citizen complaints from Redis cache')
+    return JSON.parse(cached)
+  }
+
+  console.log('🐢 Citizen complaints from DATABASE')
+
+  const offset = (page - 1) * pageSize
+
+  const { rows, count: total } = await Complaint.findAndCountAll({
     where: { citizen_id: citizenId },
     include: [
       {
@@ -270,84 +348,74 @@ async function getUserComplaintsService (citizenId) {
         ]
       }
     ],
-    order: [['created_at', 'DESC']]
+    order: [['created_at', 'DESC']],
+    limit: pageSize,
+    offset
   })
 
-  return complaints.map(c => new ComplaintCreateOutputDTO(c))
+  const data = rows.map(c => new ComplaintCreateOutputDTO(c))
+
+  const result = {
+    data,
+    pagination: {
+      total,
+      page,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize)
+    }
+  }
+
+  await client.setEx(cacheKey, 60, JSON.stringify(result))
+
+  return result
 }
 
 /**
  * Get complaints for a specific employee based on their government entity
  */
-async function getEmployeeComplaintsService (employee) {
+async function getEmployeeComplaintsService (employee, page, pageSize) {
   const employeeEntity = employee.government_entity
 
-  const complaints = await Complaint.findAll({
-    where: { government_entity: employeeEntity },
-    include: [
-      {
-        model: Citizen,
-        as: 'citizen',
-        include: [
-          {
-            model: User,
-            as: 'user',
-            attributes: ['id', 'first_name', 'last_name', 'phone']
-          }
-        ]
-      },
-      {
-        model: Employee,
-        as: 'employee',
-        include: [
-          {
-            model: User,
-            as: 'user',
-            attributes: ['id', 'first_name', 'last_name', 'phone']
-          }
-        ]
-      }
-    ],
-    order: [['created_at', 'DESC']]
-  })
-  if (!complaints) {
-    throw new Error('not have any complaint yet.')
+  const cacheKey = `complaints:employee:${employeeEntity}:page:${page}`
+
+  const cached = await client.get(cacheKey)
+  if (cached) {
+    console.log('⚡ Employee complaints from Redis cache')
+    return JSON.parse(cached)
   }
 
-  return complaints.map(c => new ComplaintCreateOutputDTO(c))
+  console.log('🐢 Employee complaints from DATABASE')
+
+  const offset = (page - 1) * pageSize
+
+  const { rows, count: total } = await ComplaintRepository.findAndCountAll(
+    offset,
+    employeeEntity,
+    pageSize
+  )
+
+  const data = rows.map(c => new ComplaintCreateOutputDTO(c))
+
+  const result = {
+    data,
+    pagination: {
+      total,
+      page,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize)
+    }
+  }
+
+  await client.setEx(cacheKey, 60, JSON.stringify(result))
+
+  return result
 }
 
 /**
  * Get a single complaint with history/details
  */
 async function getComplaintWithHistory (complaintId) {
-  const complaint = await Complaint.findByPk(complaintId, {
-    include: [
-      {
-        model: Citizen,
-        as: 'citizen',
-        include: [
-          {
-            model: User,
-            as: 'user',
-            attributes: ['id', 'first_name', 'last_name', 'phone']
-          }
-        ]
-      },
-      {
-        model: Employee,
-        as: 'employee',
-        include: [
-          {
-            model: User,
-            as: 'user',
-            attributes: ['id', 'first_name', 'last_name', 'phone']
-          }
-        ]
-      }
-    ]
-  })
-
+  const complaint = await ComplaintRepository.findByPk(complaintId)
   if (!complaint) throw new Error('Complaint not found')
 
   return {

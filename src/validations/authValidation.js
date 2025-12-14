@@ -14,7 +14,8 @@ function ValidateRegisterEmployee (data) {
     government_entity: Joi.string()
       .valid('كهرباء', 'ماء', 'صحة', 'تعليم', 'داخلية', 'مالية')
       .required(),
-    permission_id: Joi.array().items(Joi.number().integer()).default([]) // ✅ تعديل هنا
+    permission_id: Joi.array().items(Joi.number().integer()).default([]), // ✅ تعديل هنا
+     fcm_token: Joi.string().allow(null, '').optional()
   })
 
   return schema.validate(data)

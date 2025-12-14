@@ -127,7 +127,7 @@ async function registerCitizen (userData) {
   const inputCitizenDTO = new CitizenInputDTO({
     user_id: user.id
   })
-  const citizen = await Citizen.create({ ...inputCitizenDTO })
+   await Citizen.create({ ...inputCitizenDTO })
 
   const rolePermissions = await RolePermission.findAll({
     where: { role_id: 3 }

@@ -167,14 +167,49 @@ router.put(
  * @swagger
  * /api/complaint/my-complaints:
  *   get:
- *     summary: Get all complaints for logged-in citizen
+ *     summary: Get paginated complaints for the logged-in citizen
  *     tags: [Complaint]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *         description: Page number (default = 1)
  *     responses:
  *       200:
- *         description: List of user's complaints
+ *         description: List of citizen complaints with pagination
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/ComplaintCreateOutputDTO'
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     total:
+ *                       type: integer
+ *                       example: 12
+ *                     page:
+ *                       type: integer
+ *                       example: 1
+ *                     pageSize:
+ *                       type: integer
+ *                       example: 10
+ *                     totalPages:
+ *                       type: integer
+ *                       example: 2
  */
+
 router.get(
   '/my-complaints',
   authMiddlewaree,
@@ -182,21 +217,53 @@ router.get(
   getMyComplaintsController
 );
 
-
-//  Get Employee Complaints => (By Government Entity)
-
 /**
  * @swagger
  * /api/complaint/employee-complaints:
  *   get:
- *     summary: Get all complaints assigned to employee's government entity
+ *     summary: Get all complaints assigned to the employee's government entity (with pagination)
  *     tags: [Complaint]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *         description: Page number (default = 1)
  *     responses:
  *       200:
- *         description: List of complaints for employee
+ *         description: List of complaints for employee with pagination
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/ComplaintCreateOutputDTO'
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     total:
+ *                       type: integer
+ *                       example: 45
+ *                     page:
+ *                       type: integer
+ *                       example: 1
+ *                     pageSize:
+ *                       type: integer
+ *                       example: 10
+ *                     totalPages:
+ *                       type: integer
+ *                       example: 5
  */
+
 router.get(
   '/employee-complaints',
   authMiddlewaree,
@@ -211,13 +278,39 @@ router.get(
  * @swagger
  * /api/complaint/all:
  *   get:
- *     summary: Get ALL complaints (Admin Only)
+ *     summary: Get ALL complaints (Admin Only) - paginated (pageSize fixed at 10)
  *     tags: [Complaint]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number
  *     responses:
  *       200:
- *         description: List of ALL complaints
+ *         description: List of complaints with pagination (pageSize fixed to 10)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     total:
+ *                       type: integer
+ *                     page:
+ *                       type: integer
+ *                     pageSize:
+ *                       type: integer
+ *                       example: 10
+ *                     totalPages:
+ *                       type: integer
  */
 router.get(
   '/all',

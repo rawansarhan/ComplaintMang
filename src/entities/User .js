@@ -55,9 +55,9 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING(255),
         allowNull: false
       },
-      phone :{
-        type :DataTypes.INTEGER,
-        allowNull:false
+      phone: {
+        type: DataTypes.INTEGER,
+        allowNull: false
       },
       role_id: {
         type: DataTypes.INTEGER,
@@ -66,6 +66,10 @@ module.exports = (sequelize, DataTypes) => {
           key: 'id'
         },
         allowNull: false
+      },
+      fcm_token: {
+        type: DataTypes.STRING,
+        allowNull: true
       },
       created_at: {
         type: DataTypes.DATE,

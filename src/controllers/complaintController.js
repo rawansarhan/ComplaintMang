@@ -47,19 +47,22 @@ const updateComplant = asyncHandler(async (req, res) => {
   });
 });
 
-// get all complaint for admin
+/// get all complaint for admin
 const showAllComplaints = asyncHandler(async (req, res) => {
-  const complaints = await getAllComplaintsService();
+  
+  const page = parseInt(req.query.page) || 1;
+
+  const pageSize = 3;
+
+  const complaints = await getAllComplaintsService(page, pageSize);
 
   return res.status(200).json({
     success: true,
-    complaints,
+    ...complaints,
   });
 
-
-
-
 });
+
 
 
 // get all complaint for employee
@@ -68,8 +71,10 @@ const getEmployeeComplaintsController = asyncHandler(async (req, res) => {
   if (!employee) {
     return res.status(400).json({ message: 'المستخدم ليس مسجلاً موظف بعد' });
   }
- 
-  const complaints = await getEmployeeComplaintsService(employee);
+   const page = parseInt(req.query.page) || 1;
+
+  const pageSize = 3;
+  const complaints = await getEmployeeComplaintsService(employee,page,pageSize);
 
   return res.json({
     success: true,
@@ -85,9 +90,11 @@ const getMyComplaintsController = asyncHandler(async (req, res) => {
 if (!citizen) {
   return res.status(400).json({ message: 'المستخدم ليس مسجلاً كمواطن بعد' });
 }
+  const page = parseInt(req.query.page) || 1;
 
+  const pageSize = 3;
 const citizenId = citizen.id;
-  const complaints = await getUserComplaintsService(citizenId);
+  const complaints = await getUserComplaintsService(citizenId,page,pageSize);
 
   return res.json({
     success: true,

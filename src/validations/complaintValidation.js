@@ -33,7 +33,12 @@ function ValidateUpdateEmpComplaint(data) {
   const schema = Joi.object({
     notes: Joi.string().max(4000).allow(null, ''),
     status :Joi.string().
-      valid('كهرباء', 'ماء', 'صحة', 'تعليم', 'داخلية', 'مالية')
+      valid( 'جديدة',
+          'بانتظار معلومات اضافية',
+          'قيد المعالجة',
+          'منجزة',
+          'مرفوضة'
+        )
 
   });
 
