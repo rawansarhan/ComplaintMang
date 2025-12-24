@@ -117,7 +117,8 @@ RegisterEmployeeResponse: {
             last_name: { type: 'string', example: 'Ahmad' },
             email: { type: 'string', example: 'Rawan@gmail.com' },
             password: { type: 'string', example: 'Abc123$' },
-            phone : {type: 'string' , example:'0954862937' }
+            phone : {type: 'string' , example:'0954862937' },
+            fcm_token :{type:'string' , example : 'jmhjlgfssdtyighjhjjk'}
           }
         },
         RegisterCitizenResponse: {
@@ -157,14 +158,14 @@ RegisterEmployeeResponse: {
           type: 'object',
           required: ['email'],
           properties: {
-            email: { type: 'string', example: 'ali@gmail.com' }
+            email: { type: 'string', example: 'ghhlhfkyf' }
           }
         },
         VerifyOtp: {
           type: 'object',
-          required: ['email', 'otp'],
+          required: ['session_id', 'otp'],
           properties: {
-            email: { type: 'string', example: 'ali@gmail.com' },
+            session_id: { type: 'string', example: 'jihhhhugfyfd' },
             otp: { type: 'string', example: '123456' }
           }
         },

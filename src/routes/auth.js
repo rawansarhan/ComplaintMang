@@ -82,7 +82,7 @@ router.post('/login', AuthController.login)
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/LoginRequest'
+ *             $ref: '#/components/schemas/Login'
  *     responses:
  *       200:
  *         description: login step 1 successfully

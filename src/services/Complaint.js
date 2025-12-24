@@ -196,50 +196,52 @@ async function updateComplaintService (employeeID, complaintId, updateData) {
     await transaction.commit()
     ///notification//////////////////////////////////////
 
-    const citizen = await Citizen.findByPk(complaint.citizen_id, {
-      include: [{ model: User, as: 'user', attributes: ['fcm_token'] }]
-    })
+    // const citizen = await Citizen.findByPk(complaint.citizen_id, {
+    //   include: [{ model: User, as: 'user', attributes: ['fcm_token'] }]
+    // })
 
-    const token = citizen?.user?.fcm_token
-    if (!token) return
+    // const token = citizen?.user?.fcm_token
+    // if (!token) return
 
-    const userId = citizen.user.id
+    // const userId = citizen.user.id
 
-    // Socket
-    emitToUser(userId, 'complaint_updated', {
-      complaintId: complaint.id,
-      status: updateData.status,
-      notes: updateData.notes
-    })
+    // // Socket
+    // emitToUser(userId, 'complaint_updated', {
+    //   complaintId: complaint.id,
+    //   status: updateData.status,
+    //   notes: updateData.notes
+    // })
 
-    // firebase
-    if (updateData.status) {
-      sendNotification({
-        token,
-        title: 'تم تحديث حالة الشكوى',
-        body: `حالة الشكوى أصبحت: ${updateData.status}`,
-        data: {
-          complaintId: complaint.id.toString(),
-          type: 'STATUS_UPDATE'
-        }
-      }).catch(console.error)
-    }
+    // // firebase
+    // if (updateData.status) {
+    //   sendNotification({
+    //     token,
+    //     title: 'تم تحديث حالة الشكوى',
+    //     body: `حالة الشكوى أصبحت: ${updateData.status}`,
+    //     data: {
+    //       complaintId: complaint.id.toString(),
+    //       type: 'STATUS_UPDATE'
+    //     }
+    //   }).catch(console.error)
+    // }
 
-    if (updateData.notes) {
-      sendNotification({
-        token,
-        title: 'ملاحظة جديدة على الشكوى',
-        body: 'قام الموظف بإضافة ملاحظة جديدة',
-        data: {
-          complaintId: complaint.id.toString(),
-          type: 'NEW_NOTE'
-        }
-      }).catch(console.error)
-    }
+    // if (updateData.notes) {
+    //   sendNotification({
+    //     token,
+    //     title: 'ملاحظة جديدة على الشكوى',
+    //     body: 'قام الموظف بإضافة ملاحظة جديدة',
+    //     data: {
+    //       complaintId: complaint.id.toString(),
+    //       type: 'NEW_NOTE'
+    //     }
+    //   }).catch(console.error)
+    // }
 
     return new ComplaintUpdateOutputDTO(updatedComplaint)
   } catch (err) {
-    await transaction.rollback()
+    if (!transaction.finished) {
+      await transaction.rollback()
+    }
     throw err
   }
 }

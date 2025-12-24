@@ -198,7 +198,8 @@ async function loginStep1 (userData) {
   const session_id = uuidv4()
 
   // حفظ الـ OTP مع البريد الإلكتروني لسهولة التحقق لاحقًا
-  await OtpRepository.saveOtp(session_id, { otp, email: user.email })
+  await OtpRepository.saveOtp(session_id, otp, user.email)
+
 
   await sendOtpEmail(user.email, otp)
 

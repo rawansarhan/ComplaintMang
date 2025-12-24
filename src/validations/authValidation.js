@@ -15,7 +15,7 @@ function ValidateRegisterEmployee (data) {
       .valid('كهرباء', 'ماء', 'صحة', 'تعليم', 'داخلية', 'مالية')
       .required(),
     permission_id: Joi.array().items(Joi.number().integer()).default([]), // ✅ تعديل هنا
-     fcm_token: Joi.string().allow(null, '').optional()
+    
   })
 
   return schema.validate(data)
@@ -30,7 +30,8 @@ function ValidateRegisterCitizen (data) {
     password: Joi.string().required(),
     phone: Joi.string()
       .pattern(/^[0-9]{10}$/)
-      .required()
+      .required(),
+    fcm_token: Joi.string().allow(null, '').optional()
   })
 
   return schema.validate(data)
@@ -56,7 +57,7 @@ function ValidateSendOtp (data) {
 /* ========================= VERIFY OTP (STEP 2) ========================= */
 function ValidateVerifyOtp (data) {
   return Joi.object({
-    session_id: Joi.string().uuid().required(), // ⬅️ بديل عن الإيميل
+    session_id: Joi.string().required(),
     otp: Joi.string().length(6).required()
   }).validate(data)
 }
