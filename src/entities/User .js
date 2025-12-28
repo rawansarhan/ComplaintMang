@@ -22,11 +22,15 @@ module.exports = (sequelize, DataTypes) => {
       })
 
       User.belongsToMany(models.Permission, {
-        through: 'user_permissions',
+        through: {
+          model: models.UserPermission,
+          timestamps: false
+        },
         foreignKey: 'user_id',
         otherKey: 'permission_id',
         as: 'permissions'
       })
+      
 
       User.hasMany(models.ActivityLog, {
         foreignKey: 'user_id',
@@ -49,7 +53,8 @@ module.exports = (sequelize, DataTypes) => {
       },
       email: {
         type: DataTypes.STRING(100),
-        allowNull: false
+        allowNull: false,
+        unique:true
       },
       password: {
         type: DataTypes.STRING(255),

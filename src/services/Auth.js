@@ -9,6 +9,7 @@ const {
   UserPermission,
   RolePermission,
   Permission
+
 } = require('../entities')
 
 const {
@@ -20,7 +21,9 @@ const {
 
 const {
   UserLoginOutputDTO,
-  UserRegisterOutputDTO
+  UserRegisterOutputDTO,
+  CitizenLoginOutputDTO
+
 } = require('../dto/UserOutputDTO')
 
 const {
@@ -66,6 +69,8 @@ async function sendOtpEmail (email, otp) {
 
 // ================== REGISTER EMPLOYEE ===================
 async function registerEmployee (userData) {
+  const userEmail =await User.findOne({ where: { email: userData.email } })
+  if (userEmail) throw new Error('تم انشاء حساب بهذا البريد الالكتروني سابقا')
   // التحقق من صحة البيانات
   const { error } = ValidateRegisterEmployee(userData)
   if (error) {
@@ -81,6 +86,7 @@ async function registerEmployee (userData) {
     password: hashedPassword,
     role_id: role_id
   })
+
   const user = await User.create({ ...inputUserDTO })
 
   const inputEmpDTO = new EmployeeInputDTO({
@@ -108,11 +114,14 @@ async function registerEmployee (userData) {
 
 // ================== REGISTER CITIZEN ===================
 async function registerCitizen (userData) {
+  const userEmail = await User.findOne({ where: { email: userData.email } })
+  if (userEmail) throw new Error('تم انشاء حساب بهذا البريد الالكتروني سابقا')
   const { error } = ValidateRegisterCitizen(userData)
   if (error) {
     const messages = error.details.map(d => d.message)
     throw new Error(messages.join(', '))
   }
+ 
 
   const role_id = 3
   const hashedPassword = await bcrypt.hash(userData.password, 10)
@@ -122,6 +131,7 @@ async function registerCitizen (userData) {
     password: hashedPassword,
     role_id: role_id
   })
+
   const user = await User.create({ ...inputUserDTO })
 
   const inputCitizenDTO = new CitizenInputDTO({
@@ -147,7 +157,7 @@ async function registerCitizen (userData) {
   }
 }
 //=================== login admin and employee ================//
-async function login (userData) {
+async function login(userData) {
   const { error } = ValidateLoginUser(userData)
   if (error) {
     const messages = error.details.map(d => d.message)
@@ -156,7 +166,19 @@ async function login (userData) {
 
   const inputDTO = new UserLoginInputDTO(userData)
 
-  const user = await User.findOne({ where: { email: inputDTO.email } })
+  const user = await User.findOne({
+    where: { email: inputDTO.email },
+    include: [
+      {
+        model: Permission,
+        as: 'permissions',
+        attributes: ['id', 'name'], // 👈 أسماء الصلاحيات فقط
+        through: { attributes: [] } // 👈 لا ترجع جدول الربط
+      }
+    ]
+  })
+  
+
   if (!user) {
     throw new Error('Invalid email or password')
   }
@@ -166,9 +188,11 @@ async function login (userData) {
     throw new Error('Invalid email or password')
   }
 
-  const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, {
-    expiresIn: '30d'
-  })
+  const token = jwt.sign(
+    { id: user.id, role: user.role },
+    JWT_SECRET,
+    { expiresIn: '30d' }
+  )
 
   const outputDTO = new UserLoginOutputDTO(user)
 
@@ -177,6 +201,7 @@ async function login (userData) {
     token
   }
 }
+
 
 // ================== Login Step 1: Send OTP ===================
 async function loginStep1 (userData) {
@@ -200,11 +225,11 @@ async function loginStep1 (userData) {
   // حفظ الـ OTP مع البريد الإلكتروني لسهولة التحقق لاحقًا
   await OtpRepository.saveOtp(session_id, otp, user.email)
 
-
+  const outputDTO = new CitizenLoginOutputDTO(user)
   await sendOtpEmail(user.email, otp)
 
   return {
-    message: 'تم إرسال رمز التحقق OTP على بريدك الإلكتروني',
+    user : outputDTO,
     session_id
   }
 }

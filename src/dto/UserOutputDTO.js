@@ -13,15 +13,33 @@ class UserRegisterOutputDTO {
 }
 
 class UserLoginOutputDTO {
+  constructor ({ id, first_name, last_name, email, permissions }) {
+    this.id = id
+    this.first_name = first_name
+    this.last_name = last_name
+    this.email = email
+    this.permissions = permissions
+      ? permissions.map(p => ({
+          id: p.id,
+          name: p.name
+        }))
+      : []
+  }
+}
+
+
+class CitizenLoginOutputDTO {
   constructor ({ id,first_name,last_name,email}) {
      this.id = id;
-    this.first_name = first_name;
-    this.last_name = last_name;
-    this.email = this.email;
+    this.first_name = first_name
+    this.last_name = last_name
+    this.email = email
+ 
   }
 }
 
 module.exports = {
   UserLoginOutputDTO,
-  UserRegisterOutputDTO
+  UserRegisterOutputDTO,
+  CitizenLoginOutputDTO
 }

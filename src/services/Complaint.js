@@ -172,29 +172,29 @@ async function updateComplaintService (employeeID, complaintId, updateData) {
       { transaction }
     )
 
-    const history = await ActivityLog.create(
-      {
-        user_id: employeeID,
-        action: 'UPDATE_COMPLAINT',
-        entity_type: 'Complaint',
-        entity_id: complaint.id,
-        description: 'Complaint updated',
-        metadata: {
-          changed_fields: Object.keys(updateData)
-        }
-      },
-      { transaction }
-    )
+    // const history = await ActivityLog.create(
+    //   {
+    //     user_id: employeeID,
+    //     action: 'UPDATE_COMPLAINT',
+    //     entity_type: 'Complaint',
+    //     entity_id: complaint.id,
+    //     description: 'Complaint updated',
+    //     metadata: {
+    //       changed_fields: Object.keys(updateData)
+    //     }
+    //   },
+    //   { transaction }
+    // )
 
     console.log({
       started_at: startTime,
       ended_at: endTime,
       duration_ms: endTime - startTime
     })
-    console.log(history)
+    
 
     await transaction.commit()
-    ///notification//////////////////////////////////////
+    //notification//////////////////////////////////////
 
     // const citizen = await Citizen.findByPk(complaint.citizen_id, {
     //   include: [{ model: User, as: 'user', attributes: ['fcm_token'] }]
@@ -205,7 +205,7 @@ async function updateComplaintService (employeeID, complaintId, updateData) {
 
     // const userId = citizen.user.id
 
-    // // Socket
+    // Socket
     // emitToUser(userId, 'complaint_updated', {
     //   complaintId: complaint.id,
     //   status: updateData.status,
@@ -324,36 +324,12 @@ async function getUserComplaintsService (citizenId, page, pageSize) {
 
   const offset = (page - 1) * pageSize
 
-  const { rows, count: total } = await Complaint.findAndCountAll({
-    where: { citizen_id: citizenId },
-    include: [
-      {
-        model: Citizen,
-        as: 'citizen',
-        include: [
-          {
-            model: User,
-            as: 'user',
-            attributes: ['id', 'first_name', 'last_name', 'phone']
-          }
-        ]
-      },
-      {
-        model: Employee,
-        as: 'employee',
-        include: [
-          {
-            model: User,
-            as: 'user',
-            attributes: ['id', 'first_name', 'last_name', 'phone']
-          }
-        ]
-      }
-    ],
-    order: [['created_at', 'DESC']],
-    limit: pageSize,
-    offset
-  })
+  const { rows, count: total } = 
+  await ComplaintRepository.findAndCountAllCitizen(
+    { offset,
+      citizenId,
+     pageSize}
+   )
 
   const data = rows.map(c => new ComplaintCreateOutputDTO(c))
 
@@ -375,26 +351,38 @@ async function getUserComplaintsService (citizenId, page, pageSize) {
 /**
  * Get complaints for a specific employee based on their government entity
  */
-async function getEmployeeComplaintsService (employee, page, pageSize) {
-  const employeeEntity = employee.government_entity
+async function getEmployeeComplaintsService(employee, page = 1, pageSize = 10) {
+  if (!employee || !employee.government_entity) {
+    throw new Error('Invalid employee data')
+  }
+  console.log(3)  
 
-  const cacheKey = `complaints:employee:${employeeEntity}:page:${page}`
+  page = Math.max(1, Number(page))
+  pageSize = Math.max(1, Number(pageSize))
+  console.log(4)  
+
+  const employeeEntity = employee.government_entity
+  const cacheKey = `complaints:employee:${employeeEntity}:page:${page}:size:${pageSize}`
+  console.log(5)  
 
   const cached = await client.get(cacheKey)
   if (cached) {
     console.log('⚡ Employee complaints from Redis cache')
     return JSON.parse(cached)
   }
+  console.log(6)  
 
   console.log('🐢 Employee complaints from DATABASE')
 
   const offset = (page - 1) * pageSize
 
-  const { rows, count: total } = await ComplaintRepository.findAndCountAll(
-    offset,
-    employeeEntity,
-    pageSize
-  )
+  const { rows, count: total } =
+    await ComplaintRepository.findAndCountAll(
+     { offset,
+      employeeEntity,
+      pageSize}
+    )
+    console.log(7)  
 
   const data = rows.map(c => new ComplaintCreateOutputDTO(c))
 
@@ -412,6 +400,7 @@ async function getEmployeeComplaintsService (employee, page, pageSize) {
 
   return result
 }
+
 
 /**
  * Get a single complaint with history/details

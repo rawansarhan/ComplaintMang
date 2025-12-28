@@ -71,9 +71,18 @@ const getEmployeeComplaintsController = asyncHandler(async (req, res) => {
   if (!employee) {
     return res.status(400).json({ message: 'المستخدم ليس مسجلاً موظف بعد' });
   }
+  if (!employee.government_entity) {
+    return res.status(400).json({
+      message: 'لم يتم تحديد الجهة الحكومية لهذا الموظف'
+    });
+  }
+ console.log(1)  
    const page = parseInt(req.query.page) || 1;
 
+
   const pageSize = 3;
+ console.log(2)  
+
   const complaints = await getEmployeeComplaintsService(employee,page,pageSize);
 
   return res.json({

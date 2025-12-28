@@ -40,7 +40,7 @@ class AuthController {
     try {
       const result = await login(req.body)
       return res.status(200).json({
-        message: 'تم إرسال رمز التحقق OTP بنجاح',
+        message: 'تم تسجيل الدخول بنجاح',
         data: result
       })
     } catch (error) {

@@ -339,34 +339,27 @@ router.get(
  *     responses:
  *       200:
  *         description: Complaint details with history
- *         content:
+  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 success:
- *                   type: boolean
- *                 complaint:
- *                   $ref: '#/components/schemas/ComplaintUpdateOutputDTO'
- *                 history:
+ *                 data:
  *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       id:
- *                         type: integer
- *                       changed_by:
- *                         type: integer
- *                       change_type:
- *                         type: string
- *                       old_value:
- *                         type: object
- *                       new_value:
- *                         type: object
- *                       changed_at:
- *                         type: string
- *                         format: date-time
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     total:
+ *                       type: integer
+ *                     page:
+ *                       type: integer
+ *                     pageSize:
+ *                       type: integer
+ *                       example: 10
+ *                     totalPages:
+ *                       type: integer
  */
+
 router.get(
   '/history/:id',
   authMiddlewaree,

@@ -2,9 +2,12 @@ module.exports = {
 up: async (queryInterface) => {
 const perms = [
 'admin_register_employee',
+'login_adminAndEmployee',
+'login_citizen',
 'citizen_create_complaint',
 'citizen_view_complaints',
 'citizen_delete_complaint',
+'citizen_update_complaint',
 'employee_view_assigned_complaints',
 'employee_update_complaint',
 'admin_view_all_complaints',

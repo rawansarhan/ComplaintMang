@@ -51,7 +51,7 @@ class ComplaintRepository {
       ]
     })
   }
-  async findAndCountAll ({ offset, pageSize, employeeEntity }) {
+  async findAndCountAll ({ offset, employeeEntity,pageSize }) {
     return await Complaint.findAndCountAll({
       where: { government_entity: employeeEntity },
       include: [
@@ -83,7 +83,41 @@ class ComplaintRepository {
       offset
     })
   }
+async findAndCountAllCitizen ({ offset, citizenId,pageSize }) {
 
+  return await Complaint.findAndCountAll({
+    where: { citizen_id: citizenId },
+    include: [
+      {
+        model: Citizen,
+        as: 'citizen',
+        include: [
+          {
+            model: User,
+            as: 'user',
+            attributes: ['id', 'first_name', 'last_name', 'phone']
+          }
+        ]
+      },
+      {
+        model: Employee,
+        as: 'employee',
+        include: [
+          {
+            model: User,
+            as: 'user',
+            attributes: ['id', 'first_name', 'last_name', 'phone']
+          }
+        ]
+      }
+    ],
+    order: [['created_at', 'DESC']],
+    limit: pageSize,
+    offset
+  })
+
+
+}
   async update (id, updatedData) {
     const complaint = await this.findById(id)
     if (!complaint) return null

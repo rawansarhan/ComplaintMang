@@ -68,7 +68,8 @@ router.post('/registerCitizen', AuthController.registerCitizen)
  *       200:
  *         description: login successfully
  */
-router.post('/login', AuthController.login)
+router.post('/login',
+   AuthController.login)
 
 // -------------------- Login Step 1 --------------------//
 /**
@@ -87,7 +88,8 @@ router.post('/login', AuthController.login)
  *       200:
  *         description: login step 1 successfully
  */
-router.post('/loginStep1', AuthController.loginStep1)
+router.post('/loginStep1', 
+  AuthController.loginStep1)
 
 // -------------------- Verify OTP Step 2 --------------------
 /**
