@@ -6,14 +6,14 @@ module.exports = {
       `SELECT id FROM users WHERE role_id = 1;`
     );
 
-    const adminPermissions = [1, 7, 8, 10];
+    const adminPermissions = [1, 10, 11, 12,13];
 
     const userPermissionsData = [];
     admins.forEach(admin => {
       adminPermissions.forEach(permission_id => {
         userPermissionsData.push({
           user_id: admin.id,
-          permission_id,
+          permission_id,  
         });
       });
     });

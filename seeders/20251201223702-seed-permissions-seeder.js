@@ -13,7 +13,8 @@ const perms = [
 'admin_view_all_complaints',
 'admin_manage_permissions',
 'view_complaint_history',
-'get_all_permission'
+'get_all_permission',
+'citizen_view_complaint_Id'
 ];
 
 
