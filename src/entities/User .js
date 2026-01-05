@@ -18,7 +18,7 @@ module.exports = (sequelize, DataTypes) => {
       })
       User.belongsTo(models.Role, {
         foreignKey: 'role_id',
-        as: 'user_role'
+        as: 'role'
       })
 
       User.belongsToMany(models.Permission, {
@@ -71,6 +71,14 @@ module.exports = (sequelize, DataTypes) => {
           key: 'id'
         },
         allowNull: false
+      },
+      failed_login_attempts: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0
+      },
+      lock_until: {
+        type: DataTypes.DATE,
+        allowNull: true
       },
       fcm_token: {
         type: DataTypes.STRING,

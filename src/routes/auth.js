@@ -128,5 +128,23 @@ router.get(
   hasPermission('get_all_permission'),
   AuthController.getAllPermissionController
 )
+/**
+ * @swagger
+ * /api/auth/AllUsers:
+ *   get:
+ *     summary: Get all users
+ *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of roles with users
+ */
+router.get(
+  '/AllUsers',
+  authMiddlewaree,
+  hasPermission('get_all_users'),
+  AuthController.getAllUsers
+)
 
 module.exports = router

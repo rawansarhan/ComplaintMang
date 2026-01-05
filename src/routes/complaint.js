@@ -8,7 +8,10 @@ const {
   getMyComplaintsController,
   showAllComplaints,
   getComplaintWithHistoryController,
-  updateComplant
+  updateComplant,
+  deletedComplaintForAdminAndEmp,
+  deletedComplaintForcitizen,
+  updateComplantForCitizen
 } = require('../controllers/complaintController');
 
 const { 
@@ -365,6 +368,143 @@ router.get(
   authMiddlewaree,
   hasPermission('view_complaint_history'), 
   getComplaintWithHistoryController
+);
+/**
+ * @swagger
+ * /api/complaint/admin/{id}:
+ *   delete:
+ *     summary: Delete complaint (Admin & Employee)
+ *     tags: [Complaint]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Complaint ID
+ *     responses:
+ *       200:
+ *         description: Complaint deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *       404:
+ *         description: Complaint not found
+ */
+router.delete(
+  '/admin/:id',
+  authMiddlewaree,
+  hasPermission('delete_complaint'),
+  deletedComplaintForAdminAndEmp
+);
+
+/**
+ * @swagger
+ * /api/complaint/citizen/{id}:
+ *   delete:
+ *     summary: Delete own complaint (Citizen)
+ *     tags: [Complaint]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Complaint ID
+ *     responses:
+ *       200:
+ *         description: Complaint deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *       403:
+ *         description: Not allowed to delete this complaint
+ *       404:
+ *         description: Complaint not found
+ */
+router.delete(
+  '/citizen/:id',
+  authMiddlewaree,
+  hasPermission('citizen_delete_complaint'),
+  deletedComplaintForcitizen
+);
+
+
+/**
+ * @swagger
+ * /api/complaint/updateComplaintForCitizen/{id}:
+ *   put:
+ *     summary: Update complaint (Citizen)
+ *     tags: [Complaint]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Complaint ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               description:
+ *                 type: string
+ *                 maxLength: 2000
+ *               images:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: binary
+ *               attachments:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: binary
+ *     responses:
+ *       200:
+ *         description: Complaint updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 complaint:
+ *                   type: object
+ *       404:
+ *         description: Complaint not found
+ *       403:
+ *         description: Not allowed to update this complaint
+ */
+
+
+router.put(
+  '/updateComplaintForCitizen/:id',
+  authMiddlewaree,
+  hasPermission('citizen_update_complaint'),
+  upload.fields([
+    { name: 'images', maxCount: 5 },
+    { name: 'attachments', maxCount: 5 }
+  ]),
+  updateComplantForCitizen
 );
 
 

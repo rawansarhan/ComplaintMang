@@ -39,6 +39,15 @@ module.exports = {
         },
         allowNull: false
       },
+      failed_login_attempts: {
+        type: Sequelize.INTEGER,
+        defaultValue: 0
+      },
+      lock_until: {
+        type: Sequelize.DATE,
+        allowNull: true
+      }
+      ,
       fcm_token: {
     type: Sequelize.STRING,
     allowNull: true

@@ -8,7 +8,9 @@ const {
   Citizen,
   UserPermission,
   RolePermission,
-  Permission
+  Permission,
+  Role
+
 
 } = require('../entities')
 
@@ -32,18 +34,17 @@ const {
   ValidateRegisterEmployee,
   ValidateVerifyOtp // ⬅️ استيراد للتحقق من OTP
 } = require('../validations/authValidation')
-
 const { EmployeeInputDTO } = require('../dto/EmployeeInputDTO')
 const { EmployeeOutputDTO } = require('../dto/EmployeeOutputDTO')
-
 const { CitizenInputDTO } = require('../dto/CitizenInputDTO')
 const { CitizenOutputDTO } = require('../dto/CitizenOutputDTO')
-
 const { UserPermissionInputDTO } = require('../dto/UserPermissionInputDTO')
 const { UserPermissionOutputDTO } = require('../dto/UserPermissionOutputDTO')
-
+const {   clearIpFailures,checkIpBlock,recordIpFailure
+} = require('../utils/rateLimiter')
 const OtpRepository = require('../repositories/OtpRepository')
-
+const { log } = require('winston')
+const { Op } = require('sequelize');
 const JWT_SECRET = process.env.JWT_SECRET || 'secret_key'
 
 // إعداد البريد لإرسال OTP
@@ -65,6 +66,40 @@ async function sendOtpEmail (email, otp) {
   }
 
   await transporter.sendMail(mailOptions)
+}
+///////////////////////////////////////////////////////////////
+async function UserUnLocked(user) {
+  if (user.lock_until==null) return false
+
+  // إذا وقت القفل انتهى → فك القفل
+  if (new Date(user.lock_until) <= new Date()) {
+    user.failed_login_attempts = 0
+    user.lock_until = null
+    await user.save()
+    console.log("=======================unlocked========================")
+    return false
+  }
+
+  return true
+}
+
+function isUserLocked(user) {
+  return user.lock_until && new Date(user.lock_until) > new Date()
+}
+async function recordUserFailure(user) {
+  user.failed_login_attempts += 1
+
+  if (user.failed_login_attempts >= 4) {
+    user.lock_until = new Date(Date.now() + 15 * 60 * 1000)
+  }
+
+  await user.save()
+}
+
+async function resetUserLock(user) {
+  user.failed_login_attempts = 0
+  user.lock_until = null
+  await user.save()
 }
 
 // ================== REGISTER EMPLOYEE ===================
@@ -204,35 +239,53 @@ async function login(userData) {
 
 
 // ================== Login Step 1: Send OTP ===================
-async function loginStep1 (userData) {
+
+async function loginStep1(userData, ip) {
+  await checkIpBlock(ip)
+  console.log(1)
   const { error } = ValidateLoginUser(userData)
   if (error) {
-    console.log('Validation error details:', error.details)
-    throw new Error(error.details.map(d => d.message).join(', '))
+    console.log("wrong validation")
+
+    throw new Error('البريد الإلكتروني أو كلمة المرور غير صحيحة')
+  }
+  const inputLoginDTO = new UserLoginInputDTO(userData)
+  const user = await User.findOne({ where: { email: inputLoginDTO.email } })
+
+  if (!user) {
+    await recordIpFailure(ip)
+    console.log("wrong email")
+    throw new Error('البريد الإلكتروني أو كلمة المرور غير صحيحة')
   }
 
-  const inputLoginDTO = new UserLoginInputDTO(userData)
-
-  const user = await User.findOne({ where: { email: inputLoginDTO.email } })
-  if (!user) throw new Error('البريد الإلكتروني أو كلمة المرور غير صحيحة')
-
+  await UserUnLocked(user)
+  if (isUserLocked(user)) {
+    console.log("====================locked==================")
+    throw new Error('Your account has been temporarily locked')
+  }
   const isMatch = await bcrypt.compare(inputLoginDTO.password, user.password)
-  if (!isMatch) throw new Error('البريد الإلكتروني أو كلمة المرور غير صحيحة')
+
+  if (!isMatch) {
+    await recordIpFailure(ip)
+    await recordUserFailure(user)
+    console.log("wrong password")
+    throw new Error('البريد الإلكتروني أو كلمة المرور غير صحيحة')
+  }
+  await clearIpFailures(ip)
+  await resetUserLock(user)
 
   const otp = Math.floor(100000 + Math.random() * 900000).toString()
   const session_id = uuidv4()
 
-  // حفظ الـ OTP مع البريد الإلكتروني لسهولة التحقق لاحقًا
   await OtpRepository.saveOtp(session_id, otp, user.email)
-
-  const outputDTO = new CitizenLoginOutputDTO(user)
   await sendOtpEmail(user.email, otp)
 
   return {
-    user : outputDTO,
+    user: new CitizenLoginOutputDTO(user),
     session_id
   }
 }
+
 
 // ================== Login Step 2: Verify OTP ===================
 async function verifyOtpStep2 (otpData) {
@@ -263,7 +316,7 @@ async function verifyOtpStep2 (otpData) {
     token
   }
 }
-
+////////////
 async function getAllPermission(role_id = 2) {
   const permissions = await RolePermission.findAll({
     where: { role_id },
@@ -282,11 +335,44 @@ async function getAllPermission(role_id = 2) {
 
   return permissions ;
 }
+////////////////////////////////
+async function getAllUser() {
+  const roles = await Role.findAll({
+    where: {
+      name: {
+        [Op.ne]: 'Admin'
+      }
+    },
+    attributes: ['id', 'name'],
+    include: [
+      {
+        model: User,
+        as: 'users',
+        attributes: ['id', 'first_name', 'last_name', 'email', 'phone'],
+        include: [
+          {
+            model: Employee,
+            as: 'employee',
+            required: false, 
+            attributes: ['government_entity']
+          }
+        ]
+      }
+    ]
+  });
+
+  return roles;
+}
+
+
+
+
 module.exports = {
   registerEmployee,
   registerCitizen,
   loginStep1,
   verifyOtpStep2,
   login,
-  getAllPermission
+  getAllPermission,
+  getAllUser
 }

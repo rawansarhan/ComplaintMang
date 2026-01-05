@@ -1,3 +1,4 @@
+const { error } = require('winston')
 const {
   Complaint,
   Citizen,
@@ -51,8 +52,45 @@ class ComplaintRepository {
       ]
     })
   }
-  async findAndCountAll ({ offset, employeeEntity,pageSize }) {
-    return await Complaint.findAndCountAll({
+
+
+  async findAndCountAllAdmin ({ offset,pageSize }) {
+    const all = await Complaint.findAndCountAll({
+      include: [
+        {
+          model: Citizen,
+          as: 'citizen',
+          include: [
+            {
+              model: User,
+              as: 'user',
+              attributes: ['id', 'first_name', 'last_name', 'phone']
+            }
+          ]
+        },
+        {
+          model: Employee,
+          as: 'employee',
+          include: [
+            {
+              model: User,
+              as: 'user',
+              attributes: ['id', 'first_name', 'last_name', 'phone']
+            }
+          ]
+        }
+      ],
+      order: [['created_at', 'DESC']],
+      limit: pageSize,
+      offset: offset
+    })
+    if (all.length === 0) {
+      return  error("you are not have complaint yet");
+    }
+    return all
+  }
+  async findAndCountAll({ offset, employeeEntity, pageSize }) {
+    const all = await Complaint.findAndCountAll({
       where: { government_entity: employeeEntity },
       include: [
         {
@@ -81,11 +119,18 @@ class ComplaintRepository {
       order: [['created_at', 'DESC']],
       limit: pageSize,
       offset
-    })
+    });
+  
+    if (all.length === 0) {
+      return  error("you are not have complaint yet");
+    }
+  
+    return all;
   }
+  
 async findAndCountAllCitizen ({ offset, citizenId,pageSize }) {
 
-  return await Complaint.findAndCountAll({
+  const all =await Complaint.findAndCountAll({
     where: { citizen_id: citizenId },
     include: [
       {
@@ -115,7 +160,10 @@ async findAndCountAllCitizen ({ offset, citizenId,pageSize }) {
     limit: pageSize,
     offset
   })
-
+  if (all.length === 0) {
+    return  error("you are not have complaint yet");
+  }
+  return all
 
 }
   async update (id, updatedData) {
@@ -125,12 +173,36 @@ async findAndCountAllCitizen ({ offset, citizenId,pageSize }) {
     return complaint
   }
 
-  async delete (id) {
-    const complaint = await this.findById(id)
-    if (!complaint) return null
-    await complaint.destroy()
-    return true
-  }
+ // Admin & Employee
+ async delete(complaintId, options = {}) {
+  const complaint = await Complaint.findOne({
+    where: {
+      id: complaintId
+    },
+    ...options
+  });
+
+  if (!complaint) return false;
+
+  await complaint.destroy(options);
+  return true;
+}
+// citizen
+async deleteMyComplaint(citizenId, complaintId, options = {}) {
+  const complaint = await Complaint.findOne({
+    where: {
+      id: complaintId,
+      citizen_id: citizenId
+    },
+    ...options
+  });
+
+  if (!complaint) return false;
+
+  await complaint.destroy(options);
+  return true;
+}
+
 }
 
 module.exports = new ComplaintRepository()

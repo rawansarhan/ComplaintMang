@@ -1,20 +1,22 @@
 module.exports = {
 up: async (queryInterface) => {
 const perms = [
-'admin_register_employee',
-'login_adminAndEmployee',
-'login_citizen',
-'citizen_create_complaint',
-'citizen_view_complaints',
-'citizen_delete_complaint',
-'citizen_update_complaint',
-'employee_view_assigned_complaints',
-'employee_update_complaint',
-'admin_view_all_complaints',
-'admin_manage_permissions',
-'view_complaint_history',
-'get_all_permission',
-'citizen_view_complaint_Id'
+'admin_register_employee',//1
+'login_adminAndEmployee',//2
+'login_citizen',//3
+'citizen_create_complaint',//4
+'citizen_view_complaints',//5
+'citizen_delete_complaint',//6
+'citizen_update_complaint',//7
+'employee_view_assigned_complaints',//8
+'employee_update_complaint',//9
+'admin_view_all_complaints',//10
+'admin_manage_permissions',//11
+'view_complaint_history',//12
+'get_all_permission',//13
+'citizen_view_complaint_Id',//14
+'delete_complaint',//15
+'get_all_users',//16
 ];
 
 

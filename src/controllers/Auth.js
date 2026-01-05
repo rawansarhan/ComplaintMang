@@ -4,7 +4,8 @@ const {
   verifyOtpStep2,
   registerEmployee,
   login,
-  getAllPermission
+  getAllPermission,
+  getAllUser
 } = require('../services/Auth')
 const { Permission } = require('../entities')
 
@@ -51,7 +52,8 @@ class AuthController {
   // -------------------- Login Step 1 --------------------
   async loginStep1 (req, res) {
     try {
-      const result = await loginStep1(req.body)
+      const ip = req.ip || req.connection.remoteAddress
+      const result = await loginStep1(req.body, ip)
       return res.status(200).json({
         message: 'تم إرسال رمز التحقق OTP بنجاح',
         data: result
@@ -84,5 +86,20 @@ class AuthController {
       user_permission
     })
   }
+
+/////// --------------GET ALL users
+
+async getAllUsers (req,res) {
+  const userCitizen = await getAllUser()
+
+  return res.json({
+    message :"get all users",
+    userCitizen
+  })
 }
+
+
+
+}
+
 module.exports = new AuthController()
