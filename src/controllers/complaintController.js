@@ -11,7 +11,7 @@ const {
   destroyComplaintForcitizen,
   updateComplaintForCitizenService 
 } = require('../services/Complaint');
-const {Complaint ,Employee,Citizen,sequelize }= require('../entities');
+const {Complaint ,Employee,Citizen,sequelize ,User }= require('../entities');
 const withTransaction = require('../Aspect/withTransaction');
 const { sendNotification } = require('../services/notification.service')
 

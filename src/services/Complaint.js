@@ -28,10 +28,8 @@ const AppError = require('../errors/AppError') // خطأ عام
 const ValidationError = require('../errors/ValidationError')
 
 async function createComplaintService(userID, complaintData, files) {
-  const sequelize = Complaint.sequelize
 
-  return withTransaction(sequelize, async (transaction) => {
-    const citizen = await Citizen.findOne({ where: { user_id: userID }, transaction })
+    const citizen = await Citizen.findOne({ where: { user_id: userID } })
     if (!citizen) {
       throw new ValidationError('المستخدم ليس مسجلاً كمواطن بعد')
     }
@@ -59,12 +57,12 @@ async function createComplaintService(userID, complaintData, files) {
       attachments: Array.isArray(inputComplaintDTO.attachments) ? inputComplaintDTO.attachments : []
     }
 
-    const reference_number = await Complaint.generateReferenceNumber(dbData.government_entity, transaction)
+    const reference_number = await Complaint.generateReferenceNumber(dbData.government_entity)
     dbData.reference_number = reference_number
 
     await client.del('all_complaints')
 
-    const complaint = await Complaint.create(dbData, { transaction })
+    const complaint = await Complaint.create(dbData)
     const plainComplaint = complaint.get({ plain: true })
 
     await ActivityLog.create(
@@ -75,15 +73,11 @@ async function createComplaintService(userID, complaintData, files) {
         entity_id: complaint.id,
         description: 'Complaint created',
         metadata: { created_fields: plainComplaint }
-      },
-      { transaction }
+      }
     )
 
     return new ComplaintCreateOutputDTO(plainComplaint)
-  }, {
-    userId: userID,
-    service: 'createComplaintService'
-  })
+  
 }
 /*
 update for employee

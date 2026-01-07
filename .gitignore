@@ -8,7 +8,7 @@ config/**/*.json
 
 
 config/firebase/appnet-bf43f-0e1e012de7f5.json
-
+test/
 # Build folders
 dist/
 build/

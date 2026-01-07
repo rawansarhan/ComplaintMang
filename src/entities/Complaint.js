@@ -22,7 +22,7 @@ module.exports = (sequelize, DataTypes) => {
     }
 
     /**
-     * توليد reference_number بشكل آمن لضمان عدم التكرار
+     * توليد reference_number بشكل آمن باستخدام sequence لكل جهة
      */
     static async generateReferenceNumber (government_entity, transaction) {
       const entityMap = {
@@ -36,27 +36,27 @@ module.exports = (sequelize, DataTypes) => {
 
       const prefix = entityMap[government_entity] || 9
 
-      console.log('START generating number', government_entity, Date.now())
-
-      const lastComplaint = await Complaint.findOne({
-        where: { government_entity },
-        order: [['id', 'DESC']],
-        lock: true,
-        transaction
-      })
-
-      console.log('END generating number', government_entity, Date.now())
-
-      let serial = 1
-      if (lastComplaint && lastComplaint.reference_number) {
-        const parts = lastComplaint.reference_number.split('-')
-        serial = parseInt(parts[1], 10) + 1
-      }
-
-      return `${prefix}-${serial.toString().padStart(4, '0')}`
-    }
-  }
-
+      // استخدام sequence لكل جهة لتجنب تكرار الأرقام
+      const result = await sequelize.query(
+        `
+        INSERT INTO complaint_sequences(government_entity, last_serial, created_at, updated_at)
+        VALUES(:government_entity, 1, NOW(), NOW())
+        ON CONFLICT (government_entity)
+        DO UPDATE SET last_serial = complaint_sequences.last_serial + 1,
+                      updated_at = NOW()
+        RETURNING last_serial
+        `,
+        {
+          replacements: { government_entity },
+          type: sequelize.QueryTypes.RAW, // هنا
+          transaction
+        }
+      )
+      
+      // result سيكون array، ونقدر ناخذ الرقم كالتالي:
+      const sequenceNumber = result[0][0].last_serial
+      return `${prefix}-${sequenceNumber.toString().padStart(4, '0')}`
+    }}      
   Complaint.init(
     {
       reference_number: {
@@ -80,8 +80,12 @@ module.exports = (sequelize, DataTypes) => {
       location: { type: DataTypes.STRING(255), allowNull: true },
       citizen_id: { type: DataTypes.INTEGER, allowNull: false },
       responsible_id: { type: DataTypes.INTEGER, allowNull: true },
-      images: { type: DataTypes.JSONB, allowNull: true },
-      attachments: { type: DataTypes.JSONB, allowNull: true },
+      images: { type: DataTypes.JSONB, allowNull: false, defaultValue: [] },
+      attachments: {
+        type: DataTypes.JSONB,
+        allowNull: false,
+        defaultValue: []
+      },
       status: {
         type: DataTypes.ENUM(
           'جديدة',

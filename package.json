@@ -4,12 +4,14 @@
   "description": "Express.js with PostgreSQL template",
   "main": "src/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node src/server.js",
-    "dev": "nodemon src/server.js",
-    "migrate": "sequelize db:migrate",
-    "seed": "sequelize db:seed:all"
-  },
+  "start": "node src/server.js",
+  "dev": "nodemon src/server.js",
+  "dev:4001": "set PORT=4001 && nodemon src/server.js",
+  "dev:4002": "set PORT=4002 && nodemon src/server.js",
+  "dev:4003": "set PORT=4003 && nodemon src/server.js",
+  "migrate": "sequelize db:migrate",
+  "seed": "sequelize db:seed:all"
+},
   "keywords": [],
   "author": "",
   "license": "ISC",
